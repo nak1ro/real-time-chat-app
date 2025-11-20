@@ -1,0 +1,293 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  avatarUrl String?
+  status     Status?
+  lastSeenAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages      Message[]
+  conversations ConversationMember[]
+  reactions     MessageReaction[]
+  mentions      MessageMention[]
+  receipts      MessageReceipt[]
+  devices       UserDevice[]
+  typingStates  TypingState[]
+
+  moderationActionsTaken    ModerationAction[] @relation("ModerationActor")
+  moderationActionsReceived ModerationAction[] @relation("ModerationTarget")
+
+  createdConversations Conversation[] @relation("ConversationCreatedBy")
+
+  channelBans ChannelBan[]
+}
+
+enum Status {
+  ONLINE
+  OFFLINE
+  AWAY
+  DND
+}
+
+model Conversation {
+  id   String @id @default(uuid())
+  name String
+  type        ConversationType
+  description String?
+  slug        String?  @unique
+  isPublic    Boolean  @default(false)
+  isReadOnly  Boolean  @default(false)
+  avatarUrl   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdById String?
+  createdBy   User?   @relation("ConversationCreatedBy", fields: [createdById], references: [id])
+
+  messages          Message[]
+  members           ConversationMember[]
+  moderationActions ModerationAction[]
+  typingStates      TypingState[]
+  channelBans       ChannelBan[]
+
+  @@index([type])
+  @@index([isPublic])
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+  CHANNEL
+}
+
+model ConversationMember {
+  id        String     @id @default(uuid())
+  joinedAt  DateTime   @default(now())
+  role      MemberRole
+  userId    String
+  conversationId String
+
+  lastReadMessageId String?
+  lastReadMessage   Message? @relation("LastReadMessage", fields: [lastReadMessageId], references: [id])
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
+  @@index([conversationId])
+}
+
+enum MemberRole {
+  MEMBER
+  ADMIN
+  MODERATOR
+  OWNER
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  text           String
+  createdAt      DateTime @default(now())
+  isEdited       Boolean  @default(false)
+  editedAt       DateTime?
+  deletedAt      DateTime?
+
+  userId         String
+  conversationId String
+
+  replyToId String?
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  replyTo Message?  @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies Message[] @relation("MessageReplies")
+
+  reactions   MessageReaction[]
+  mentions    MessageMention[]
+  attachments Attachment[]
+  receipts    MessageReceipt[]
+  moderationActions ModerationAction[]
+
+  lastReadBy ConversationMember[] @relation("LastReadMessage")
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt])
+  @@index([userId])
+}
+
+model MessageReaction {
+  id        String   @id @default(uuid())
+  emoji     String
+  userId    String
+  messageId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, messageId, emoji])
+  @@index([messageId])
+}
+
+model MessageMention {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model Attachment {
+  id         String         @id @default(uuid())
+  messageId  String
+  url        String
+  fileName   String?
+  mimeType   String?
+  sizeBytes  Int?
+  type       AttachmentType
+  width      Int?
+  height     Int?
+  durationMs Int?
+  thumbnailUrl String?
+
+  createdAt  DateTime @default(now())
+
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+}
+
+enum AttachmentType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  OTHER
+}
+
+model MessageReceipt {
+  id          String                @id @default(uuid())
+  messageId   String
+  userId      String
+  status      MessageDeliveryStatus @default(SENT)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  deliveredAt DateTime?
+  seenAt      DateTime?
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId, messageId])
+}
+
+enum MessageDeliveryStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+model TypingState {
+  id             String   @id @default(uuid())
+  userId         String
+  conversationId String
+  isTyping       Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
+  @@index([conversationId])
+}
+
+model ModerationAction {
+  id         String                @id @default(uuid())
+  action     ModerationActionType
+  reason     String?
+  expiresAt  DateTime?
+  createdAt  DateTime              @default(now())
+
+  actorId      String
+  targetUserId String?
+  conversationId String?
+  messageId     String?
+
+  actor        User         @relation("ModerationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  targetUser   User?        @relation("ModerationTarget", fields: [targetUserId], references: [id])
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message      Message?      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([targetUserId])
+  @@index([action])
+}
+
+enum ModerationActionType {
+  KICK
+  BAN
+  UNBAN
+  MUTE
+  UNMUTE
+  MAKE_ADMIN
+  REMOVE_ADMIN
+  DELETE_MESSAGE
+  PIN_MESSAGE
+}
+
+model ChannelBan {
+  id             String    @id @default(uuid())
+  reason         String?
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  userId         String
+  conversationId String
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
+  @@index([conversationId])
+}
+
+model UserDevice {
+  id           String     @id @default(uuid())
+  userId       String
+  deviceId     String     @unique
+  deviceName   String?
+  deviceType   DeviceType?
+  pushToken    String?
+  lastActiveAt DateTime   @default(now())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum DeviceType {
+  WEB
+  DESKTOP
+  MOBILE
+  TABLET
+}
