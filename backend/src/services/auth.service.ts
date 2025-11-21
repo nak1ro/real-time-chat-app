@@ -30,9 +30,7 @@ export const mapUserToResponse = (user: User): UserResponse => {
 };
 
 /**
- * Register a new user
- * For guest users (no password): Just create with name
- * For authenticated users: Create with name and password hash
+ * Register a new user with name and password
  */
 export const register = async (dto: RegisterDto): Promise<AuthResponse> => {
   // Validate input
@@ -49,16 +47,14 @@ export const register = async (dto: RegisterDto): Promise<AuthResponse> => {
     });
   }
 
-  let passwordHash: string | undefined;
-  if (dto.password) {
-    passwordHash = await hashPassword(dto.password);
-  }
+  // Hash password
+  const passwordHash = await hashPassword(dto.password);
 
   // Create user
   const user = await createUser({
     name: dto.name,
     avatarUrl: dto.avatarUrl,
-    passwordHash, // Note: This field doesn't exist in current schema
+    passwordHash,
   });
 
   // Generate token
@@ -74,9 +70,7 @@ export const register = async (dto: RegisterDto): Promise<AuthResponse> => {
 };
 
 /**
- * Login user with email and password
- * Note: Current schema doesn't have email/password fields
- * This is a placeholder for when you add authentication fields
+ * Login user with name and password
  */
 export const login = async (dto: LoginDto): Promise<AuthResponse> => {
   // Validate input
@@ -85,25 +79,19 @@ export const login = async (dto: LoginDto): Promise<AuthResponse> => {
     'Login validation failed'
   );
 
-  // Find user by email (using name for now)
-  const user = await findUserByNameService(dto.email);
+  // Find user by name
+  const user = await findUserByNameService(dto.name);
   
   if (!user) {
     throw new AuthenticationError('Invalid credentials');
   }
 
-  // Verify password
-  // Note: passwordHash field doesn't exist in current schema
-  // You'll need to add this field to the User model
-  // For now, we'll throw an error
-  throw new AuthenticationError('Password authentication not yet implemented');
-
-  /*
-  // This is what the implementation would look like with password field:
+  // Check if user has a password set
   if (!user.passwordHash) {
     throw new AuthenticationError('Invalid credentials');
   }
 
+  // Verify password
   const isPasswordValid = await comparePassword(dto.password, user.passwordHash);
   
   if (!isPasswordValid) {
@@ -120,7 +108,6 @@ export const login = async (dto: LoginDto): Promise<AuthResponse> => {
     user: mapUserToResponse(user),
     token,
   };
-  */
 };
 
 /**

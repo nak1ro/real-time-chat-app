@@ -6,13 +6,12 @@ import { User } from '@prisma/client';
 
 export interface RegisterDto {
   name: string;
-  email?: string;
-  password?: string;
+  password: string;
   avatarUrl?: string;
 }
 
 export interface LoginDto {
-  email: string;
+  name: string;
   password: string;
 }
 
@@ -37,7 +36,6 @@ export interface AuthenticatedRequest {
   user?: {
     id: string;
     name: string;
-    email?: string;
   };
 }
 

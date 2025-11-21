@@ -45,6 +45,7 @@ export const createUser = async (data: CreateUserData): Promise<User> => {
         data: {
             name: data.name,
             avatarUrl: data.avatarUrl,
+            passwordHash: data.passwordHash,
             status: data.status ?? Status.ONLINE,
             lastSeenAt: new Date(),
         },
