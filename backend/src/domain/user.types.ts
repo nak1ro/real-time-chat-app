@@ -5,8 +5,7 @@ import { Status } from '@prisma/client';
  */
 export interface CreateUserData {
   name: string;
-  email?: string;
-  passwordHash?: string;
+  passwordHash: string;
   avatarUrl?: string;
   status?: Status;
 }

@@ -9,14 +9,6 @@ interface ValidationResult {
 }
 
 /**
- * Email Validation
- */
-export const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-/**
  * Password Validation
  * - Minimum 8 characters
  * - At least one uppercase letter
@@ -62,8 +54,7 @@ export const isValidUrl = (url: string): boolean => {
  */
 export const validateRegistration = (data: {
   name: string;
-  email?: string;
-  password?: string;
+  password: string;
   avatarUrl?: string;
 }): ValidationResult => {
   const errors: Record<string, string> = {};
@@ -75,22 +66,11 @@ export const validateRegistration = (data: {
     errors.name = 'Name must be 2-50 characters and contain only letters, numbers, spaces, hyphens, and underscores';
   }
 
-  // Validate email (optional but must be valid if provided)
-  if (data.email !== undefined) {
-    if (!data.email.trim()) {
-      errors.email = 'Email cannot be empty if provided';
-    } else if (!isValidEmail(data.email)) {
-      errors.email = 'Invalid email format';
-    }
-  }
-
-  // Validate password (optional but must be valid if provided)
-  if (data.password !== undefined) {
-    if (!data.password) {
-      errors.password = 'Password cannot be empty if provided';
-    } else if (!isValidPassword(data.password)) {
-      errors.password = 'Password must be at least 8 characters with uppercase, lowercase, and number';
-    }
+  // Validate password (required)
+  if (!data.password || !data.password.trim()) {
+    errors.password = 'Password is required';
+  } else if (!isValidPassword(data.password)) {
+    errors.password = 'Password must be at least 8 characters with uppercase, lowercase, and number';
   }
 
   // Validate avatarUrl (optional)
@@ -108,15 +88,15 @@ export const validateRegistration = (data: {
  * Validate Login Data
  */
 export const validateLogin = (data: {
-  email: string;
+  name: string;
   password: string;
 }): ValidationResult => {
   const errors: Record<string, string> = {};
 
-  if (!data.email || !data.email.trim()) {
-    errors.email = 'Email is required';
-  } else if (!isValidEmail(data.email)) {
-    errors.email = 'Invalid email format';
+  if (!data.name || !data.name.trim()) {
+    errors.name = 'Name is required';
+  } else if (!isValidName(data.name)) {
+    errors.name = 'Invalid name format';
   }
 
   if (!data.password || !data.password.trim()) {
