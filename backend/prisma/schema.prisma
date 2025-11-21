@@ -11,6 +11,7 @@ model User {
   id        String   @id @default(uuid())
   name      String
   avatarUrl String?
+  passwordHash String?
   status     Status?
   lastSeenAt DateTime?
   createdAt DateTime @default(now())
