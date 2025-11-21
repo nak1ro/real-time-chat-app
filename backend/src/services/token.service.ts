@@ -1,13 +1,15 @@
-import jwt from 'jsonwebtoken';
+import jwt, {Secret, SignOptions} from 'jsonwebtoken';
 import { env } from '../config/env';
 import { TokenPayload } from '../domain';
 import { AuthenticationError } from '../middleware';
 
 // Generate JWT token
 export const generateToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, env.jwtSecret, {
-    expiresIn: env.jwtExpiresIn,
-  });
+  const secret: Secret = env.jwtSecret as Secret;
+  const expiresIn: SignOptions['expiresIn'] =
+      env.jwtExpiresIn as SignOptions['expiresIn'];
+
+  return jwt.sign(payload, secret, { expiresIn });
 };
 
 // Verify and decode JWT token
