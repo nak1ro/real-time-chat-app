@@ -4,40 +4,45 @@ import { verifyToken } from '../services/token.service';
 import { findUserById } from '../services/user.service';
 import { SocketData } from './socket.types';
 
-/**
- * Socket.IO authentication middleware
- * Verifies JWT token and attaches user data to socket
- */
+// Extract token from socket handshake (auth, header, or query)
+const extractToken = (socket: Socket): string | null => {
+    return (
+        socket.handshake.auth.token ||
+        socket.handshake.headers.authorization?.replace('Bearer ', '') ||
+        (socket.handshake.query.token as string) ||
+        null
+    );
+};
+
+// Create authentication error
+const createAuthError = (message: string): ExtendedError => {
+    return new Error(message);
+};
+
+// Socket.IO authentication middleware
 export const socketAuthMiddleware = async (
     socket: Socket,
     next: (err?: ExtendedError) => void
 ): Promise<void> => {
     try {
-        // Extract token from handshake auth or query
-        const token =
-            socket.handshake.auth.token ||
-            socket.handshake.headers.authorization?.replace('Bearer ', '') ||
-            (socket.handshake.query.token as string);
+        const token = extractToken(socket);
 
         if (!token) {
-            return next(new Error('Authentication token required'));
+            return next(createAuthError('Authentication token required'));
         }
 
-        // Verify token
         const payload = verifyToken(token);
 
         if (!payload.userId) {
-            return next(new Error('Invalid token payload'));
+            return next(createAuthError('Invalid token payload'));
         }
 
-        // Verify user exists
         const user = await findUserById(payload.userId);
 
         if (!user) {
-            return next(new Error('User not found'));
+            return next(createAuthError('User not found'));
         }
 
-        // Attach user data to socket
         const socketData: SocketData = {
             userId: user.id,
             userName: user.name,
@@ -48,7 +53,6 @@ export const socketAuthMiddleware = async (
         next();
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Authentication failed';
-        next(new Error(message));
+        next(createAuthError(message));
     }
 };
-
