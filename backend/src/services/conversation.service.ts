@@ -18,6 +18,17 @@ import {BadRequestError, NotFoundError, AuthorizationError} from '../middleware'
 // Constants
 
 const ALLOWED_UPDATE_ROLES: MemberRole[] = [MemberRole.OWNER, MemberRole.ADMIN];
+const ALLOWED_ADD_MEMBER_ROLES: MemberRole[] = [MemberRole.OWNER, MemberRole.ADMIN];
+const ALLOWED_REMOVE_MEMBER_ROLES: MemberRole[] = [MemberRole.OWNER, MemberRole.ADMIN];
+const ALLOWED_UPDATE_ROLE_ROLES: MemberRole[] = [MemberRole.OWNER, MemberRole.ADMIN];
+
+// Role hierarchy (higher number = higher authority)
+const ROLE_HIERARCHY: Record<MemberRole, number> = {
+    [MemberRole.OWNER]: 3,
+    [MemberRole.ADMIN]: 2,
+    [MemberRole.MODERATOR]: 1, // Not used but included for completeness
+    [MemberRole.MEMBER]: 0,
+};
 
 const MEMBER_INCLUDE_WITH_USER = {
     members: {
@@ -184,6 +195,67 @@ const buildConversationWhereClause = (
     return where;
 };
 
+// Check if users are already members of a conversation
+const filterExistingMembers = (
+    conversation: ConversationWithBasicMembers,
+    userIds: string[]
+): {newUserIds: string[]; existingUserIds: string[]} => {
+    const existingMemberIds = new Set(conversation.members.map((m) => m.userId));
+    const newUserIds: string[] = [];
+    const existingUserIds: string[] = [];
+
+    for (const userId of userIds) {
+        if (existingMemberIds.has(userId)) {
+            existingUserIds.push(userId);
+        } else {
+            newUserIds.push(userId);
+        }
+    }
+
+    return {newUserIds, existingUserIds};
+};
+
+// Check if removing a member would leave the conversation without an OWNER
+const wouldRemoveLastOwner = (
+    conversation: ConversationWithBasicMembers,
+    memberIdToRemove: string
+): boolean => {
+    const memberToRemove = conversation.members.find((m) => m.userId === memberIdToRemove);
+    
+    if (!memberToRemove || memberToRemove.role !== MemberRole.OWNER) {
+        return false;
+    }
+
+    const ownerCount = conversation.members.filter((m) => m.role === MemberRole.OWNER).length;
+    return ownerCount === 1;
+};
+
+// Check if changing a role would leave the conversation without an OWNER
+const wouldRemoveLastOwnerByRoleChange = (
+    conversation: ConversationWithBasicMembers,
+    memberId: string,
+    newRole: MemberRole
+): boolean => {
+    const memberToChange = conversation.members.find((m) => m.userId === memberId);
+    
+    if (!memberToChange || memberToChange.role !== MemberRole.OWNER || newRole === MemberRole.OWNER) {
+        return false;
+    }
+
+    const ownerCount = conversation.members.filter((m) => m.role === MemberRole.OWNER).length;
+    return ownerCount === 1;
+};
+
+// Compare role hierarchy levels
+const getRoleLevel = (role: MemberRole): number => {
+    return ROLE_HIERARCHY[role];
+};
+
+// Check if actor has higher role than target
+const hasHigherRole = (actorRole: MemberRole, targetRole: MemberRole): boolean => {
+    return getRoleLevel(actorRole) > getRoleLevel(targetRole);
+};
+
 // Public API
 
 // Create or get existing direct conversation between two users
@@ -309,4 +381,223 @@ export const updateConversation = async (
         },
         include: MEMBER_INCLUDE_WITH_USER,
     });
+};
+
+// Add members to a conversation (OWNER or ADMIN only)
+export const addConversationMembers = async (
+    conversationId: string,
+    actorId: string,
+    userIds: string[],
+    role: MemberRole = MemberRole.MEMBER
+): Promise<ConversationWithMembers> => {
+    if (!userIds.length) {
+        throw new BadRequestError('At least one user ID must be provided');
+    }
+
+    // Remove duplicates from input
+    const uniqueUserIds = [...new Set(userIds)];
+
+    // Get conversation and verify permissions
+    const conversation = await findConversationWithBasicMembers(conversationId);
+    verifyUserMembershipAndRole(conversation, actorId, ALLOWED_ADD_MEMBER_ROLES);
+
+    // Cannot add members to direct conversations
+    if (conversation.type === PrismaConversationType.DIRECT) {
+        throw new BadRequestError('Cannot add members to direct conversations');
+    }
+
+    // Filter out users who are already members
+    const {newUserIds, existingUserIds} = filterExistingMembers(
+        conversation,
+        uniqueUserIds
+    );
+
+    if (newUserIds.length === 0) {
+        if (existingUserIds.length > 0) {
+            throw new BadRequestError('All specified users are already members');
+        }
+        throw new BadRequestError('No valid users to add');
+    }
+
+    // Verify all new users exist
+    await verifyUsersExist(newUserIds);
+
+    // Add members using a transaction
+    await prisma.$transaction(
+        newUserIds.map((userId) =>
+            prisma.conversationMember.create({
+                data: {
+                    conversationId,
+                    userId,
+                    role,
+                },
+            })
+        )
+    );
+
+    // Return updated conversation with members
+    return findConversationWithMembers(conversationId);
+};
+
+// Remove a member from a conversation (OWNER or ADMIN only)
+export const removeConversationMember = async (
+    conversationId: string,
+    actorId: string,
+    memberId: string
+): Promise<ConversationWithMembers> => {
+    if (!memberId) {
+        throw new BadRequestError('Member ID must be provided');
+    }
+
+    if (actorId === memberId) {
+        throw new BadRequestError('Cannot remove yourself. Use leaveConversation instead');
+    }
+
+    // Get conversation and verify actor permissions
+    const conversation = await findConversationWithBasicMembers(conversationId);
+    verifyUserMembershipAndRole(conversation, actorId, ALLOWED_REMOVE_MEMBER_ROLES);
+
+    // Cannot remove members from direct conversations
+    if (conversation.type === PrismaConversationType.DIRECT) {
+        throw new BadRequestError('Cannot remove members from direct conversations');
+    }
+
+    // Check if member exists in conversation
+    const memberToRemove = findUserMembership(conversation, memberId);
+    if (!memberToRemove) {
+        throw new NotFoundError('Member not found in this conversation');
+    }
+
+    // Prevent removing the last OWNER
+    if (wouldRemoveLastOwner(conversation, memberId)) {
+        throw new BadRequestError(
+            'Cannot remove the last OWNER. Transfer ownership first or add another OWNER'
+        );
+    }
+
+    // Remove the member
+    await prisma.conversationMember.delete({
+        where: {
+            id: memberToRemove.id,
+        },
+    });
+
+    // Return updated conversation with members
+    return findConversationWithMembers(conversationId);
+};
+
+// Leave a conversation
+export const leaveConversation = async (
+    conversationId: string,
+    userId: string
+): Promise<void> => {
+    // Get conversation and verify membership
+    const conversation = await findConversationWithBasicMembers(conversationId);
+    const membership = findUserMembership(conversation, userId);
+
+    if (!membership) {
+        throw new NotFoundError('You are not a member of this conversation');
+    }
+
+    // Cannot leave direct conversations
+    if (conversation.type === PrismaConversationType.DIRECT) {
+        throw new BadRequestError('Cannot leave direct conversations');
+    }
+
+    // Prevent last OWNER from leaving
+    if (wouldRemoveLastOwner(conversation, userId)) {
+        throw new BadRequestError(
+            'Cannot leave as the last OWNER. Transfer ownership first or add another OWNER'
+        );
+    }
+
+    // Remove the membership
+    await prisma.conversationMember.delete({
+        where: {
+            id: membership.id,
+        },
+    });
+};
+
+// Update a member's role (OWNER or ADMIN only, with hierarchy enforcement)
+export const updateMemberRole = async (
+    conversationId: string,
+    actorId: string,
+    memberId: string,
+    newRole: MemberRole
+): Promise<ConversationWithMembers> => {
+    if (!memberId) {
+        throw new BadRequestError('Member ID must be provided');
+    }
+
+    if (actorId === memberId) {
+        throw new BadRequestError('Cannot change your own role');
+    }
+
+    // Validate new role is allowed
+    if (
+        newRole !== MemberRole.OWNER &&
+        newRole !== MemberRole.ADMIN &&
+        newRole !== MemberRole.MEMBER
+    ) {
+        throw new BadRequestError('Invalid role. Allowed roles: OWNER, ADMIN, MEMBER');
+    }
+
+    // Get conversation and verify actor permissions
+    const conversation = await findConversationWithBasicMembers(conversationId);
+    verifyUserMembershipAndRole(conversation, actorId, ALLOWED_UPDATE_ROLE_ROLES);
+
+    // Cannot change roles in direct conversations
+    if (conversation.type === PrismaConversationType.DIRECT) {
+        throw new BadRequestError('Cannot change roles in direct conversations');
+    }
+
+    // Get actor and target member
+    const actorMember = findUserMembership(conversation, actorId);
+    const targetMember = findUserMembership(conversation, memberId);
+
+    if (!actorMember) {
+        throw new AuthorizationError('You are not a member of this conversation');
+    }
+
+    if (!targetMember) {
+        throw new NotFoundError('Target member not found in this conversation');
+    }
+
+    // Check if target member already has the new role
+    if (targetMember.role === newRole) {
+        throw new BadRequestError(`Member already has the role ${newRole}`);
+    }
+
+    // Enforce hierarchy: actor must have higher role than target
+    if (!hasHigherRole(actorMember.role, targetMember.role)) {
+        throw new AuthorizationError(
+            'You can only change roles of members with lower roles than yours'
+        );
+    }
+
+    // Prevent promoting someone to a role equal or higher than actor's own role
+    if (getRoleLevel(newRole) >= getRoleLevel(actorMember.role)) {
+        throw new AuthorizationError('You cannot promote someone to your role or higher');
+    }
+
+    // Prevent demoting the last OWNER
+    if (wouldRemoveLastOwnerByRoleChange(conversation, memberId, newRole)) {
+        throw new BadRequestError(
+            'Cannot demote the last OWNER. Promote another member to OWNER first'
+        );
+    }
+
+    // Update the member's role
+    await prisma.conversationMember.update({
+        where: {
+            id: targetMember.id,
+        },
+        data: {
+            role: newRole,
+        },
+    });
+
+    // Return updated conversation with members
+    return findConversationWithMembers(conversationId);
 };
