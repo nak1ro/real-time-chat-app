@@ -4,10 +4,16 @@ import { env } from '../config/env';
 import { socketAuthMiddleware } from './socket.auth';
 import { handleConnection } from './socket.handlers';
 import { AuthenticatedSocket } from './socket.types';
+import { SOCKET_EVENTS } from './socket.utils';
 
-/**
- * Initialize Socket.IO server with authentication
- */
+// Socket.IO server configuration
+const SOCKET_CONFIG = {
+    CONNECT_TIMEOUT: 10000,
+    PING_TIMEOUT: 5000,
+    PING_INTERVAL: 25000,
+} as const;
+
+// Initialize Socket.IO server with authentication and handlers
 export const initializeSocketIO = (httpServer: HTTPServer): Server => {
     const io = new Server(httpServer, {
         cors: {
@@ -15,18 +21,15 @@ export const initializeSocketIO = (httpServer: HTTPServer): Server => {
             credentials: true,
             methods: ['GET', 'POST'],
         },
-        // Connection timeout
-        connectTimeout: 10000,
-        // Ping settings
-        pingTimeout: 5000,
-        pingInterval: 25000,
+        connectTimeout: SOCKET_CONFIG.CONNECT_TIMEOUT,
+        pingTimeout: SOCKET_CONFIG.PING_TIMEOUT,
+        pingInterval: SOCKET_CONFIG.PING_INTERVAL,
     });
 
     // Apply authentication middleware
     io.use(socketAuthMiddleware);
 
-    // Handle connections
-    io.on('connection', (socket: AuthenticatedSocket) => {
+    io.on(SOCKET_EVENTS.CONNECT, (socket: AuthenticatedSocket) => {
         handleConnection(io, socket);
     });
 
@@ -39,7 +42,7 @@ export const initializeSocketIO = (httpServer: HTTPServer): Server => {
         });
     });
 
-    console.log('🔌 Socket.IO server initialized');
+    console.log('Socket.IO server initialized');
 
     return io;
 };
@@ -47,4 +50,7 @@ export const initializeSocketIO = (httpServer: HTTPServer): Server => {
 export * from './socket.types';
 export * from './socket.auth';
 export * from './socket.handlers';
+export * from './socket.rooms';
+export * from './socket.messages';
+export * from './socket.utils';
 
