@@ -1,10 +1,19 @@
 import { Server, Socket } from 'socket.io';
+import { Status } from '@prisma/client';
 import { MessageWithRelations } from '../domain';
 
 // Extended socket data attached to each authenticated socket
 export interface SocketData {
     userId: string;
     userName: string;
+}
+
+// Presence data structure
+export interface PresenceData {
+    userId: string;
+    status: Status | null;
+    lastSeenAt: Date | null;
+    timestamp: Date;
 }
 
 // Type-safe socket with authenticated user data
@@ -20,6 +29,7 @@ export interface ServerToClientEvents {
     'message:new': (message: MessageWithRelations) => void;
     'message:updated': (message: MessageWithRelations) => void;
     'message:deleted': (message: MessageWithRelations) => void;
+    'presence:update': (data: PresenceData) => void;
 }
 
 // Standard response types
@@ -57,6 +67,11 @@ export interface ClientToServerEvents {
     'message:delete': (
         data: { messageId: string },
         callback?: (response: SocketResponse<{ message: MessageWithRelations }>) => void
+    ) => void;
+    'presence:heartbeat': (callback?: (response: SocketResponse<{ timestamp: Date }>) => void) => void;
+    'presence:get': (
+        userIds: string[],
+        callback?: (response: SocketResponse<{ users: Array<{ userId: string; status: Status | null; lastSeenAt: Date | null }> }>) => void
     ) => void;
 }
 

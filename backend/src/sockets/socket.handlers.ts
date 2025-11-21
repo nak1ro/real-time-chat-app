@@ -8,6 +8,12 @@ import {
     getCurrentRooms,
 } from './socket.rooms';
 import { handleMessageSend, handleMessageEdit, handleMessageDelete } from './socket.messages';
+import {
+    handleUserOnline,
+    handleUserOffline,
+    handleHeartbeat,
+    handleGetPresence,
+} from './socket.presence';
 import { SOCKET_EVENTS, createSuccessResponse, invokeCallback } from './socket.utils';
 
 // Register all event handlers for a socket connection
@@ -18,11 +24,15 @@ export const handleConnection = async (io: Server, socket: AuthenticatedSocket):
 
     await joinUserConversations(socket);
 
+    await handleUserOnline(io, socket);
+
     registerConversationHandlers(socket);
 
     registerMessageHandlers(io, socket);
 
-    registerDisconnectionHandlers(socket, userName, userId);
+    registerPresenceHandlers(io, socket);
+
+    registerDisconnectionHandlers(io, socket, userName, userId);
 };
 
 // Register conversation-related event handlers
@@ -61,13 +71,26 @@ const registerMessageHandlers = (io: Server, socket: AuthenticatedSocket): void 
     });
 };
 
+// Register presence-related event handlers
+const registerPresenceHandlers = (io: Server, socket: AuthenticatedSocket): void => {
+    socket.on(SOCKET_EVENTS.PRESENCE_HEARTBEAT, (callback) => {
+        handleHeartbeat(io, socket, callback);
+    });
+
+    socket.on(SOCKET_EVENTS.PRESENCE_GET, (userIds, callback) => {
+        handleGetPresence(socket, userIds, callback);
+    });
+};
+
 // Register disconnection and error handlers
 const registerDisconnectionHandlers = (
+    io: Server,
     socket: AuthenticatedSocket,
     userName: string,
     userId: string
 ): void => {
     socket.on(SOCKET_EVENTS.DISCONNECT, async (reason) => {
+        await handleUserOffline(io, socket);
         await leaveAllConversations(socket);
         console.log(`User disconnected: ${userName} (${userId}) - Reason: ${reason}`);
     });

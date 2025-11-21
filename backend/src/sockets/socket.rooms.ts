@@ -3,7 +3,7 @@ import { AuthenticatedSocket } from './socket.types';
 import { filterSocketRooms, formatConversationList } from './socket.utils';
 
 // Get all conversation IDs for a user
-const getUserConversationIds = async (userId: string): Promise<string[]> => {
+export const getUserConversationIds = async (userId: string): Promise<string[]> => {
     const memberships = await prisma.conversationMember.findMany({
         where: { userId },
         select: { conversationId: true },
@@ -13,7 +13,7 @@ const getUserConversationIds = async (userId: string): Promise<string[]> => {
 };
 
 // Verify user has membership in a conversation
-const verifyConversationMembership = async (
+export const verifyConversationMembership = async (
     userId: string,
     conversationId: string
 ): Promise<boolean> => {
