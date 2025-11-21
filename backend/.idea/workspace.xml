@@ -5,11 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/domain/conversation.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/services/conversation.service.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/domain/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/domain/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/domain/conversation.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/domain/conversation.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/conversation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/conversation.service.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +69,7 @@
       <updated>1763655934305</updated>
       <workItem from="1763655936022" duration="12000" />
       <workItem from="1763655949276" duration="10151000" />
-      <workItem from="1763750627716" duration="5146000" />
+      <workItem from="1763750627716" duration="7033000" />
     </task>
     <servers />
   </component>
