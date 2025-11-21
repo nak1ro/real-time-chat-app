@@ -44,3 +44,5 @@ export function startServer() {
         console.log(`Backend running on http://${env.host}:${env.port} (${env.nodeEnv})`);
     });
 }
+
+startServer();
