@@ -36,8 +36,6 @@ model User {
 enum Status {
   ONLINE
   OFFLINE
-  AWAY
-  DND
 }
 
 model Conversation {

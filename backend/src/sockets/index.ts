@@ -52,5 +52,6 @@ export * from './socket.auth';
 export * from './socket.handlers';
 export * from './socket.rooms';
 export * from './socket.messages';
+export * from './socket.presence';
 export * from './socket.utils';
 
