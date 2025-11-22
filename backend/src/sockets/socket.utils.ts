@@ -26,6 +26,12 @@ export const SOCKET_EVENTS = {
     PRESENCE_UPDATE: 'presence:update',
     PRESENCE_HEARTBEAT: 'presence:heartbeat',
     PRESENCE_GET: 'presence:get',
+    
+    // Receipts
+    RECEIPT_READ: 'receipt:read',
+    RECEIPT_DELIVERED: 'receipt:delivered',
+    RECEIPT_UPDATE: 'receipt:update',
+    RECEIPT_GET_STATS: 'receipt:getStats',
 } as const;
 
 // Create success response
