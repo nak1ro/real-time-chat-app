@@ -1,7 +1,8 @@
-import { Message, MessageDeliveryStatus, MemberRole, ConversationMember, Prisma } from '@prisma/client';
-import { prisma } from '../db/prisma';
-import { CreateMessageData, MessageWithRelations, PaginationOptions, PaginatedMessages } from '../domain';
-import { BadRequestError, NotFoundError, AuthorizationError } from '../middleware';
+import {ConversationMember, MemberRole, Message, MessageDeliveryStatus, Prisma} from '@prisma/client';
+import {prisma} from '../db/prisma';
+import {CreateMessageData, MessageWithRelations, PaginatedMessages, PaginationOptions} from '../domain';
+import {AuthorizationError, BadRequestError, NotFoundError} from '../middleware';
+import {createReceiptForRecipients} from './receipt.service';
 
 // Constants
 
@@ -232,6 +233,7 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
             include: MESSAGE_INCLUDE_WITH_RELATIONS,
         });
 
+        // Create READ receipt for the sender
         await tx.messageReceipt.create({
             data: {
                 messageId: message.id,
@@ -244,6 +246,14 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
 
         return message;
     });
+
+    // Create SENT receipts for all other conversation members
+    await createReceiptForRecipients(
+        result.id,
+        conversationId,
+        userId,
+        MessageDeliveryStatus.SENT
+    );
 
     return result;
 };
@@ -305,8 +315,8 @@ export const editMessage = async (
         throw new BadRequestError('New text is the same as current text');
     }
 
-    const updatedMessage = await prisma.message.update({
-        where: { id: messageId },
+    return await prisma.message.update({
+        where: {id: messageId},
         data: {
             text: trimmedText,
             isEdited: true,
@@ -314,8 +324,6 @@ export const editMessage = async (
         },
         include: MESSAGE_INCLUDE_WITH_RELATIONS,
     });
-
-    return updatedMessage;
 };
 
 // Soft delete a message (author or elevated roles only for moderation)
@@ -331,14 +339,12 @@ export const softDeleteMessage = async (
 
     await verifyUserCanDeleteMessage(message, actorId);
 
-    const deletedMessage = await prisma.message.update({
-        where: { id: messageId },
+    return await prisma.message.update({
+        where: {id: messageId},
         data: {
             deletedAt: new Date(),
             text: DELETED_MESSAGE_PLACEHOLDER,
         },
         include: MESSAGE_INCLUDE_WITH_RELATIONS,
     });
-
-    return deletedMessage;
 };

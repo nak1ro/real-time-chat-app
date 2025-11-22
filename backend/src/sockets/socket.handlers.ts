@@ -14,6 +14,11 @@ import {
     handleHeartbeat,
     handleGetPresence,
 } from './socket.presence';
+import {
+    handleMarkAsRead,
+    handleMarkAsDelivered,
+    handleGetReadStats,
+} from './socket.receipts';
 import { SOCKET_EVENTS, createSuccessResponse, invokeCallback } from './socket.utils';
 
 // Register all event handlers for a socket connection
@@ -31,6 +36,8 @@ export const handleConnection = async (io: Server, socket: AuthenticatedSocket):
     registerMessageHandlers(io, socket);
 
     registerPresenceHandlers(io, socket);
+
+    registerReceiptHandlers(io, socket);
 
     registerDisconnectionHandlers(io, socket, userName, userId);
 };
@@ -79,6 +86,21 @@ const registerPresenceHandlers = (io: Server, socket: AuthenticatedSocket): void
 
     socket.on(SOCKET_EVENTS.PRESENCE_GET, (userIds, callback) => {
         handleGetPresence(socket, userIds, callback);
+    });
+};
+
+// Register receipt-related event handlers
+const registerReceiptHandlers = (io: Server, socket: AuthenticatedSocket): void => {
+    socket.on(SOCKET_EVENTS.RECEIPT_READ, (data, callback) => {
+        handleMarkAsRead(io, socket, data, callback);
+    });
+
+    socket.on(SOCKET_EVENTS.RECEIPT_DELIVERED, (data, callback) => {
+        handleMarkAsDelivered(io, socket, data, callback);
+    });
+
+    socket.on(SOCKET_EVENTS.RECEIPT_GET_STATS, (messageId, callback) => {
+        handleGetReadStats(socket, messageId, callback);
     });
 };
 

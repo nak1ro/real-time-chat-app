@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { Status } from '@prisma/client';
 import { MessageWithRelations } from '../domain';
+import { ReceiptUpdatePayload, BulkReceiptUpdate, MessageReadStats } from '../domain/receipt.types';
 
 // Extended socket data attached to each authenticated socket
 export interface SocketData {
@@ -30,6 +31,7 @@ export interface ServerToClientEvents {
     'message:updated': (message: MessageWithRelations) => void;
     'message:deleted': (message: MessageWithRelations) => void;
     'presence:update': (data: PresenceData) => void;
+    'receipt:update': (data: ReceiptUpdatePayload | BulkReceiptUpdate) => void;
 }
 
 // Standard response types
@@ -72,6 +74,18 @@ export interface ClientToServerEvents {
     'presence:get': (
         userIds: string[],
         callback?: (response: SocketResponse<{ users: Array<{ userId: string; status: Status | null; lastSeenAt: Date | null }> }>) => void
+    ) => void;
+    'receipt:read': (
+        data: { conversationId: string; upToMessageId?: string },
+        callback?: (response: SocketResponse<{ messagesAffected: number; lastMessageId: string | null }>) => void
+    ) => void;
+    'receipt:delivered': (
+        data: { messageId: string; conversationId: string },
+        callback?: (response: SocketResponse<{ success: boolean }>) => void
+    ) => void;
+    'receipt:getStats': (
+        messageId: string,
+        callback?: (response: SocketResponse<MessageReadStats>) => void
     ) => void;
 }
 
