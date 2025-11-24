@@ -618,3 +618,122 @@ export const updateMemberRole = async (
     // Return updated conversation with members
     return findConversationWithMembers(conversationId);
 };
+
+// List all public channels
+export const listPublicChannels = async (filters?: ConversationFilters) => {
+    const where: Prisma.ConversationWhereInput = {
+        type: PrismaConversationType.CHANNEL,
+        isPublic: true,
+    };
+
+    // Apply optional name filter
+    if (filters?.name) {
+        where.name = {
+            contains: filters.name,
+            mode: 'insensitive',
+        };
+    }
+
+    const channels = await prisma.conversation.findMany({
+        where,
+        orderBy: [
+            { createdAt: 'desc' },
+        ],
+        include: {
+            _count: {
+                select: {
+                    members: true,
+                },
+            },
+        },
+    });
+
+    return channels;
+};
+
+// Join a public channel by slug
+export const joinChannelBySlug = async (slug: string, userId: string) => {
+    // Find channel by slug
+    const channel = await prisma.conversation.findUnique({
+        where: { slug },
+        include: {
+            members: true,
+        },
+    });
+
+    if (!channel) {
+        throw new NotFoundError('Channel');
+    }
+
+    // Verify it's a public channel
+    if (!channel.isPublic || channel.type !== PrismaConversationType.CHANNEL) {
+        throw new BadRequestError('This is not a public channel');
+    }
+
+    // Check if user is already a member
+    const existingMember = channel.members.find((m) => m.userId === userId);
+    if (existingMember) {
+        throw new BadRequestError('You are already a member of this channel');
+    }
+
+    // Check for active ban
+    const now = new Date();
+    const activeBan = await prisma.channelBan.findUnique({
+        where: {
+            userId_conversationId: {
+                userId,
+                conversationId: channel.id,
+            },
+        },
+    });
+
+    if (activeBan && (!activeBan.expiresAt || activeBan.expiresAt > now)) {
+        const message = activeBan.expiresAt
+            ? `You are banned from this channel until ${activeBan.expiresAt.toISOString()}`
+            : 'You are permanently banned from this channel';
+        throw new AuthorizationError(message);
+    }
+
+    // Add user as member
+    await prisma.conversationMember.create({
+        data: {
+            userId,
+            conversationId: channel.id,
+            role: MemberRole.MEMBER,
+        },
+    });
+
+    // Return updated channel with members
+    return findConversationWithMembers(channel.id);
+};
+
+// Generate unique slug from channel name
+export const generateSlug = async (name: string): Promise<string> => {
+    const baseSlug = name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove non-alphanumeric except spaces and hyphens
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+
+    // Check if slug exists
+    const existing = await prisma.conversation.findUnique({
+        where: { slug: baseSlug },
+    });
+
+    if (!existing) {
+        return baseSlug;
+    }
+
+    // If exists, append number
+    let counter = 1;
+    let slug = `${baseSlug}-${counter}`;
+
+    while (await prisma.conversation.findUnique({ where: { slug } })) {
+        counter++;
+        slug = `${baseSlug}-${counter}`;
+    }
+
+    return slug;
+};

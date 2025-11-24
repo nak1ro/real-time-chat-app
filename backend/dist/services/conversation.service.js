@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateMemberRole = exports.leaveConversation = exports.removeConversationMember = exports.addConversationMembers = exports.updateConversation = exports.getConversationByIdForUser = exports.listUserConversations = exports.findConversationById = exports.createGroupOrChannelConversation = exports.createDirectConversation = void 0;
+exports.generateSlug = exports.joinChannelBySlug = exports.listPublicChannels = exports.updateMemberRole = exports.leaveConversation = exports.removeConversationMember = exports.addConversationMembers = exports.updateConversation = exports.getConversationByIdForUser = exports.listUserConversations = exports.findConversationById = exports.createGroupOrChannelConversation = exports.createDirectConversation = void 0;
 const client_1 = require("@prisma/client");
 const prisma_1 = require("../db/prisma");
 const middleware_1 = require("../middleware");
@@ -427,3 +427,107 @@ const updateMemberRole = async (conversationId, actorId, memberId, newRole) => {
     return findConversationWithMembers(conversationId);
 };
 exports.updateMemberRole = updateMemberRole;
+// List all public channels
+const listPublicChannels = async (filters) => {
+    const where = {
+        type: client_1.ConversationType.CHANNEL,
+        isPublic: true,
+    };
+    // Apply optional name filter
+    if (filters?.name) {
+        where.name = {
+            contains: filters.name,
+            mode: 'insensitive',
+        };
+    }
+    const channels = await prisma_1.prisma.conversation.findMany({
+        where,
+        orderBy: [
+            { createdAt: 'desc' },
+        ],
+        include: {
+            _count: {
+                select: {
+                    members: true,
+                },
+            },
+        },
+    });
+    return channels;
+};
+exports.listPublicChannels = listPublicChannels;
+// Join a public channel by slug
+const joinChannelBySlug = async (slug, userId) => {
+    // Find channel by slug
+    const channel = await prisma_1.prisma.conversation.findUnique({
+        where: { slug },
+        include: {
+            members: true,
+        },
+    });
+    if (!channel) {
+        throw new middleware_1.NotFoundError('Channel');
+    }
+    // Verify it's a public channel
+    if (!channel.isPublic || channel.type !== client_1.ConversationType.CHANNEL) {
+        throw new middleware_1.BadRequestError('This is not a public channel');
+    }
+    // Check if user is already a member
+    const existingMember = channel.members.find((m) => m.userId === userId);
+    if (existingMember) {
+        throw new middleware_1.BadRequestError('You are already a member of this channel');
+    }
+    // Check for active ban
+    const now = new Date();
+    const activeBan = await prisma_1.prisma.channelBan.findUnique({
+        where: {
+            userId_conversationId: {
+                userId,
+                conversationId: channel.id,
+            },
+        },
+    });
+    if (activeBan && (!activeBan.expiresAt || activeBan.expiresAt > now)) {
+        const message = activeBan.expiresAt
+            ? `You are banned from this channel until ${activeBan.expiresAt.toISOString()}`
+            : 'You are permanently banned from this channel';
+        throw new middleware_1.AuthorizationError(message);
+    }
+    // Add user as member
+    await prisma_1.prisma.conversationMember.create({
+        data: {
+            userId,
+            conversationId: channel.id,
+            role: client_1.MemberRole.MEMBER,
+        },
+    });
+    // Return updated channel with members
+    return findConversationWithMembers(channel.id);
+};
+exports.joinChannelBySlug = joinChannelBySlug;
+// Generate unique slug from channel name
+const generateSlug = async (name) => {
+    const baseSlug = name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove non-alphanumeric except spaces and hyphens
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+    // Check if slug exists
+    const existing = await prisma_1.prisma.conversation.findUnique({
+        where: { slug: baseSlug },
+    });
+    if (!existing) {
+        return baseSlug;
+    }
+    // If exists, append number
+    let counter = 1;
+    let slug = `${baseSlug}-${counter}`;
+    while (await prisma_1.prisma.conversation.findUnique({ where: { slug } })) {
+        counter++;
+        slug = `${baseSlug}-${counter}`;
+    }
+    return slug;
+};
+exports.generateSlug = generateSlug;
