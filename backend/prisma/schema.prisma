@@ -90,7 +90,6 @@ model ConversationMember {
 enum MemberRole {
   MEMBER
   ADMIN
-  MODERATOR
   OWNER
 }
 

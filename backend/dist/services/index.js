@@ -20,3 +20,6 @@ __exportStar(require("./password.service"), exports);
 __exportStar(require("./token.service"), exports);
 __exportStar(require("./conversation.service"), exports);
 __exportStar(require("./message.service"), exports);
+__exportStar(require("./presence.service"), exports);
+__exportStar(require("./receipt.service"), exports);
+__exportStar(require("./permissions.service"), exports);

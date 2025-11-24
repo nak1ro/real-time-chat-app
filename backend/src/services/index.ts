@@ -6,5 +6,4 @@ export * from './conversation.service';
 export * from './message.service';
 export * from './presence.service';
 export * from './receipt.service';
-
-
+export * from './permissions.service';

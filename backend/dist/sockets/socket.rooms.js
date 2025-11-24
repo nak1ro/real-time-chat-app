@@ -1,10 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCurrentRooms = exports.leaveAllConversations = exports.leaveConversation = exports.joinConversation = exports.joinUserConversations = exports.getUserConversationIds = void 0;
+exports.getCurrentRooms = exports.leaveAllConversations = exports.leaveConversation = exports.joinConversation = exports.joinUserConversations = exports.verifyConversationMembership = exports.getUserConversationIds = void 0;
 const prisma_1 = require("../db/prisma");
-/**
- * Get all conversation IDs that a user is a member of
- */
+const socket_utils_1 = require("./socket.utils");
+// Get all conversation IDs for a user
 const getUserConversationIds = async (userId) => {
     const memberships = await prisma_1.prisma.conversationMember.findMany({
         where: { userId },
@@ -13,45 +12,42 @@ const getUserConversationIds = async (userId) => {
     return memberships.map((m) => m.conversationId);
 };
 exports.getUserConversationIds = getUserConversationIds;
-/**
- * Join all conversation rooms for a user
- */
+// Verify user has membership in a conversation
+const verifyConversationMembership = async (userId, conversationId) => {
+    const membership = await prisma_1.prisma.conversationMember.findFirst({
+        where: { userId, conversationId },
+    });
+    return membership !== null;
+};
+exports.verifyConversationMembership = verifyConversationMembership;
+// Join all conversation rooms for a user on connect
 const joinUserConversations = async (socket) => {
     const { userId, userName } = socket.data;
     try {
         const conversationIds = await (0, exports.getUserConversationIds)(userId);
         if (conversationIds.length === 0) {
-            console.log(`📭 User ${userName} has no conversations to join`);
+            console.log(`User ${userName} has no conversations`);
             return;
         }
-        // Join all conversation rooms
         await socket.join(conversationIds);
-        console.log(`📬 User ${userName} joined ${conversationIds.length} conversation rooms:`, conversationIds.slice(0, 3).join(', ') + (conversationIds.length > 3 ? '...' : ''));
+        console.log(`User ${userName} joined ${conversationIds.length} rooms: ${(0, socket_utils_1.formatConversationList)(conversationIds)}`);
     }
     catch (error) {
         console.error(`Failed to join conversations for user ${userId}:`, error);
     }
 };
 exports.joinUserConversations = joinUserConversations;
-/**
- * Join a specific conversation room
- */
+// Join a specific conversation room with membership verification
 const joinConversation = async (socket, conversationId) => {
     const { userId, userName } = socket.data;
     try {
-        // Verify user is a member of the conversation
-        const membership = await prisma_1.prisma.conversationMember.findFirst({
-            where: {
-                userId,
-                conversationId,
-            },
-        });
-        if (!membership) {
-            console.warn(`User ${userName} attempted to join conversation ${conversationId} without membership`);
+        const isMember = await (0, exports.verifyConversationMembership)(userId, conversationId);
+        if (!isMember) {
+            console.warn(`User ${userName} attempted to join ${conversationId} without membership`);
             return false;
         }
         await socket.join(conversationId);
-        console.log(`➕ User ${userName} joined conversation room: ${conversationId}`);
+        console.log(`User ${userName} joined room: ${conversationId}`);
         return true;
     }
     catch (error) {
@@ -60,34 +56,27 @@ const joinConversation = async (socket, conversationId) => {
     }
 };
 exports.joinConversation = joinConversation;
-/**
- * Leave a specific conversation room
- */
+// Leave a specific conversation room
 const leaveConversation = async (socket, conversationId) => {
     const { userName } = socket.data;
     await socket.leave(conversationId);
-    console.log(`➖ User ${userName} left conversation room: ${conversationId}`);
+    console.log(`User ${userName} left room: ${conversationId}`);
 };
 exports.leaveConversation = leaveConversation;
-/**
- * Leave all conversation rooms
- */
+// Leave all conversation rooms on disconnect
 const leaveAllConversations = async (socket) => {
     const { userName } = socket.data;
-    // Get all rooms the socket is in (excluding the default socket.id room)
-    const rooms = Array.from(socket.rooms).filter((room) => room !== socket.id);
+    const rooms = (0, socket_utils_1.filterSocketRooms)(socket.rooms, socket.id);
+    if (rooms.length === 0)
+        return;
     for (const room of rooms) {
         await socket.leave(room);
     }
-    if (rooms.length > 0) {
-        console.log(`🚪 User ${userName} left ${rooms.length} conversation rooms`);
-    }
+    console.log(`User ${userName} left ${rooms.length} rooms`);
 };
 exports.leaveAllConversations = leaveAllConversations;
-/**
- * Get current rooms the socket is in (excluding default socket.id room)
- */
+// Get current rooms the socket is in
 const getCurrentRooms = (socket) => {
-    return Array.from(socket.rooms).filter((room) => room !== socket.id);
+    return (0, socket_utils_1.filterSocketRooms)(socket.rooms, socket.id);
 };
 exports.getCurrentRooms = getCurrentRooms;

@@ -19,9 +19,14 @@ const socket_io_1 = require("socket.io");
 const env_1 = require("../config/env");
 const socket_auth_1 = require("./socket.auth");
 const socket_handlers_1 = require("./socket.handlers");
-/**
- * Initialize Socket.IO server with authentication
- */
+const socket_utils_1 = require("./socket.utils");
+// Socket.IO server configuration
+const SOCKET_CONFIG = {
+    CONNECT_TIMEOUT: 10000,
+    PING_TIMEOUT: 5000,
+    PING_INTERVAL: 25000,
+};
+// Initialize Socket.IO server with authentication and handlers
 const initializeSocketIO = (httpServer) => {
     const io = new socket_io_1.Server(httpServer, {
         cors: {
@@ -29,16 +34,13 @@ const initializeSocketIO = (httpServer) => {
             credentials: true,
             methods: ['GET', 'POST'],
         },
-        // Connection timeout
-        connectTimeout: 10000,
-        // Ping settings
-        pingTimeout: 5000,
-        pingInterval: 25000,
+        connectTimeout: SOCKET_CONFIG.CONNECT_TIMEOUT,
+        pingTimeout: SOCKET_CONFIG.PING_TIMEOUT,
+        pingInterval: SOCKET_CONFIG.PING_INTERVAL,
     });
     // Apply authentication middleware
     io.use(socket_auth_1.socketAuthMiddleware);
-    // Handle connections
-    io.on('connection', (socket) => {
+    io.on(socket_utils_1.SOCKET_EVENTS.CONNECT, (socket) => {
         (0, socket_handlers_1.handleConnection)(io, socket);
     });
     // Handle connection errors
@@ -49,7 +51,7 @@ const initializeSocketIO = (httpServer) => {
             context: err.context,
         });
     });
-    console.log('🔌 Socket.IO server initialized');
+    console.log('Socket.IO server initialized');
     return io;
 };
 exports.initializeSocketIO = initializeSocketIO;
@@ -58,3 +60,5 @@ __exportStar(require("./socket.auth"), exports);
 __exportStar(require("./socket.handlers"), exports);
 __exportStar(require("./socket.rooms"), exports);
 __exportStar(require("./socket.messages"), exports);
+__exportStar(require("./socket.presence"), exports);
+__exportStar(require("./socket.utils"), exports);

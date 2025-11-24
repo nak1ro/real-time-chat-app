@@ -4,8 +4,9 @@ exports.softDeleteMessage = exports.editMessage = exports.getConversationMessage
 const client_1 = require("@prisma/client");
 const prisma_1 = require("../db/prisma");
 const middleware_1 = require("../middleware");
+const receipt_service_1 = require("./receipt.service");
+const permissions_service_1 = require("./permissions.service");
 // Constants
-const ELEVATED_ROLES = [client_1.MemberRole.OWNER, client_1.MemberRole.ADMIN];
 const DEFAULT_PAGE_LIMIT = 50;
 const MAX_PAGE_LIMIT = 100;
 const DELETED_MESSAGE_PLACEHOLDER = '[Message deleted]';
@@ -47,30 +48,6 @@ const getUserMembership = async (userId, conversationId) => {
         throw new middleware_1.AuthorizationError('You are not a member of this conversation');
     }
     return membership;
-};
-// Verify user is banned from the conversation
-const verifyUserIsNotBanned = async (userId, conversationId) => {
-    const now = new Date();
-    const activeBan = await prisma_1.prisma.channelBan.findFirst({
-        where: {
-            userId,
-            conversationId,
-            OR: [
-                { expiresAt: null },
-                { expiresAt: { gt: now } },
-            ],
-        },
-    });
-    if (activeBan) {
-        const message = activeBan.expiresAt
-            ? `You are banned from this conversation until ${activeBan.expiresAt.toISOString()}`
-            : 'You are permanently banned from this conversation';
-        throw new middleware_1.AuthorizationError(message);
-    }
-};
-// Check if user has elevated role
-const hasElevatedRole = (role) => {
-    return ELEVATED_ROLES.includes(role);
 };
 // Get conversation by ID or throw
 const getConversationOrThrow = async (conversationId) => {
@@ -117,26 +94,6 @@ const verifyIsMessageAuthor = (message, actorId) => {
         throw new middleware_1.AuthorizationError('You can only edit your own messages');
     }
 };
-// Check if user can delete a message (author or elevated role)
-const canUserDeleteMessage = async (message, actorId) => {
-    if (message.userId === actorId) {
-        return true;
-    }
-    const membership = await prisma_1.prisma.conversationMember.findFirst({
-        where: {
-            userId: actorId,
-            conversationId: message.conversationId,
-        },
-    });
-    return membership ? hasElevatedRole(membership.role) : false;
-};
-// Verify user can delete message or throw
-const verifyUserCanDeleteMessage = async (message, actorId) => {
-    const canDelete = await canUserDeleteMessage(message, actorId);
-    if (!canDelete) {
-        throw new middleware_1.AuthorizationError('You can only delete your own messages or you must be an admin/owner');
-    }
-};
 // Validate message text is not empty
 const validateMessageText = (text) => {
     if (!text || text.trim().length === 0) {
@@ -159,11 +116,10 @@ const buildPaginationWhereClause = (conversationId, cursor) => {
 const createMessage = async (data) => {
     const { userId, conversationId, text, replyToId } = data;
     validateMessageText(text);
-    const conversation = await getConversationOrThrow(conversationId);
-    const membership = await getUserMembership(userId, conversationId);
-    await verifyUserIsNotBanned(userId, conversationId);
-    if (conversation.isReadOnly && !hasElevatedRole(membership.role)) {
-        throw new middleware_1.AuthorizationError('This conversation is read-only. Only admins and owners can send messages');
+    // Verify user can send messages
+    const canSend = await (0, permissions_service_1.canSendMessage)(userId, conversationId);
+    if (!canSend) {
+        throw new middleware_1.AuthorizationError('You cannot send messages in this conversation');
     }
     if (replyToId) {
         await verifyReplyToMessage(replyToId, conversationId);
@@ -178,6 +134,7 @@ const createMessage = async (data) => {
             },
             include: MESSAGE_INCLUDE_WITH_RELATIONS,
         });
+        // Create READ receipt for the sender
         await tx.messageReceipt.create({
             data: {
                 messageId: message.id,
@@ -189,6 +146,8 @@ const createMessage = async (data) => {
         });
         return message;
     });
+    // Create SENT receipts for all other conversation members
+    await (0, receipt_service_1.createReceiptForRecipients)(result.id, conversationId, userId, client_1.MessageDeliveryStatus.SENT);
     return result;
 };
 exports.createMessage = createMessage;
@@ -230,7 +189,7 @@ const editMessage = async (messageId, actorId, text) => {
     if (message.text === trimmedText) {
         throw new middleware_1.BadRequestError('New text is the same as current text');
     }
-    const updatedMessage = await prisma_1.prisma.message.update({
+    return await prisma_1.prisma.message.update({
         where: { id: messageId },
         data: {
             text: trimmedText,
@@ -239,7 +198,6 @@ const editMessage = async (messageId, actorId, text) => {
         },
         include: MESSAGE_INCLUDE_WITH_RELATIONS,
     });
-    return updatedMessage;
 };
 exports.editMessage = editMessage;
 // Soft delete a message (author or elevated roles only for moderation)
@@ -248,8 +206,12 @@ const softDeleteMessage = async (messageId, actorId) => {
     if (message.deletedAt) {
         throw new middleware_1.BadRequestError('Message is already deleted');
     }
-    await verifyUserCanDeleteMessage(message, actorId);
-    const deletedMessage = await prisma_1.prisma.message.update({
+    // Verify user can moderate the message
+    const canModerate = await (0, permissions_service_1.canModerateMessage)(actorId, messageId);
+    if (!canModerate) {
+        throw new middleware_1.AuthorizationError('You can only delete your own messages or must be OWNER/ADMIN');
+    }
+    return await prisma_1.prisma.message.update({
         where: { id: messageId },
         data: {
             deletedAt: new Date(),
@@ -257,6 +219,5 @@ const softDeleteMessage = async (messageId, actorId) => {
         },
         include: MESSAGE_INCLUDE_WITH_RELATIONS,
     });
-    return deletedMessage;
 };
 exports.softDeleteMessage = softDeleteMessage;

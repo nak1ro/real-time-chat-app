@@ -18,3 +18,4 @@ __exportStar(require("./auth.types"), exports);
 __exportStar(require("./user.types"), exports);
 __exportStar(require("./conversation.types"), exports);
 __exportStar(require("./message.types"), exports);
+__exportStar(require("./receipt.types"), exports);

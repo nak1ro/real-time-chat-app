@@ -1,12 +1,12 @@
-import {ConversationMember, MemberRole, Message, MessageDeliveryStatus, Prisma} from '@prisma/client';
-import {prisma} from '../db/prisma';
-import {CreateMessageData, MessageWithRelations, PaginatedMessages, PaginationOptions} from '../domain';
-import {AuthorizationError, BadRequestError, NotFoundError} from '../middleware';
-import {createReceiptForRecipients} from './receipt.service';
+import { ConversationMember, MemberRole, Message, MessageDeliveryStatus, Prisma } from '@prisma/client';
+import { prisma } from '../db/prisma';
+import { CreateMessageData, MessageWithRelations, PaginatedMessages, PaginationOptions } from '../domain';
+import { AuthorizationError, BadRequestError, NotFoundError } from '../middleware';
+import { createReceiptForRecipients } from './receipt.service';
+import { canSendMessage, canModerateMessage } from './permissions.service';
 
 // Constants
 
-const ELEVATED_ROLES: MemberRole[] = [MemberRole.OWNER, MemberRole.ADMIN];
 const DEFAULT_PAGE_LIMIT = 50;
 const MAX_PAGE_LIMIT = 100;
 const DELETED_MESSAGE_PLACEHOLDER = '[Message deleted]';
@@ -58,34 +58,6 @@ const getUserMembership = async (
     }
 
     return membership;
-};
-
-// Verify user is banned from the conversation
-const verifyUserIsNotBanned = async (userId: string, conversationId: string): Promise<void> => {
-    const now = new Date();
-
-    const activeBan = await prisma.channelBan.findFirst({
-        where: {
-            userId,
-            conversationId,
-            OR: [
-                { expiresAt: null },
-                { expiresAt: { gt: now } },
-            ],
-        },
-    });
-
-    if (activeBan) {
-        const message = activeBan.expiresAt
-            ? `You are banned from this conversation until ${activeBan.expiresAt.toISOString()}`
-            : 'You are permanently banned from this conversation';
-        throw new AuthorizationError(message);
-    }
-};
-
-// Check if user has elevated role
-const hasElevatedRole = (role: MemberRole): boolean => {
-    return ELEVATED_ROLES.includes(role);
 };
 
 // Get conversation by ID or throw
@@ -148,33 +120,6 @@ const verifyIsMessageAuthor = (message: Message, actorId: string): void => {
     }
 };
 
-// Check if user can delete a message (author or elevated role)
-const canUserDeleteMessage = async (message: Message, actorId: string): Promise<boolean> => {
-    if (message.userId === actorId) {
-        return true;
-    }
-
-    const membership = await prisma.conversationMember.findFirst({
-        where: {
-            userId: actorId,
-            conversationId: message.conversationId,
-        },
-    });
-
-    return membership ? hasElevatedRole(membership.role) : false;
-};
-
-// Verify user can delete message or throw
-const verifyUserCanDeleteMessage = async (message: Message, actorId: string): Promise<void> => {
-    const canDelete = await canUserDeleteMessage(message, actorId);
-    
-    if (!canDelete) {
-        throw new AuthorizationError(
-            'You can only delete your own messages or you must be an admin/owner'
-        );
-    }
-};
-
 // Validate message text is not empty
 const validateMessageText = (text: string): void => {
     if (!text || text.trim().length === 0) {
@@ -207,15 +152,10 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
 
     validateMessageText(text);
 
-    const conversation = await getConversationOrThrow(conversationId);
-    const membership = await getUserMembership(userId, conversationId);
-
-    await verifyUserIsNotBanned(userId, conversationId);
-
-    if (conversation.isReadOnly && !hasElevatedRole(membership.role)) {
-        throw new AuthorizationError(
-            'This conversation is read-only. Only admins and owners can send messages'
-        );
+    // Verify user can send messages
+    const canSend = await canSendMessage(userId, conversationId);
+    if (!canSend) {
+        throw new AuthorizationError('You cannot send messages in this conversation');
     }
 
     if (replyToId) {
@@ -316,7 +256,7 @@ export const editMessage = async (
     }
 
     return await prisma.message.update({
-        where: {id: messageId},
+        where: { id: messageId },
         data: {
             text: trimmedText,
             isEdited: true,
@@ -337,10 +277,14 @@ export const softDeleteMessage = async (
         throw new BadRequestError('Message is already deleted');
     }
 
-    await verifyUserCanDeleteMessage(message, actorId);
+    // Verify user can moderate the message
+    const canModerate = await canModerateMessage(actorId, messageId);
+    if (!canModerate) {
+        throw new AuthorizationError('You can only delete your own messages or must be OWNER/ADMIN');
+    }
 
     return await prisma.message.update({
-        where: {id: messageId},
+        where: { id: messageId },
         data: {
             deletedAt: new Date(),
             text: DELETED_MESSAGE_PLACEHOLDER,

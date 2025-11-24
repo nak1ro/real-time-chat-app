@@ -4,6 +4,7 @@ exports.updateMemberRole = exports.leaveConversation = exports.removeConversatio
 const client_1 = require("@prisma/client");
 const prisma_1 = require("../db/prisma");
 const middleware_1 = require("../middleware");
+const permissions_service_1 = require("./permissions.service");
 // Constants
 const ALLOWED_UPDATE_ROLES = [client_1.MemberRole.OWNER, client_1.MemberRole.ADMIN];
 const ALLOWED_ADD_MEMBER_ROLES = [client_1.MemberRole.OWNER, client_1.MemberRole.ADMIN];
@@ -13,7 +14,6 @@ const ALLOWED_UPDATE_ROLE_ROLES = [client_1.MemberRole.OWNER, client_1.MemberRol
 const ROLE_HIERARCHY = {
     [client_1.MemberRole.OWNER]: 3,
     [client_1.MemberRole.ADMIN]: 2,
-    [client_1.MemberRole.MODERATOR]: 1, // Not used but included for completeness
     [client_1.MemberRole.MEMBER]: 0,
 };
 const MEMBER_INCLUDE_WITH_USER = {
@@ -245,8 +245,11 @@ const getConversationByIdForUser = async (conversationId, userId) => {
 exports.getConversationByIdForUser = getConversationByIdForUser;
 // Update a conversation (OWNER or ADMIN only)
 const updateConversation = async (conversationId, actorId, patch) => {
-    const conversation = await findConversationWithBasicMembers(conversationId);
-    verifyUserMembershipAndRole(conversation, actorId, ALLOWED_UPDATE_ROLES);
+    // Verify actor has permission to update conversation
+    const canManage = await (0, permissions_service_1.canManageMembers)(actorId, conversationId);
+    if (!canManage) {
+        throw new middleware_1.AuthorizationError('Only OWNER or ADMIN can update conversations');
+    }
     return prisma_1.prisma.conversation.update({
         where: { id: conversationId },
         data: {
@@ -267,9 +270,13 @@ const addConversationMembers = async (conversationId, actorId, userIds, role = c
     }
     // Remove duplicates from input
     const uniqueUserIds = [...new Set(userIds)];
-    // Get conversation and verify permissions
+    // Verify actor has permission to add members
+    const canManage = await (0, permissions_service_1.canManageMembers)(actorId, conversationId);
+    if (!canManage) {
+        throw new middleware_1.AuthorizationError('Only OWNER or ADMIN can add members');
+    }
+    // Get conversation
     const conversation = await findConversationWithBasicMembers(conversationId);
-    verifyUserMembershipAndRole(conversation, actorId, ALLOWED_ADD_MEMBER_ROLES);
     // Cannot add members to direct conversations
     if (conversation.type === client_1.ConversationType.DIRECT) {
         throw new middleware_1.BadRequestError('Cannot add members to direct conversations');
@@ -304,9 +311,13 @@ const removeConversationMember = async (conversationId, actorId, memberId) => {
     if (actorId === memberId) {
         throw new middleware_1.BadRequestError('Cannot remove yourself. Use leaveConversation instead');
     }
-    // Get conversation and verify actor permissions
+    // Verify actor has permission to remove members
+    const canManage = await (0, permissions_service_1.canManageMembers)(actorId, conversationId);
+    if (!canManage) {
+        throw new middleware_1.AuthorizationError('Only OWNER or ADMIN can remove members');
+    }
+    // Get conversation
     const conversation = await findConversationWithBasicMembers(conversationId);
-    verifyUserMembershipAndRole(conversation, actorId, ALLOWED_REMOVE_MEMBER_ROLES);
     // Cannot remove members from direct conversations
     if (conversation.type === client_1.ConversationType.DIRECT) {
         throw new middleware_1.BadRequestError('Cannot remove members from direct conversations');
@@ -368,9 +379,12 @@ const updateMemberRole = async (conversationId, actorId, memberId, newRole) => {
         newRole !== client_1.MemberRole.MEMBER) {
         throw new middleware_1.BadRequestError('Invalid role. Allowed roles: OWNER, ADMIN, MEMBER');
     }
-    // Get conversation and verify actor permissions
+    // Verify actor has permission to update member roles
+    const canManage = await (0, permissions_service_1.canManageMembers)(actorId, conversationId);
+    if (!canManage) {
+        throw new middleware_1.AuthorizationError('Only OWNER or ADMIN can update member roles');
+    }
     const conversation = await findConversationWithBasicMembers(conversationId);
-    verifyUserMembershipAndRole(conversation, actorId, ALLOWED_UPDATE_ROLE_ROLES);
     // Cannot change roles in direct conversations
     if (conversation.type === client_1.ConversationType.DIRECT) {
         throw new middleware_1.BadRequestError('Cannot change roles in direct conversations');
