@@ -30,6 +30,46 @@ const getActiveBan = async (userId: string, conversationId: string) => {
     });
 };
 
+// Check if user has an active mute in the conversation
+const getActiveMute = async (userId: string, conversationId: string) => {
+    const now = new Date();
+
+    // Find latest MUTE action
+    const mute = await prisma.moderationAction.findFirst({
+        where: {
+            targetUserId: userId,
+            conversationId,
+            action: 'MUTE',
+            OR: [
+                { expiresAt: null },
+                { expiresAt: { gt: now } },
+            ],
+        },
+        orderBy: { createdAt: 'desc' },
+    });
+
+    if (!mute) {
+        return null;
+    }
+
+    // Check if there's a more recent UNMUTE
+    const unmute = await prisma.moderationAction.findFirst({
+        where: {
+            targetUserId: userId,
+            conversationId,
+            action: 'UNMUTE',
+            createdAt: { gt: mute.createdAt },
+        },
+    });
+
+    // If unmute exists and is more recent, user is not muted
+    if (unmute) {
+        return null;
+    }
+
+    return mute;
+};
+
 // Get conversation read-only status or null if not found
 const getConversationReadOnlyStatus = async (conversationId: string) => {
     const conversation = await prisma.conversation.findUnique({
@@ -64,6 +104,11 @@ export const canSendMessage = async (
 
     const ban = await getActiveBan(userId, conversationId);
     if (ban) {
+        return false;
+    }
+
+    const mute = await getActiveMute(userId, conversationId);
+    if (mute) {
         return false;
     }
 
