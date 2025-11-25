@@ -33,11 +33,11 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.markAllAsRead = exports.markAsRead = exports.getUnreadCount = exports.getNotifications = void 0;
+exports.markConversationAsRead = exports.markAllAsRead = exports.markAsRead = exports.getUnreadNotificationCount = exports.getUserNotifications = void 0;
 const middleware_1 = require("../../middleware");
 const notificationService = __importStar(require("../../services/messages/notification.service"));
 // Get user notifications
-exports.getNotifications = (0, middleware_1.asyncHandler)(async (req, res) => {
+exports.getUserNotifications = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
     const options = {
         limit: req.query.limit ? parseInt(req.query.limit) : undefined,
@@ -50,20 +50,20 @@ exports.getNotifications = (0, middleware_1.asyncHandler)(async (req, res) => {
         data: result,
     });
 });
-// Get unread count
-exports.getUnreadCount = (0, middleware_1.asyncHandler)(async (req, res) => {
+// Get unread notification count
+exports.getUnreadNotificationCount = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
     const count = await notificationService.getUnreadCount(userId);
     res.status(200).json({
         status: 'success',
-        data: { count },
+        data: { unreadCount: count },
     });
 });
 // Mark notification as read
 exports.markAsRead = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { id } = req.params;
     const userId = req.user?.id;
-    const notification = await notificationService.markAsRead(id, userId);
+    const { id: notificationId } = req.params;
+    const notification = await notificationService.markAsRead(notificationId, userId);
     res.status(200).json({
         status: 'success',
         data: { notification },
@@ -75,6 +75,22 @@ exports.markAllAsRead = (0, middleware_1.asyncHandler)(async (req, res) => {
     const count = await notificationService.markAllAsRead(userId);
     res.status(200).json({
         status: 'success',
-        data: { count },
+        data: {
+            message: 'All notifications marked as read',
+            count,
+        },
+    });
+});
+// Mark conversation notifications as read
+exports.markConversationAsRead = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
+    const { id: conversationId } = req.params;
+    const count = await notificationService.markConversationAsRead(userId, conversationId);
+    res.status(200).json({
+        status: 'success',
+        data: {
+            message: 'Conversation notifications marked as read',
+            count,
+        },
     });
 });

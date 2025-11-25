@@ -41,13 +41,12 @@ exports.authController = void 0;
 const authControllerImport = __importStar(require("./auth/auth.controller"));
 exports.authController = authControllerImport;
 // Message controllers
-// TODO: Uncomment when implementing message controllers
-// export * from './messages/message.controller';
-// export * from './messages/mention.controller';
-// export * from './messages/reaction.controller';
-// export * from './messages/receipt.controller';
-// export * from './messages/attachment.controller';
-// export * from './messages/notification.controller';
+__exportStar(require("./messages/message.controller"), exports);
+__exportStar(require("./messages/mention.controller"), exports);
+__exportStar(require("./messages/reaction.controller"), exports);
+__exportStar(require("./messages/receipt.controller"), exports);
+__exportStar(require("./messages/attachment.controller"), exports);
+__exportStar(require("./messages/notification.controller"), exports);
 // Conversation controllers
 __exportStar(require("./conversations/conversation.controller"), exports);
 __exportStar(require("./conversations/moderation.controller"), exports);

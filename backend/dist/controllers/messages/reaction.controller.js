@@ -36,11 +36,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMessageReactions = exports.toggleReaction = void 0;
 const middleware_1 = require("../../middleware");
 const reactionService = __importStar(require("../../services/messages/reaction.service"));
-// Toggle reaction
+// Toggle reaction (add or remove)
 exports.toggleReaction = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
-    const { messageId, emoji } = req.body;
-    const result = await reactionService.toggleReaction(userId, messageId, emoji);
+    const { id: messageId } = req.params;
+    const { emoji } = req.body;
+    const result = await reactionService.toggleReaction({
+        userId,
+        messageId,
+        emoji,
+    });
     res.status(200).json({
         status: 'success',
         data: result,
@@ -48,7 +53,7 @@ exports.toggleReaction = (0, middleware_1.asyncHandler)(async (req, res) => {
 });
 // Get message reactions
 exports.getMessageReactions = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { messageId } = req.params;
+    const { id: messageId } = req.params;
     const reactions = await reactionService.getMessageReactions(messageId);
     res.status(200).json({
         status: 'success',

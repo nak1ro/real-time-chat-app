@@ -33,35 +33,36 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReadStats = exports.markAsDelivered = exports.markAsRead = void 0;
+exports.getUnreadCount = exports.getMessageReadStats = exports.markMessagesAsRead = void 0;
 const middleware_1 = require("../../middleware");
 const receiptService = __importStar(require("../../services/messages/receipt.service"));
 // Mark messages as read
-exports.markAsRead = (0, middleware_1.asyncHandler)(async (req, res) => {
+exports.markMessagesAsRead = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
-    const { conversationId, upToMessageId } = req.body;
-    const result = await receiptService.markMessagesAsRead(userId, conversationId, upToMessageId);
+    const { id: conversationId } = req.params;
+    const { upToMessageId } = req.body;
+    const result = await receiptService.markMessagesAsRead(conversationId, userId, upToMessageId);
     res.status(200).json({
         status: 'success',
         data: result,
     });
 });
-// Mark message as delivered
-exports.markAsDelivered = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const userId = req.user?.id;
-    const { messageId, conversationId } = req.body;
-    await receiptService.markMessageAsDelivered(userId, messageId, conversationId);
-    res.status(200).json({
-        status: 'success',
-        data: { success: true },
-    });
-});
-// Get read statistics
-exports.getReadStats = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { messageId } = req.params;
+// Get message read statistics
+exports.getMessageReadStats = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const { id: messageId } = req.params;
     const stats = await receiptService.getMessageReadStats(messageId);
     res.status(200).json({
         status: 'success',
         data: stats,
+    });
+});
+// Get unread message count for conversation
+exports.getUnreadCount = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
+    const { id: conversationId } = req.params;
+    const count = await receiptService.getUnreadMessageCount(conversationId, userId);
+    res.status(200).json({
+        status: 'success',
+        data: { unreadCount: count },
     });
 });

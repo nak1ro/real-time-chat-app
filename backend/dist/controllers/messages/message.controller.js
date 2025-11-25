@@ -33,13 +33,33 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMessage = exports.editMessage = exports.createMessage = exports.getConversationMessages = void 0;
+exports.deleteMessage = exports.editMessage = exports.getConversationMessages = exports.createMessage = void 0;
 const middleware_1 = require("../../middleware");
 const messageService = __importStar(require("../../services/messages/message.service"));
-// Get conversation messages
-exports.getConversationMessages = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { conversationId } = req.params;
+// Create new message
+exports.createMessage = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
+    const { conversationId, text, replyToId, attachments } = req.body;
+    const data = {
+        userId,
+        conversationId,
+        text,
+        replyToId,
+        attachments,
+    };
+    const result = await messageService.createMessage(data);
+    res.status(201).json({
+        status: 'success',
+        data: {
+            message: result,
+            mentionedUserIds: result.mentionedUserIds,
+        },
+    });
+});
+// Get conversation messages with pagination
+exports.getConversationMessages = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
+    const { id: conversationId } = req.params;
     const pagination = {
         limit: req.query.limit ? parseInt(req.query.limit) : undefined,
         cursor: req.query.cursor,
@@ -51,38 +71,22 @@ exports.getConversationMessages = (0, middleware_1.asyncHandler)(async (req, res
         data: result,
     });
 });
-// Create message
-exports.createMessage = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const userId = req.user?.id;
-    const data = {
-        userId,
-        conversationId: req.body.conversationId,
-        text: req.body.text,
-        replyToId: req.body.replyToId,
-        attachments: req.body.attachments,
-    };
-    const message = await messageService.createMessage(data);
-    res.status(201).json({
-        status: 'success',
-        data: { message },
-    });
-});
 // Edit message
 exports.editMessage = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { id } = req.params;
-    const userId = req.user?.id;
+    const actorId = req.user?.id;
+    const { id: messageId } = req.params;
     const { text } = req.body;
-    const message = await messageService.editMessage(id, userId, text);
+    const message = await messageService.editMessage(messageId, actorId, text);
     res.status(200).json({
         status: 'success',
         data: { message },
     });
 });
-// Delete message
+// Delete message (soft delete)
 exports.deleteMessage = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { id } = req.params;
-    const userId = req.user?.id;
-    const message = await messageService.softDeleteMessage(id, userId);
+    const actorId = req.user?.id;
+    const { id: messageId } = req.params;
+    const message = await messageService.softDeleteMessage(messageId, actorId);
     res.status(200).json({
         status: 'success',
         data: { message },

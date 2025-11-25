@@ -36,14 +36,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserMentions = void 0;
 const middleware_1 = require("../../middleware");
 const mentionService = __importStar(require("../../services/messages/mention.service"));
-// Get user's mentions
+// Get mentions for current user
 exports.getUserMentions = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
-    const pagination = {
+    const options = {
         limit: req.query.limit ? parseInt(req.query.limit) : undefined,
         cursor: req.query.cursor,
     };
-    const result = await mentionService.getMentionsForUser(userId, pagination);
+    const result = await mentionService.getMentionsForUser(userId, options);
     res.status(200).json({
         status: 'success',
         data: result,
