@@ -6,9 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/controllers/conversations/conversation.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/controllers/conversations/conversation.controller.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/controllers/conversations/moderation.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/controllers/conversations/moderation.controller.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/controllers/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/controllers/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/auth.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/routes/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/routes/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/controllers/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

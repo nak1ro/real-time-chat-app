@@ -49,9 +49,8 @@ exports.authController = authControllerImport;
 // export * from './messages/attachment.controller';
 // export * from './messages/notification.controller';
 // Conversation controllers
-// TODO: Uncomment when implementing conversation controllers
-// export * from './conversations/conversation.controller';
-// export * from './conversations/moderation.controller';
+__exportStar(require("./conversations/conversation.controller"), exports);
+__exportStar(require("./conversations/moderation.controller"), exports);
 // User controllers
 __exportStar(require("./users/user.controller"), exports);
 __exportStar(require("./users/presence.controller"), exports);

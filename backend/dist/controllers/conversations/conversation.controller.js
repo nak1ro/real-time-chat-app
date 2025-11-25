@@ -33,123 +33,138 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateMemberRole = exports.removeMember = exports.addMembers = exports.deleteConversation = exports.updateConversation = exports.createChannel = exports.createGroupConversation = exports.createDirectConversation = exports.getConversation = exports.getUserConversations = void 0;
+exports.generateSlug = exports.joinChannelBySlug = exports.listPublicChannels = exports.updateMemberRole = exports.leaveConversation = exports.removeMember = exports.addMembers = exports.updateConversation = exports.getConversationById = exports.listUserConversations = exports.createGroupOrChannel = exports.createDirectConversation = void 0;
 const middleware_1 = require("../../middleware");
 const conversationService = __importStar(require("../../services/conversations/conversation.service"));
-// Get user conversations
-exports.getUserConversations = (0, middleware_1.asyncHandler)(async (req, res) => {
+const client_1 = require("@prisma/client");
+// Create direct conversation
+exports.createDirectConversation = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const currentUserId = req.user?.id;
+    const { otherUserId } = req.body;
+    const conversation = await conversationService.createDirectConversation(currentUserId, otherUserId);
+    res.status(201).json({
+        status: 'success',
+        data: { conversation },
+    });
+});
+// Create group or channel conversation
+exports.createGroupOrChannel = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const currentUserId = req.user?.id;
+    const data = req.body;
+    const conversation = await conversationService.createGroupOrChannelConversation(currentUserId, data);
+    res.status(201).json({
+        status: 'success',
+        data: { conversation },
+    });
+});
+// List user's conversations
+exports.listUserConversations = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
-    const conversations = await conversationService.getUserConversations(userId);
+    const filters = req.query.type || req.query.isPublic || req.query.name
+        ? {
+            type: req.query.type,
+            isPublic: req.query.isPublic === 'true' ? true : req.query.isPublic === 'false' ? false : undefined,
+            name: req.query.name,
+        }
+        : undefined;
+    const conversations = await conversationService.listUserConversations(userId, filters);
     res.status(200).json({
         status: 'success',
         data: { conversations },
     });
 });
 // Get conversation by ID
-exports.getConversation = (0, middleware_1.asyncHandler)(async (req, res) => {
+exports.getConversationById = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
     const { id } = req.params;
-    const userId = req.user?.id;
-    const conversation = await conversationService.getConversationById(id, userId);
+    const conversation = await conversationService.getConversationByIdForUser(id, userId);
     res.status(200).json({
-        status: 'success',
-        data: { conversation },
-    });
-});
-// Create direct conversation
-exports.createDirectConversation = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const userId = req.user?.id;
-    const dto = {
-        userIds: [userId, req.body.otherUserId],
-    };
-    const conversation = await conversationService.createDirectConversation(dto);
-    res.status(201).json({
-        status: 'success',
-        data: { conversation },
-    });
-});
-// Create group conversation
-exports.createGroupConversation = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const creatorId = req.user?.id;
-    const dto = {
-        name: req.body.name,
-        creatorId,
-        memberIds: req.body.memberIds,
-        description: req.body.description,
-        avatarUrl: req.body.avatarUrl,
-    };
-    const conversation = await conversationService.createGroupConversation(dto);
-    res.status(201).json({
-        status: 'success',
-        data: { conversation },
-    });
-});
-// Create channel
-exports.createChannel = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const creatorId = req.user?.id;
-    const dto = {
-        name: req.body.name,
-        slug: req.body.slug,
-        creatorId,
-        description: req.body.description,
-        isPublic: req.body.isPublic,
-        isReadOnly: req.body.isReadOnly,
-        avatarUrl: req.body.avatarUrl,
-    };
-    const conversation = await conversationService.createChannel(dto);
-    res.status(201).json({
         status: 'success',
         data: { conversation },
     });
 });
 // Update conversation
 exports.updateConversation = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const actorId = req.user?.id;
     const { id } = req.params;
-    const userId = req.user?.id;
-    const conversation = await conversationService.updateConversation(id, userId, req.body);
+    const patch = req.body;
+    const conversation = await conversationService.updateConversation(id, actorId, patch);
     res.status(200).json({
         status: 'success',
         data: { conversation },
     });
 });
-// Delete conversation
-exports.deleteConversation = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { id } = req.params;
-    const userId = req.user?.id;
-    const conversation = await conversationService.deleteConversation(id, userId);
-    res.status(200).json({
-        status: 'success',
-        data: { conversation },
-    });
-});
-// Add members
+// Add members to conversation
 exports.addMembers = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { id } = req.params;
     const actorId = req.user?.id;
-    const { userIds } = req.body;
-    const members = await conversationService.addMembers(id, userIds, actorId);
+    const { id } = req.params;
+    const { userIds, role } = req.body;
+    const conversation = await conversationService.addConversationMembers(id, actorId, userIds, role || client_1.MemberRole.MEMBER);
     res.status(200).json({
         status: 'success',
-        data: { members },
+        data: { conversation },
     });
 });
-// Remove member
+// Remove member from conversation
 exports.removeMember = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { id, userId } = req.params;
     const actorId = req.user?.id;
-    await conversationService.removeMember(id, userId, actorId);
+    const { id, memberId } = req.params;
+    const conversation = await conversationService.removeConversationMember(id, actorId, memberId);
     res.status(200).json({
         status: 'success',
-        data: { success: true },
+        data: { conversation },
+    });
+});
+// Leave conversation
+exports.leaveConversation = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
+    const { id } = req.params;
+    await conversationService.leaveConversation(id, userId);
+    res.status(200).json({
+        status: 'success',
+        data: {
+            message: 'Left conversation successfully',
+        },
     });
 });
 // Update member role
 exports.updateMemberRole = (0, middleware_1.asyncHandler)(async (req, res) => {
-    const { id, userId } = req.params;
     const actorId = req.user?.id;
+    const { id, memberId } = req.params;
     const { role } = req.body;
-    const member = await conversationService.updateMemberRole(id, userId, role, actorId);
+    const conversation = await conversationService.updateMemberRole(id, actorId, memberId, role);
     res.status(200).json({
         status: 'success',
-        data: { member },
+        data: { conversation },
+    });
+});
+// List public channels
+exports.listPublicChannels = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const filters = req.query.name
+        ? { name: req.query.name }
+        : undefined;
+    const channels = await conversationService.listPublicChannels(filters);
+    res.status(200).json({
+        status: 'success',
+        data: { channels },
+    });
+});
+// Join channel by slug
+exports.joinChannelBySlug = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
+    const { slug } = req.params;
+    const conversation = await conversationService.joinChannelBySlug(slug, userId);
+    res.status(200).json({
+        status: 'success',
+        data: { conversation },
+    });
+});
+// Generate slug from name
+exports.generateSlug = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const { name } = req.body;
+    const slug = await conversationService.generateSlug(name);
+    res.status(200).json({
+        status: 'success',
+        data: { slug },
     });
 });

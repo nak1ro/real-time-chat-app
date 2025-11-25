@@ -12,9 +12,8 @@ export const authController = authControllerImport;
 // export * from './messages/notification.controller';
 
 // Conversation controllers
-// TODO: Uncomment when implementing conversation controllers
-// export * from './conversations/conversation.controller';
-// export * from './conversations/moderation.controller';
+export * from './conversations/conversation.controller';
+export * from './conversations/moderation.controller';
 
 // User controllers
 export * from './users/user.controller';
