@@ -4,6 +4,7 @@ exports.handleMessageDelete = exports.handleMessageEdit = exports.handleMessageS
 const message_service_1 = require("../services/message.service");
 const socket_rooms_1 = require("./socket.rooms");
 const socket_utils_1 = require("./socket.utils");
+const socket_mentions_1 = require("./socket.mentions");
 // Handle message:send event
 const handleMessageSend = async (io, socket, data, callback) => {
     const { userId } = socket.data;
@@ -19,6 +20,8 @@ const handleMessageSend = async (io, socket, data, callback) => {
         await (0, socket_rooms_1.joinConversation)(socket, data.conversationId);
         // Broadcast to conversation room
         io.to(data.conversationId).emit(socket_utils_1.SOCKET_EVENTS.MESSAGE_NEW, message);
+        // Notify mentioned users
+        (0, socket_mentions_1.notifyMentionedUsers)(io, message, message.mentionedUserIds);
         console.log(`Message sent to ${data.conversationId} by user ${userId}`);
         (0, socket_utils_1.invokeCallback)(callback, (0, socket_utils_1.createSuccessResponse)({ message }));
     }

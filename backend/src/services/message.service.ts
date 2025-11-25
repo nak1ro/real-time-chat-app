@@ -76,8 +76,12 @@ const buildPaginationWhereClause = (
 // Public API
 
 
+import { processMentions } from './mention.service';
+
+// ... (existing imports)
+
 // Create a new message in a conversation
-export const createMessage = async (data: CreateMessageData): Promise<MessageWithRelations> => {
+export const createMessage = async (data: CreateMessageData): Promise<MessageWithRelations & { mentionedUserIds: string[] }> => {
     const { userId, conversationId, text, replyToId, attachments } = data;
 
     validateMessageText(text);
@@ -91,6 +95,8 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
     if (replyToId) {
         await verifyReplyToMessage(replyToId, conversationId);
     }
+
+    let mentionedUserIds: string[] = [];
 
     const result = await prisma.$transaction(async (tx) => {
         const message = await tx.message.create({
@@ -107,6 +113,9 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
         if (attachments && attachments.length > 0) {
             await attachFilesToMessage(message.id, attachments as any);
         }
+
+        // Process mentions
+        mentionedUserIds = await processMentions(message.id, text);
 
         // Create READ receipt for the sender
         await tx.messageReceipt.create({
@@ -130,7 +139,7 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
         MessageDeliveryStatus.SENT
     );
 
-    return result;
+    return { ...result, mentionedUserIds };
 };
 
 // Get messages for a conversation with pagination

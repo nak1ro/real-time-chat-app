@@ -22,6 +22,9 @@ export const SOCKET_EVENTS = {
     MESSAGE_UPDATED: 'message:updated',
     MESSAGE_DELETED: 'message:deleted',
 
+    // Mentions
+    MENTION_NEW: 'mention:new',
+
     // Presence
     PRESENCE_UPDATE: 'presence:update',
     PRESENCE_HEARTBEAT: 'presence:heartbeat',

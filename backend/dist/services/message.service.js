@@ -53,6 +53,8 @@ const buildPaginationWhereClause = (conversationId, cursor) => {
     return where;
 };
 // Public API
+const mention_service_1 = require("./mention.service");
+// ... (existing imports)
 // Create a new message in a conversation
 const createMessage = async (data) => {
     const { userId, conversationId, text, replyToId, attachments } = data;
@@ -65,6 +67,7 @@ const createMessage = async (data) => {
     if (replyToId) {
         await verifyReplyToMessage(replyToId, conversationId);
     }
+    let mentionedUserIds = [];
     const result = await prisma_1.prisma.$transaction(async (tx) => {
         const message = await tx.message.create({
             data: {
@@ -79,6 +82,8 @@ const createMessage = async (data) => {
         if (attachments && attachments.length > 0) {
             await (0, attachment_service_1.attachFilesToMessage)(message.id, attachments);
         }
+        // Process mentions
+        mentionedUserIds = await (0, mention_service_1.processMentions)(message.id, text);
         // Create READ receipt for the sender
         await tx.messageReceipt.create({
             data: {
@@ -93,7 +98,7 @@ const createMessage = async (data) => {
     });
     // Create SENT receipts for all other conversation members
     await (0, receipt_service_1.createReceiptForRecipients)(result.id, conversationId, userId, client_1.MessageDeliveryStatus.SENT);
-    return result;
+    return { ...result, mentionedUserIds };
 };
 exports.createMessage = createMessage;
 // Get messages for a conversation with pagination

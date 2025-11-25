@@ -39,6 +39,7 @@ export const MESSAGE_INCLUDE_WITH_RELATIONS = {
     user: { select: MESSAGE_USER_SELECT },
     replyTo: MESSAGE_REPLY_TO_INCLUDE,
     attachments: true,
+    mentions: true,
     _count: {
         select: { receipts: true },
     },

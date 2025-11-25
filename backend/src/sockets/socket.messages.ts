@@ -10,6 +10,7 @@ import {
     invokeCallback,
     getErrorMessage,
 } from './socket.utils';
+import { notifyMentionedUsers } from './socket.mentions';
 
 // Handle message:send event
 export const handleMessageSend = async (
@@ -35,6 +36,9 @@ export const handleMessageSend = async (
 
         // Broadcast to conversation room
         io.to(data.conversationId).emit(SOCKET_EVENTS.MESSAGE_NEW, message);
+
+        // Notify mentioned users
+        notifyMentionedUsers(io, message, message.mentionedUserIds);
 
         console.log(`Message sent to ${data.conversationId} by user ${userId}`);
 
