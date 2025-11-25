@@ -32,27 +32,35 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authController = void 0;
-// Auth controllers
-const authControllerImport = __importStar(require("./auth/auth.controller"));
-exports.authController = authControllerImport;
-// Message controllers
-// TODO: Uncomment when implementing message controllers
-// export * from './messages/message.controller';
-// export * from './messages/mention.controller';
-// export * from './messages/reaction.controller';
-// export * from './messages/receipt.controller';
-// export * from './messages/attachment.controller';
-// export * from './messages/notification.controller';
-// Conversation controllers
-// TODO: Uncomment when implementing conversation controllers
-// export * from './conversations/conversation.controller';
-// export * from './conversations/moderation.controller';
-// User controllers
-__exportStar(require("./users/user.controller"), exports);
-__exportStar(require("./users/presence.controller"), exports);
-__exportStar(require("./users/permissions.controller"), exports);
+exports.getBulkPresences = exports.getUserPresence = void 0;
+const middleware_1 = require("../../middleware");
+const presenceService = __importStar(require("../../services/users/presence.service"));
+// Get user presence
+exports.getUserPresence = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const { userId } = req.params;
+    const status = await presenceService.getUserStatus(userId);
+    res.status(200).json({
+        status: 'success',
+        data: { status },
+    });
+});
+// Get bulk presences
+exports.getBulkPresences = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds)) {
+        res.status(400).json({
+            status: 'error',
+            message: 'userIds must be an array',
+        });
+        return;
+    }
+    const statuses = await Promise.all(userIds.map(async (userId) => ({
+        userId,
+        status: await presenceService.getUserStatus(userId),
+    })));
+    res.status(200).json({
+        status: 'success',
+        data: { users: statuses },
+    });
+});

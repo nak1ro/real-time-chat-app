@@ -32,27 +32,20 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authController = void 0;
-// Auth controllers
-const authControllerImport = __importStar(require("./auth/auth.controller"));
-exports.authController = authControllerImport;
-// Message controllers
-// TODO: Uncomment when implementing message controllers
-// export * from './messages/message.controller';
-// export * from './messages/mention.controller';
-// export * from './messages/reaction.controller';
-// export * from './messages/receipt.controller';
-// export * from './messages/attachment.controller';
-// export * from './messages/notification.controller';
-// Conversation controllers
-// TODO: Uncomment when implementing conversation controllers
-// export * from './conversations/conversation.controller';
-// export * from './conversations/moderation.controller';
-// User controllers
-__exportStar(require("./users/user.controller"), exports);
-__exportStar(require("./users/presence.controller"), exports);
-__exportStar(require("./users/permissions.controller"), exports);
+exports.getUserMentions = void 0;
+const middleware_1 = require("../../middleware");
+const mentionService = __importStar(require("../../services/messages/mention.service"));
+// Get user's mentions
+exports.getUserMentions = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
+    const pagination = {
+        limit: req.query.limit ? parseInt(req.query.limit) : undefined,
+        cursor: req.query.cursor,
+    };
+    const result = await mentionService.getMentionsForUser(userId, pagination);
+    res.status(200).json({
+        status: 'success',
+        data: result,
+    });
+});

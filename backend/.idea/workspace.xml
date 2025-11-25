@@ -6,17 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/services/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/services/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/services/messages/message.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/services/messages/message.service.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/sockets/core/socket.utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/sockets/core/socket.utils.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/sockets/handlers/socket.handlers.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/sockets/handlers/socket.handlers.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/sockets/handlers/socket.messages.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/sockets/handlers/socket.messages.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/messages/message.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/messages/message.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/core/socket.utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/sockets/core/socket.utils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/handlers/socket.handlers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/sockets/handlers/socket.handlers.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/handlers/socket.messages.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/sockets/handlers/socket.messages.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/controllers/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/controllers/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/auth.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
