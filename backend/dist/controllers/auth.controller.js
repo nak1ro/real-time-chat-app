@@ -34,7 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logoutUser = exports.refreshToken = exports.getCurrentUser = exports.loginUser = exports.registerUser = void 0;
-const authService = __importStar(require("../services/auth.service"));
+const authService = __importStar(require("../services/auth/auth.service"));
 const middleware_1 = require("../middleware");
 // Register a new user
 exports.registerUser = (0, middleware_1.asyncHandler)(async (req, res) => {

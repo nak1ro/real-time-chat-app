@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { RegisterDto, LoginDto } from '../domain';
-import * as authService from '../services/auth.service';
+import * as authService from '../services/auth/auth.service';
 import { asyncHandler } from '../middleware';
 
 // Register a new user

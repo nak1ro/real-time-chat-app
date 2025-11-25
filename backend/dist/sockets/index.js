@@ -17,9 +17,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.initializeSocketIO = void 0;
 const socket_io_1 = require("socket.io");
 const env_1 = require("../config/env");
-const socket_auth_1 = require("./socket.auth");
-const socket_handlers_1 = require("./socket.handlers");
-const socket_utils_1 = require("./socket.utils");
+const socket_auth_1 = require("./core/socket.auth");
+const socket_handlers_1 = require("./handlers/socket.handlers");
+const socket_utils_1 = require("./core/socket.utils");
 // Socket.IO server configuration
 const SOCKET_CONFIG = {
     CONNECT_TIMEOUT: 10000,
@@ -55,10 +55,15 @@ const initializeSocketIO = (httpServer) => {
     return io;
 };
 exports.initializeSocketIO = initializeSocketIO;
-__exportStar(require("./socket.types"), exports);
-__exportStar(require("./socket.auth"), exports);
-__exportStar(require("./socket.handlers"), exports);
-__exportStar(require("./socket.rooms"), exports);
-__exportStar(require("./socket.messages"), exports);
-__exportStar(require("./socket.presence"), exports);
-__exportStar(require("./socket.utils"), exports);
+// Core exports
+__exportStar(require("./core/socket.types"), exports);
+__exportStar(require("./core/socket.auth"), exports);
+__exportStar(require("./core/socket.utils"), exports);
+// Handler exports
+__exportStar(require("./handlers/socket.handlers"), exports);
+__exportStar(require("./handlers/socket.rooms"), exports);
+__exportStar(require("./handlers/socket.messages"), exports);
+__exportStar(require("./handlers/socket.mentions"), exports);
+__exportStar(require("./handlers/socket.reactions"), exports);
+__exportStar(require("./handlers/socket.receipts"), exports);
+__exportStar(require("./handlers/socket.presence"), exports);

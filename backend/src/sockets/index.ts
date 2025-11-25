@@ -1,10 +1,10 @@
 import { Server as HTTPServer } from 'http';
 import { Server } from 'socket.io';
 import { env } from '../config/env';
-import { socketAuthMiddleware } from './socket.auth';
-import { handleConnection } from './socket.handlers';
-import { AuthenticatedSocket } from './socket.types';
-import { SOCKET_EVENTS } from './socket.utils';
+import { socketAuthMiddleware } from './core/socket.auth';
+import { handleConnection } from './handlers/socket.handlers';
+import { AuthenticatedSocket } from './core/socket.types';
+import { SOCKET_EVENTS } from './core/socket.utils';
 
 // Socket.IO server configuration
 const SOCKET_CONFIG = {
@@ -47,11 +47,16 @@ export const initializeSocketIO = (httpServer: HTTPServer): Server => {
     return io;
 };
 
-export * from './socket.types';
-export * from './socket.auth';
-export * from './socket.handlers';
-export * from './socket.rooms';
-export * from './socket.messages';
-export * from './socket.presence';
-export * from './socket.utils';
+// Core exports
+export * from './core/socket.types';
+export * from './core/socket.auth';
+export * from './core/socket.utils';
 
+// Handler exports
+export * from './handlers/socket.handlers';
+export * from './handlers/socket.rooms';
+export * from './handlers/socket.messages';
+export * from './handlers/socket.mentions';
+export * from './handlers/socket.reactions';
+export * from './handlers/socket.receipts';
+export * from './handlers/socket.presence';

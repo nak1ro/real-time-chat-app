@@ -1,14 +1,18 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.notifyMentionedUsers = void 0;
-const socket_utils_1 = require("./socket.utils");
+import { Server } from 'socket.io';
+import { MessageWithRelations } from '../../domain';
+import { SOCKET_EVENTS } from '../core/socket.utils';
+
 // Notify users that they have been mentioned
-const notifyMentionedUsers = (io, message, mentionedUserIds) => {
-    if (!mentionedUserIds || mentionedUserIds.length === 0)
-        return;
+export const notifyMentionedUsers = (
+    io: Server,
+    message: MessageWithRelations,
+    mentionedUserIds: string[]
+): void => {
+    if (!mentionedUserIds || mentionedUserIds.length === 0) return;
+
     mentionedUserIds.forEach((userId) => {
         // Emit to specific user room (usually their userId)
-        io.to(userId).emit(socket_utils_1.SOCKET_EVENTS.MENTION_NEW, {
+        io.to(userId).emit(SOCKET_EVENTS.MENTION_NEW, {
             message,
             notification: {
                 type: 'mention',
@@ -20,4 +24,3 @@ const notifyMentionedUsers = (io, message, mentionedUserIds) => {
         });
     });
 };
-exports.notifyMentionedUsers = notifyMentionedUsers;

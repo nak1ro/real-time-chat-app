@@ -22,7 +22,6 @@ model User {
   reactions     MessageReaction[]
   mentions      MessageMention[]
   receipts      MessageReceipt[]
-  devices       UserDevice[]
   typingStates  TypingState[]
 
   moderationActionsTaken    ModerationAction[] @relation("ModerationActor")
@@ -265,27 +264,4 @@ model ChannelBan {
 
   @@unique([userId, conversationId])
   @@index([conversationId])
-}
-
-model UserDevice {
-  id           String     @id @default(uuid())
-  userId       String
-  deviceId     String     @unique
-  deviceName   String?
-  deviceType   DeviceType?
-  pushToken    String?
-  lastActiveAt DateTime   @default(now())
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-enum DeviceType {
-  WEB
-  DESKTOP
-  MOBILE
-  TABLET
 }

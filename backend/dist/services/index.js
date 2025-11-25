@@ -14,14 +14,23 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./auth.service"), exports);
-__exportStar(require("./user.service"), exports);
-__exportStar(require("./password.service"), exports);
-__exportStar(require("./token.service"), exports);
-__exportStar(require("./conversation.service"), exports);
-__exportStar(require("./message.service"), exports);
-__exportStar(require("./presence.service"), exports);
-__exportStar(require("./receipt.service"), exports);
-__exportStar(require("./permissions.service"), exports);
-__exportStar(require("./moderation.service"), exports);
-__exportStar(require("./attachment.service"), exports);
+// Auth services
+__exportStar(require("./auth/auth.service"), exports);
+__exportStar(require("./auth/password.service"), exports);
+__exportStar(require("./auth/token.service"), exports);
+// User services
+__exportStar(require("./users/user.service"), exports);
+__exportStar(require("./users/presence.service"), exports);
+__exportStar(require("./users/permissions.service"), exports);
+// Conversation services
+__exportStar(require("./conversations/conversation.service"), exports);
+__exportStar(require("./conversations/moderation.service"), exports);
+// Message services
+__exportStar(require("./messages/message.service"), exports);
+__exportStar(require("./messages/mention.service"), exports);
+__exportStar(require("./messages/reaction.service"), exports);
+__exportStar(require("./messages/receipt.service"), exports);
+__exportStar(require("./messages/attachment.service"), exports);
+// Shared
+__exportStar(require("./shared/s3.service"), exports);
+__exportStar(require("./shared/service-constants"), exports);

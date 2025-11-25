@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.notifyMentionedUsers = void 0;
-const socket_utils_1 = require("./socket.utils");
+const socket_utils_1 = require("../core/socket.utils");
 // Notify users that they have been mentioned
 const notifyMentionedUsers = (io, message, mentionedUserIds) => {
     if (!mentionedUserIds || mentionedUserIds.length === 0)
