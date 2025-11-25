@@ -2,6 +2,9 @@ import { AttachmentType } from '@prisma/client';
 import { prisma } from '../db/prisma';
 import { BadRequestError } from '../middleware';
 import { uploadToS3 } from './s3.service';
+import sharp from 'sharp';
+import ffmpeg from 'fluent-ffmpeg';
+import { promisify } from 'util';
 
 // Constants
 
@@ -69,15 +72,98 @@ const determineAttachmentType = (mimeType: string): AttachmentType => {
     return ALLOWED_MIMETYPES[mimeType] || 'OTHER';
 };
 
-// Extract metadata from file (basic implementation)
+// Extract image metadata using sharp
+const extractImageMetadata = async (buffer: Buffer): Promise<{
+    width?: number;
+    height?: number;
+}> => {
+    try {
+        const metadata = await sharp(buffer).metadata();
+        return {
+            width: metadata.width,
+            height: metadata.height,
+        };
+    } catch (error) {
+        console.error('Failed to extract image metadata:', error);
+        return {};
+    }
+};
+
+// Extract video metadata using ffmpeg
+const extractVideoMetadata = async (buffer: Buffer): Promise<{
+    width?: number;
+    height?: number;
+    durationMs?: number;
+}> => {
+    return new Promise((resolve) => {
+        // Create a temporary file path (ffmpeg needs a file path, not just a buffer)
+        const tempPath = `/tmp/${Date.now()}-${Math.random()}.mp4`;
+        const fs = require('fs');
+
+        try {
+            // Write buffer to temp file
+            fs.writeFileSync(tempPath, buffer);
+
+            ffmpeg.ffprobe(tempPath, (err, metadata) => {
+                // Clean up temp file
+                try {
+                    fs.unlinkSync(tempPath);
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+
+                if (err) {
+                    console.error('Failed to extract video metadata:', err);
+                    resolve({});
+                    return;
+                }
+
+                try {
+                    const videoStream = metadata.streams.find((s) => s.codec_type === 'video');
+                    resolve({
+                        width: videoStream?.width,
+                        height: videoStream?.height,
+                        durationMs: metadata.format.duration
+                            ? Math.floor(metadata.format.duration * 1000)
+                            : undefined,
+                    });
+                } catch (error) {
+                    console.error('Failed to parse video metadata:', error);
+                    resolve({});
+                }
+            });
+        } catch (error) {
+            console.error('Failed to process video file:', error);
+            // Clean up temp file if it exists
+            try {
+                fs.unlinkSync(tempPath);
+            } catch (e) {
+                // Ignore cleanup errors
+            }
+            resolve({});
+        }
+    });
+};
+
+// Extract metadata from file based on type
 const extractMetadata = async (file: Express.Multer.File): Promise<{
     width?: number;
     height?: number;
     durationMs?: number;
 }> => {
-    // Basic implementation - would use sharp for images, ffmpeg for videos
-    // For now, return empty metadata
-    // TODO: Implement proper metadata extraction
+    const mimeType = file.mimetype;
+
+    // Extract image metadata
+    if (mimeType.startsWith('image/')) {
+        return await extractImageMetadata(file.buffer);
+    }
+
+    // Extract video metadata
+    if (mimeType.startsWith('video/')) {
+        return await extractVideoMetadata(file.buffer);
+    }
+
+    // No metadata for other types
     return {};
 };
 
