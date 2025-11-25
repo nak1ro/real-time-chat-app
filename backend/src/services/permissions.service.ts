@@ -1,5 +1,6 @@
 import { MemberRole } from '@prisma/client';
 import { prisma } from '../db/prisma';
+import { isMemberOfConversation } from '../utils/validation-helpers';
 
 // Constants
 

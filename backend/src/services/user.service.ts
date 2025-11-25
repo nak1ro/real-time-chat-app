@@ -2,6 +2,7 @@ import { User, Status } from '@prisma/client';
 import { prisma } from '../db/prisma';
 import { CreateUserData, UserQueryOptions } from '../domain';
 import { ConflictError } from '../middleware';
+import { verifyUserExists as verifyUserExistsHelper } from '../utils/validation-helpers';
 
 // Find user by ID
 export const findUserById = async (
@@ -27,9 +28,7 @@ export const findUserByName = async (name: string): Promise<User | null> => {
 
 // Check if user exists by name
 export const userExistsByName = async (name: string): Promise<boolean> => {
-    const user = await prisma.user.findFirst({
-        where: { name },
-    });
+    const user = await findUserByName(name);
     return user !== null;
 };
 

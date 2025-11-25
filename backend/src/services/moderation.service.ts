@@ -4,6 +4,7 @@ import { AuthorizationError, BadRequestError, NotFoundError } from '../middlewar
 import { canManageMembers } from './permissions.service';
 import { softDeleteMessage } from './message.service';
 import { updateMemberRole } from './conversation.service';
+import { verifyUserExists, verifyConversationExists, verifyMessageExists } from '../utils/validation-helpers';
 
 // Types
 
@@ -17,33 +18,7 @@ export interface ApplyModerationActionParams {
     expiresAt?: Date;
 }
 
-// Helper Functions
 
-// Verify user exists
-const verifyUserExists = async (userId: string): Promise<void> => {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-        throw new NotFoundError(`User with ID ${userId}`);
-    }
-};
-
-// Verify conversation exists
-const verifyConversationExists = async (conversationId: string): Promise<void> => {
-    const conversation = await prisma.conversation.findUnique({
-        where: { id: conversationId },
-    });
-    if (!conversation) {
-        throw new NotFoundError('Conversation');
-    }
-};
-
-// Verify message exists
-const verifyMessageExists = async (messageId: string): Promise<void> => {
-    const message = await prisma.message.findUnique({ where: { id: messageId } });
-    if (!message) {
-        throw new NotFoundError('Message');
-    }
-};
 
 // Public API
 

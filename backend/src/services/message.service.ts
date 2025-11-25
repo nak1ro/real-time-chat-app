@@ -5,88 +5,15 @@ import { AuthorizationError, BadRequestError, NotFoundError } from '../middlewar
 import { createReceiptForRecipients } from './receipt.service';
 import { canSendMessage, canModerateMessage } from './permissions.service';
 import { attachFilesToMessage, AttachmentData } from './attachment.service';
-
-// Constants
-
-const DEFAULT_PAGE_LIMIT = 50;
-const MAX_PAGE_LIMIT = 100;
-const DELETED_MESSAGE_PLACEHOLDER = '[Message deleted]';
-
-const MESSAGE_USER_SELECT = {
-    id: true,
-    name: true,
-    avatarUrl: true,
-    status: true,
-} as const;
-
-const MESSAGE_REPLY_TO_INCLUDE = {
-    select: {
-        id: true,
-        text: true,
-        userId: true,
-        createdAt: true,
-        user: {
-            select: {
-                id: true,
-                name: true,
-                avatarUrl: true,
-            },
-        },
-    },
-} as const;
-
-const MESSAGE_INCLUDE_WITH_RELATIONS = {
-    user: { select: MESSAGE_USER_SELECT },
-    replyTo: MESSAGE_REPLY_TO_INCLUDE,
-    attachments: true,
-    _count: {
-        select: { receipts: true },
-    },
-} as const;
+import {
+    DEFAULT_PAGE_LIMIT,
+    MAX_PAGE_LIMIT,
+    DELETED_MESSAGE_PLACEHOLDER,
+    MESSAGE_INCLUDE_WITH_RELATIONS,
+} from './service-constants';
+import { verifyMessageExists, verifyConversationExists, verifyMembership } from '../utils/validation-helpers';
 
 // Helper Functions
-
-// Get user's membership in a conversation or throw
-const getUserMembership = async (
-    userId: string,
-    conversationId: string
-): Promise<ConversationMember> => {
-    const membership = await prisma.conversationMember.findFirst({
-        where: { userId, conversationId },
-    });
-
-    if (!membership) {
-        throw new AuthorizationError('You are not a member of this conversation');
-    }
-
-    return membership;
-};
-
-// Get conversation by ID or throw
-const getConversationOrThrow = async (conversationId: string) => {
-    const conversation = await prisma.conversation.findUnique({
-        where: { id: conversationId },
-    });
-
-    if (!conversation) {
-        throw new NotFoundError('Conversation');
-    }
-
-    return conversation;
-};
-
-// Get message by ID or throw
-const getMessageOrThrow = async (messageId: string): Promise<Message> => {
-    const message = await prisma.message.findUnique({
-        where: { id: messageId },
-    });
-
-    if (!message) {
-        throw new NotFoundError('Message');
-    }
-
-    return message;
-};
 
 // Verify reply-to message is valid
 const verifyReplyToMessage = async (
@@ -212,8 +139,8 @@ export const getConversationMessages = async (
     userId: string,
     pagination?: PaginationOptions
 ): Promise<PaginatedMessages> => {
-    await getConversationOrThrow(conversationId);
-    await getUserMembership(userId, conversationId);
+    await verifyConversationExists(conversationId);
+    await verifyMembership(userId, conversationId);
 
     const limit = Math.min(pagination?.limit || DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT);
     const sortOrder = pagination?.sortOrder || 'desc';
@@ -250,7 +177,7 @@ export const editMessage = async (
 ): Promise<MessageWithRelations> => {
     validateMessageText(text);
 
-    const message = await getMessageOrThrow(messageId);
+    const message = await verifyMessageExists(messageId);
 
     if (message.deletedAt) {
         throw new BadRequestError('Cannot edit a deleted message');
@@ -279,7 +206,7 @@ export const softDeleteMessage = async (
     messageId: string,
     actorId: string
 ): Promise<MessageWithRelations> => {
-    const message = await getMessageOrThrow(messageId);
+    const message = await verifyMessageExists(messageId);
 
     if (message.deletedAt) {
         throw new BadRequestError('Message is already deleted');

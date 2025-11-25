@@ -2,19 +2,10 @@ import { MessageDeliveryStatus } from '@prisma/client';
 import { prisma } from '../db/prisma';
 import { NotFoundError, AuthorizationError } from '../middleware';
 import { MessageReadStats, ReceiptWithUser } from '../domain/receipt.types';
+import { USER_SELECT, RECEIPT_INCLUDE_WITH_USER, buildReceiptTimestamps } from './service-constants';
+import { verifyMembership } from '../utils/validation-helpers';
 
-// Constants
-const USER_SELECT = {
-    id: true,
-    name: true,
-    avatarUrl: true,
-} as const;
 
-const RECEIPT_INCLUDE_WITH_USER = {
-    user: {
-        select: USER_SELECT,
-    },
-} as const;
 
 // Helper Functions - Validation
 
@@ -23,18 +14,7 @@ const verifyUserIsMember = async (
     conversationId: string,
     userId: string
 ): Promise<void> => {
-    const membership = await prisma.conversationMember.findUnique({
-        where: {
-            userId_conversationId: {
-                userId,
-                conversationId,
-            },
-        },
-    });
-
-    if (!membership) {
-        throw new AuthorizationError('Not a member of this conversation');
-    }
+    await verifyMembership(userId, conversationId);
 };
 
 // Get and verify message exists
@@ -137,23 +117,7 @@ const getMessageIdsInConversation = async (
 
 // Helper Functions - Receipt Operations
 
-// Build receipt timestamp data based on status
-const buildReceiptTimestamps = (status: MessageDeliveryStatus): {
-    deliveredAt?: Date;
-    seenAt?: Date;
-} => {
-    const now = new Date();
 
-    if (status === MessageDeliveryStatus.READ) {
-        return { deliveredAt: now, seenAt: now };
-    }
-
-    if (status === MessageDeliveryStatus.DELIVERED) {
-        return { deliveredAt: now };
-    }
-
-    return {};
-};
 
 // Upsert a single receipt
 const upsertReceipt = async (

@@ -118,7 +118,7 @@ export const getUsersStatus = async (
     });
 
     const statusMap = new Map();
-    
+
     for (const user of users) {
         statusMap.set(user.id, {
             status: user.status,

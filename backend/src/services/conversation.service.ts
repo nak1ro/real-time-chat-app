@@ -15,6 +15,8 @@ import {
 } from '../domain';
 import { BadRequestError, NotFoundError, AuthorizationError } from '../middleware';
 import { canManageMembers } from './permissions.service';
+import { MEMBER_INCLUDE_WITH_USER } from './service-constants';
+import { verifyUserExists, verifyUsersExist } from '../utils/validation-helpers';
 
 // Constants
 
@@ -30,32 +32,11 @@ const ROLE_HIERARCHY: Record<MemberRole, number> = {
     [MemberRole.MEMBER]: 0,
 };
 
-const MEMBER_INCLUDE_WITH_USER = {
-    members: {
-        include: {
-            user: true,
-        },
-    },
-} as const;
+
 
 // Helper Functions
 
-// Verify that a user exists by ID
-const verifyUserExists = async (userId: string): Promise<User> => {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
 
-    if (!user) {
-        throw new NotFoundError(`User with ID ${userId}`);
-    }
-
-    return user;
-};
-
-// Verify that multiple users exist
-const verifyUsersExist = async (userIds: string[]): Promise<User[]> => {
-    const users = await Promise.all(userIds.map(verifyUserExists));
-    return users;
-};
 
 // Get conversation by ID with members and users or throw
 const findConversationWithMembers = async (

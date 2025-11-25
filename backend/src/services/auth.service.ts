@@ -4,20 +4,19 @@ import { RegisterDto, LoginDto, AuthResponse, UserResponse } from '../domain';
 import { validateOrThrow, validateRegistration, validateLogin } from '../utils';
 import { hashPassword, comparePassword } from './password.service';
 import { generateToken } from './token.service';
-import { 
-  createUser, 
-  findUserByName as findUserByNameService, 
-  findUserById 
+import {
+  createUser,
+  findUserByName as findUserByNameService,
+  findUserById
 } from './user.service';
-import { 
-  AuthenticationError, 
+import {
+  AuthenticationError,
   ConflictError,
-  NotFoundError 
+  NotFoundError
 } from '../middleware';
+import { verifyUserExists } from '../utils/validation-helpers';
 
-/**
- * Map User entity to UserResponse DTO
- */
+// Map User entity to UserResponse DTO
 export const mapUserToResponse = (user: User): UserResponse => {
   return {
     id: user.id,
@@ -29,9 +28,7 @@ export const mapUserToResponse = (user: User): UserResponse => {
   };
 };
 
-/**
- * Register a new user with name and password
- */
+// Register a new user with name and password
 export const register = async (dto: RegisterDto): Promise<AuthResponse> => {
   // Validate input
   validateOrThrow(
@@ -69,9 +66,7 @@ export const register = async (dto: RegisterDto): Promise<AuthResponse> => {
   };
 };
 
-/**
- * Login user with name and password
- */
+// Login user with name and password
 export const login = async (dto: LoginDto): Promise<AuthResponse> => {
   // Validate input
   validateOrThrow(
@@ -81,7 +76,7 @@ export const login = async (dto: LoginDto): Promise<AuthResponse> => {
 
   // Find user by name
   const user = await findUserByNameService(dto.name);
-  
+
   if (!user) {
     throw new AuthenticationError('Invalid credentials');
   }
@@ -93,7 +88,7 @@ export const login = async (dto: LoginDto): Promise<AuthResponse> => {
 
   // Verify password
   const isPasswordValid = await comparePassword(dto.password, user.passwordHash);
-  
+
   if (!isPasswordValid) {
     throw new AuthenticationError('Invalid credentials');
   }
@@ -110,28 +105,17 @@ export const login = async (dto: LoginDto): Promise<AuthResponse> => {
   };
 };
 
-/**
- * Verify user authentication and return user
- */
+// Verify user authentication and return user
 export const verifyUser = async (userId: string): Promise<User> => {
-  const user = await findUserById(userId);
-  
-  if (!user) {
-    throw new NotFoundError('User');
-  }
-  
-  return user;
+  return verifyUserExists(userId);
 };
 
-/**
- * Refresh token for a user
- */
+// Refresh token for a user
 export const refreshToken = async (userId: string): Promise<string> => {
   const user = await verifyUser(userId);
-  
+
   return generateToken({
     userId: user.id,
     name: user.name,
   });
 };
-
