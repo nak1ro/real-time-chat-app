@@ -139,6 +139,10 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
         MessageDeliveryStatus.SENT
     );
 
+    // Create NEW_MESSAGE notifications for conversation members
+    // (Notifications will be sent via socket in the handler)
+    // This is handled in the socket layer to include notification IDs
+
     return { ...result, mentionedUserIds };
 };
 

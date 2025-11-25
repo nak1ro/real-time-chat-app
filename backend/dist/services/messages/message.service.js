@@ -98,6 +98,9 @@ const createMessage = async (data) => {
     });
     // Create SENT receipts for all other conversation members
     await (0, receipt_service_1.createReceiptForRecipients)(result.id, conversationId, userId, client_1.MessageDeliveryStatus.SENT);
+    // Create NEW_MESSAGE notifications for conversation members
+    // (Notifications will be sent via socket in the handler)
+    // This is handled in the socket layer to include notification IDs
     return { ...result, mentionedUserIds };
 };
 exports.createMessage = createMessage;

@@ -6,6 +6,7 @@ const socket_messages_1 = require("./socket.messages");
 const socket_presence_1 = require("./socket.presence");
 const socket_receipts_1 = require("./socket.receipts");
 const socket_reactions_1 = require("./socket.reactions");
+const socket_notifications_1 = require("./socket.notifications");
 const socket_utils_1 = require("../core/socket.utils");
 // Register all event handlers for a socket connection
 const handleConnection = async (io, socket) => {
@@ -18,6 +19,7 @@ const handleConnection = async (io, socket) => {
     registerPresenceHandlers(io, socket);
     registerReceiptHandlers(io, socket);
     registerReactionHandlers(io, socket);
+    registerNotificationHandlers(io, socket);
     registerDisconnectionHandlers(io, socket, userName, userId);
 };
 exports.handleConnection = handleConnection;
@@ -74,9 +76,14 @@ const registerReceiptHandlers = (io, socket) => {
 };
 // Register reaction-related event handlers
 const registerReactionHandlers = (io, socket) => {
-    socket.on(socket_utils_1.SOCKET_EVENTS.REACTION_TOGGLE, (data, callback) => {
-        (0, socket_reactions_1.handleToggleReaction)(io, socket, data, callback);
-    });
+    socket.on(socket_utils_1.SOCKET_EVENTS.REACTION_TOGGLE, (data, callback) => (0, socket_reactions_1.handleToggleReaction)(io, socket, data, callback));
+};
+// Register notification-related event handlers
+const registerNotificationHandlers = (io, socket) => {
+    socket.on(socket_utils_1.SOCKET_EVENTS.NOTIFICATION_GET_ALL, (data, callback) => (0, socket_notifications_1.handleGetNotifications)(socket, data, callback));
+    socket.on(socket_utils_1.SOCKET_EVENTS.NOTIFICATION_GET_UNREAD_COUNT, (callback) => (0, socket_notifications_1.handleGetUnreadCount)(socket, callback));
+    socket.on(socket_utils_1.SOCKET_EVENTS.NOTIFICATION_MARK_READ, (data, callback) => (0, socket_notifications_1.handleMarkNotificationRead)(io, socket, data, callback));
+    socket.on(socket_utils_1.SOCKET_EVENTS.NOTIFICATION_MARK_ALL_READ, (callback) => (0, socket_notifications_1.handleMarkAllNotificationsRead)(io, socket, callback));
 };
 // Register disconnection and error handlers
 const registerDisconnectionHandlers = (io, socket, userName, userId) => {

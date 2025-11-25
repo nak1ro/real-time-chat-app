@@ -11,6 +11,8 @@ import {
     getErrorMessage,
 } from '../core/socket.utils';
 import { notifyMentionedUsers } from './socket.mentions';
+import { createNotificationsForMembers } from '../../services/messages/notification.service';
+import { notifyUser } from './socket.notifications';
 
 // Handle message:send event
 export const handleMessageSend = async (
@@ -39,6 +41,27 @@ export const handleMessageSend = async (
 
         // Notify mentioned users
         notifyMentionedUsers(io, message, message.mentionedUserIds);
+
+        // Create and broadcast NEW_MESSAGE notifications
+        try {
+            const notifications = await createNotificationsForMembers(
+                data.conversationId,
+                userId,
+                'NEW_MESSAGE',
+                {
+                    messageId: message.id,
+                    actorName: socket.data.userName,
+                    messageText: message.text.substring(0, 100),
+                }
+            );
+
+            // Notify each recipient
+            notifications.forEach((notification) => {
+                notifyUser(io, notification.userId, notification);
+            });
+        } catch (notifError) {
+            console.error('Failed to create message notifications:', notifError);
+        }
 
         console.log(`Message sent to ${data.conversationId} by user ${userId}`);
 

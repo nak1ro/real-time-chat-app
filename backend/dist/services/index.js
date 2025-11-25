@@ -31,6 +31,7 @@ __exportStar(require("./messages/mention.service"), exports);
 __exportStar(require("./messages/reaction.service"), exports);
 __exportStar(require("./messages/receipt.service"), exports);
 __exportStar(require("./messages/attachment.service"), exports);
+__exportStar(require("./messages/notification.service"), exports);
 // Shared
 __exportStar(require("./shared/s3.service"), exports);
 __exportStar(require("./shared/service-constants"), exports);

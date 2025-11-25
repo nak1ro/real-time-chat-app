@@ -18,6 +18,7 @@ export * from './messages/mention.service';
 export * from './messages/reaction.service';
 export * from './messages/receipt.service';
 export * from './messages/attachment.service';
+export * from './messages/notification.service';
 
 // Shared
 export * from './shared/s3.service';

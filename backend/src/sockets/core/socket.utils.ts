@@ -39,6 +39,14 @@ export const SOCKET_EVENTS = {
     // Reactions
     REACTION_TOGGLE: 'reaction:toggle',
     REACTION_UPDATED: 'reaction:updated',
+
+    // Notifications
+    NOTIFICATION_NEW: 'notification:new',
+    NOTIFICATION_GET_ALL: 'notification:getAll',
+    NOTIFICATION_GET_UNREAD_COUNT: 'notification:getUnreadCount',
+    NOTIFICATION_MARK_READ: 'notification:markRead',
+    NOTIFICATION_MARK_ALL_READ: 'notification:markAllRead',
+    NOTIFICATION_COUNT_UPDATED: 'notification:countUpdated',
 } as const;
 
 // Create success response

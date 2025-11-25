@@ -5,6 +5,8 @@ const message_service_1 = require("../../services/messages/message.service");
 const socket_rooms_1 = require("./socket.rooms");
 const socket_utils_1 = require("../core/socket.utils");
 const socket_mentions_1 = require("./socket.mentions");
+const notification_service_1 = require("../../services/messages/notification.service");
+const socket_notifications_1 = require("./socket.notifications");
 // Handle message:send event
 const handleMessageSend = async (io, socket, data, callback) => {
     const { userId } = socket.data;
@@ -22,6 +24,21 @@ const handleMessageSend = async (io, socket, data, callback) => {
         io.to(data.conversationId).emit(socket_utils_1.SOCKET_EVENTS.MESSAGE_NEW, message);
         // Notify mentioned users
         (0, socket_mentions_1.notifyMentionedUsers)(io, message, message.mentionedUserIds);
+        // Create and broadcast NEW_MESSAGE notifications
+        try {
+            const notifications = await (0, notification_service_1.createNotificationsForMembers)(data.conversationId, userId, 'NEW_MESSAGE', {
+                messageId: message.id,
+                actorName: socket.data.userName,
+                messageText: message.text.substring(0, 100),
+            });
+            // Notify each recipient
+            notifications.forEach((notification) => {
+                (0, socket_notifications_1.notifyUser)(io, notification.userId, notification);
+            });
+        }
+        catch (notifError) {
+            console.error('Failed to create message notifications:', notifError);
+        }
         console.log(`Message sent to ${data.conversationId} by user ${userId}`);
         (0, socket_utils_1.invokeCallback)(callback, (0, socket_utils_1.createSuccessResponse)({ message }));
     }

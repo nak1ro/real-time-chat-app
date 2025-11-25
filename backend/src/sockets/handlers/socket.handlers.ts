@@ -20,6 +20,12 @@ import {
     handleGetReadStats,
 } from './socket.receipts';
 import { handleToggleReaction } from './socket.reactions';
+import {
+    handleGetNotifications,
+    handleGetUnreadCount,
+    handleMarkNotificationRead,
+    handleMarkAllNotificationsRead,
+} from './socket.notifications';
 import { SOCKET_EVENTS, createSuccessResponse, invokeCallback } from '../core/socket.utils';
 
 // Register all event handlers for a socket connection
@@ -41,6 +47,8 @@ export const handleConnection = async (io: Server, socket: AuthenticatedSocket):
     registerReceiptHandlers(io, socket);
 
     registerReactionHandlers(io, socket);
+
+    registerNotificationHandlers(io, socket);
 
     registerDisconnectionHandlers(io, socket, userName, userId);
 };
@@ -109,9 +117,28 @@ const registerReceiptHandlers = (io: Server, socket: AuthenticatedSocket): void 
 
 // Register reaction-related event handlers
 const registerReactionHandlers = (io: Server, socket: AuthenticatedSocket): void => {
-    socket.on(SOCKET_EVENTS.REACTION_TOGGLE, (data, callback) => {
-        handleToggleReaction(io, socket, data, callback);
-    });
+    socket.on(SOCKET_EVENTS.REACTION_TOGGLE, (data, callback) =>
+        handleToggleReaction(io, socket, data, callback)
+    );
+};
+
+// Register notification-related event handlers
+const registerNotificationHandlers = (io: Server, socket: AuthenticatedSocket): void => {
+    socket.on(SOCKET_EVENTS.NOTIFICATION_GET_ALL, (data, callback) =>
+        handleGetNotifications(socket, data, callback)
+    );
+
+    socket.on(SOCKET_EVENTS.NOTIFICATION_GET_UNREAD_COUNT, (callback) =>
+        handleGetUnreadCount(socket, callback)
+    );
+
+    socket.on(SOCKET_EVENTS.NOTIFICATION_MARK_READ, (data, callback) =>
+        handleMarkNotificationRead(io, socket, data, callback)
+    );
+
+    socket.on(SOCKET_EVENTS.NOTIFICATION_MARK_ALL_READ, (callback) =>
+        handleMarkAllNotificationsRead(io, socket, callback)
+    );
 };
 
 // Register disconnection and error handlers

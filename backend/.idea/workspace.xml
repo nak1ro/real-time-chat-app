@@ -6,33 +6,17 @@
   <component name="ChangeListManager">
     <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/sockets/socket.mentions.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/sockets/socket.mentions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/services/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/services/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/services/messages/message.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/services/messages/message.service.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/sockets/core/socket.utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/sockets/core/socket.utils.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/sockets/handlers/socket.handlers.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/sockets/handlers/socket.handlers.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/sockets/handlers/socket.messages.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/sockets/handlers/socket.messages.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/attachment.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/auth.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/conversation.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/mention.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/message.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/moderation.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/password.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/permissions.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/presence.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/reaction.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/receipt.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/s3.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/service-constants.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/token.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/user.service.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.auth.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.handlers.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.mentions.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.messages.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.presence.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.reactions.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.receipts.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.rooms.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.types.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sockets/socket.utils.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/messages/message.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/messages/message.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sockets/core/socket.utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/sockets/core/socket.utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sockets/handlers/socket.handlers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/sockets/handlers/socket.handlers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sockets/handlers/socket.messages.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/sockets/handlers/socket.messages.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
