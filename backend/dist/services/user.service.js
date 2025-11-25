@@ -11,7 +11,6 @@ const findUserById = async (userId, options = {}) => {
         include: {
             messages: options.includeMessages ?? false,
             conversations: options.includeConversations ?? false,
-            devices: options.includeDevices ?? false,
         },
     });
 };
@@ -25,9 +24,7 @@ const findUserByName = async (name) => {
 exports.findUserByName = findUserByName;
 // Check if user exists by name
 const userExistsByName = async (name) => {
-    const user = await prisma_1.prisma.user.findFirst({
-        where: { name },
-    });
+    const user = await (0, exports.findUserByName)(name);
     return user !== null;
 };
 exports.userExistsByName = userExistsByName;

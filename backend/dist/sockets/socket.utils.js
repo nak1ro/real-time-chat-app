@@ -28,6 +28,9 @@ exports.SOCKET_EVENTS = {
     RECEIPT_DELIVERED: 'receipt:delivered',
     RECEIPT_UPDATE: 'receipt:update',
     RECEIPT_GET_STATS: 'receipt:getStats',
+    // Reactions
+    REACTION_TOGGLE: 'reaction:toggle',
+    REACTION_UPDATED: 'reaction:updated',
 };
 // Create success response
 const createSuccessResponse = (data) => ({

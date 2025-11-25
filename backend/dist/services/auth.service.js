@@ -6,9 +6,8 @@ const password_service_1 = require("./password.service");
 const token_service_1 = require("./token.service");
 const user_service_1 = require("./user.service");
 const middleware_1 = require("../middleware");
-/**
- * Map User entity to UserResponse DTO
- */
+const validation_helpers_1 = require("../utils/validation-helpers");
+// Map User entity to UserResponse DTO
 const mapUserToResponse = (user) => {
     return {
         id: user.id,
@@ -20,9 +19,7 @@ const mapUserToResponse = (user) => {
     };
 };
 exports.mapUserToResponse = mapUserToResponse;
-/**
- * Register a new user with name and password
- */
+// Register a new user with name and password
 const register = async (dto) => {
     // Validate input
     (0, utils_1.validateOrThrow)(() => (0, utils_1.validateRegistration)(dto), 'Registration validation failed');
@@ -52,9 +49,7 @@ const register = async (dto) => {
     };
 };
 exports.register = register;
-/**
- * Login user with name and password
- */
+// Login user with name and password
 const login = async (dto) => {
     // Validate input
     (0, utils_1.validateOrThrow)(() => (0, utils_1.validateLogin)(dto), 'Login validation failed');
@@ -83,20 +78,12 @@ const login = async (dto) => {
     };
 };
 exports.login = login;
-/**
- * Verify user authentication and return user
- */
+// Verify user authentication and return user
 const verifyUser = async (userId) => {
-    const user = await (0, user_service_1.findUserById)(userId);
-    if (!user) {
-        throw new middleware_1.NotFoundError('User');
-    }
-    return user;
+    return (0, validation_helpers_1.verifyUserExists)(userId);
 };
 exports.verifyUser = verifyUser;
-/**
- * Refresh token for a user
- */
+// Refresh token for a user
 const refreshToken = async (userId) => {
     const user = await (0, exports.verifyUser)(userId);
     return (0, token_service_1.generateToken)({

@@ -6,30 +6,7 @@ const middleware_1 = require("../middleware");
 const permissions_service_1 = require("./permissions.service");
 const message_service_1 = require("./message.service");
 const conversation_service_1 = require("./conversation.service");
-// Helper Functions
-// Verify user exists
-const verifyUserExists = async (userId) => {
-    const user = await prisma_1.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-        throw new middleware_1.NotFoundError(`User with ID ${userId}`);
-    }
-};
-// Verify conversation exists
-const verifyConversationExists = async (conversationId) => {
-    const conversation = await prisma_1.prisma.conversation.findUnique({
-        where: { id: conversationId },
-    });
-    if (!conversation) {
-        throw new middleware_1.NotFoundError('Conversation');
-    }
-};
-// Verify message exists
-const verifyMessageExists = async (messageId) => {
-    const message = await prisma_1.prisma.message.findUnique({ where: { id: messageId } });
-    if (!message) {
-        throw new middleware_1.NotFoundError('Message');
-    }
-};
+const validation_helpers_1 = require("../utils/validation-helpers");
 // Public API
 // Apply a moderation action
 const applyModerationAction = async (params) => {
@@ -40,7 +17,7 @@ const applyModerationAction = async (params) => {
         throw new middleware_1.AuthorizationError('Only OWNER or ADMIN can perform moderation actions');
     }
     // Verify conversation exists
-    await verifyConversationExists(conversationId);
+    await (0, validation_helpers_1.verifyConversationExists)(conversationId);
     // Handle each action type
     switch (action) {
         case 'BAN':
@@ -73,7 +50,7 @@ const handleBan = async (params) => {
     if (!targetUserId) {
         throw new middleware_1.BadRequestError('targetUserId is required for BAN action');
     }
-    await verifyUserExists(targetUserId);
+    await (0, validation_helpers_1.verifyUserExists)(targetUserId);
     // Check if user is already banned
     const existingBan = await prisma_1.prisma.channelBan.findUnique({
         where: {
@@ -116,7 +93,7 @@ const handleUnban = async (params) => {
     if (!targetUserId) {
         throw new middleware_1.BadRequestError('targetUserId is required for UNBAN action');
     }
-    await verifyUserExists(targetUserId);
+    await (0, validation_helpers_1.verifyUserExists)(targetUserId);
     // Find active ban
     const ban = await prisma_1.prisma.channelBan.findUnique({
         where: {
@@ -158,7 +135,7 @@ const handleMute = async (params) => {
     if (!targetUserId) {
         throw new middleware_1.BadRequestError('targetUserId is required for MUTE action');
     }
-    await verifyUserExists(targetUserId);
+    await (0, validation_helpers_1.verifyUserExists)(targetUserId);
     // Create moderation action
     return await prisma_1.prisma.moderationAction.create({
         data: {
@@ -177,7 +154,7 @@ const handleUnmute = async (params) => {
     if (!targetUserId) {
         throw new middleware_1.BadRequestError('targetUserId is required for UNMUTE action');
     }
-    await verifyUserExists(targetUserId);
+    await (0, validation_helpers_1.verifyUserExists)(targetUserId);
     // Create moderation action (unmute is recorded as action)
     return await prisma_1.prisma.moderationAction.create({
         data: {
@@ -195,7 +172,7 @@ const handleDeleteMessage = async (params) => {
     if (!messageId) {
         throw new middleware_1.BadRequestError('messageId is required for DELETE_MESSAGE action');
     }
-    await verifyMessageExists(messageId);
+    await (0, validation_helpers_1.verifyMessageExists)(messageId);
     // Delete message and create moderation action
     await (0, message_service_1.softDeleteMessage)(messageId, actorId);
     // Create moderation action record
@@ -215,7 +192,7 @@ const handleMakeAdmin = async (params) => {
     if (!targetUserId) {
         throw new middleware_1.BadRequestError('targetUserId is required for MAKE_ADMIN action');
     }
-    await verifyUserExists(targetUserId);
+    await (0, validation_helpers_1.verifyUserExists)(targetUserId);
     // Update role through conversation service (handles hierarchy)
     await (0, conversation_service_1.updateMemberRole)(conversationId, actorId, targetUserId, 'ADMIN');
     // Create moderation action record
@@ -235,7 +212,7 @@ const handleRemoveAdmin = async (params) => {
     if (!targetUserId) {
         throw new middleware_1.BadRequestError('targetUserId is required for REMOVE_ADMIN action');
     }
-    await verifyUserExists(targetUserId);
+    await (0, validation_helpers_1.verifyUserExists)(targetUserId);
     // Update role through conversation service (handles hierarchy)
     await (0, conversation_service_1.updateMemberRole)(conversationId, actorId, targetUserId, 'MEMBER');
     // Create moderation action record

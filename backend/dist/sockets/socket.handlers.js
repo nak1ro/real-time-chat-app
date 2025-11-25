@@ -5,6 +5,7 @@ const socket_rooms_1 = require("./socket.rooms");
 const socket_messages_1 = require("./socket.messages");
 const socket_presence_1 = require("./socket.presence");
 const socket_receipts_1 = require("./socket.receipts");
+const socket_reactions_1 = require("./socket.reactions");
 const socket_utils_1 = require("./socket.utils");
 // Register all event handlers for a socket connection
 const handleConnection = async (io, socket) => {
@@ -16,6 +17,7 @@ const handleConnection = async (io, socket) => {
     registerMessageHandlers(io, socket);
     registerPresenceHandlers(io, socket);
     registerReceiptHandlers(io, socket);
+    registerReactionHandlers(io, socket);
     registerDisconnectionHandlers(io, socket, userName, userId);
 };
 exports.handleConnection = handleConnection;
@@ -68,6 +70,12 @@ const registerReceiptHandlers = (io, socket) => {
     });
     socket.on(socket_utils_1.SOCKET_EVENTS.RECEIPT_GET_STATS, (messageId, callback) => {
         (0, socket_receipts_1.handleGetReadStats)(socket, messageId, callback);
+    });
+};
+// Register reaction-related event handlers
+const registerReactionHandlers = (io, socket) => {
+    socket.on(socket_utils_1.SOCKET_EVENTS.REACTION_TOGGLE, (data, callback) => {
+        (0, socket_reactions_1.handleToggleReaction)(io, socket, data, callback);
     });
 };
 // Register disconnection and error handlers

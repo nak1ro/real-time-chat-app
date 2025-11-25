@@ -5,6 +5,8 @@ const client_1 = require("@prisma/client");
 const prisma_1 = require("../db/prisma");
 const middleware_1 = require("../middleware");
 const permissions_service_1 = require("./permissions.service");
+const service_constants_1 = require("./service-constants");
+const validation_helpers_1 = require("../utils/validation-helpers");
 // Constants
 const ALLOWED_UPDATE_ROLES = [client_1.MemberRole.OWNER, client_1.MemberRole.ADMIN];
 const ALLOWED_ADD_MEMBER_ROLES = [client_1.MemberRole.OWNER, client_1.MemberRole.ADMIN];
@@ -16,32 +18,12 @@ const ROLE_HIERARCHY = {
     [client_1.MemberRole.ADMIN]: 2,
     [client_1.MemberRole.MEMBER]: 0,
 };
-const MEMBER_INCLUDE_WITH_USER = {
-    members: {
-        include: {
-            user: true,
-        },
-    },
-};
 // Helper Functions
-// Verify that a user exists by ID
-const verifyUserExists = async (userId) => {
-    const user = await prisma_1.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-        throw new middleware_1.NotFoundError(`User with ID ${userId}`);
-    }
-    return user;
-};
-// Verify that multiple users exist
-const verifyUsersExist = async (userIds) => {
-    const users = await Promise.all(userIds.map(verifyUserExists));
-    return users;
-};
 // Get conversation by ID with members and users or throw
 const findConversationWithMembers = async (conversationId) => {
     const conversation = await prisma_1.prisma.conversation.findUnique({
         where: { id: conversationId },
-        include: MEMBER_INCLUDE_WITH_USER,
+        include: service_constants_1.MEMBER_INCLUDE_WITH_USER,
     });
     if (!conversation) {
         throw new middleware_1.NotFoundError('Conversation');
@@ -68,7 +50,7 @@ const findExistingDirectConversation = async (userId1, userId2) => {
                 some: { userId: userId1 },
             },
         },
-        include: MEMBER_INCLUDE_WITH_USER,
+        include: service_constants_1.MEMBER_INCLUDE_WITH_USER,
     });
     return (conversations.find((conv) => {
         const memberIds = conv.members.map((m) => m.userId);
@@ -170,7 +152,7 @@ const createDirectConversation = async (currentUserId, otherUserId) => {
     if (currentUserId === otherUserId) {
         throw new middleware_1.BadRequestError('Cannot create a direct conversation with yourself');
     }
-    const [currentUser, otherUser] = await verifyUsersExist([currentUserId, otherUserId]);
+    const [currentUser, otherUser] = await (0, validation_helpers_1.verifyUsersExist)([currentUserId, otherUserId]);
     const existingConversation = await findExistingDirectConversation(currentUserId, otherUserId);
     if (existingConversation) {
         return existingConversation;
@@ -187,7 +169,7 @@ const createDirectConversation = async (currentUserId, otherUserId) => {
                 ],
             },
         },
-        include: MEMBER_INCLUDE_WITH_USER,
+        include: service_constants_1.MEMBER_INCLUDE_WITH_USER,
     });
 };
 exports.createDirectConversation = createDirectConversation;
@@ -196,7 +178,7 @@ const createGroupOrChannelConversation = async (currentUserId, data) => {
     if (data.type !== 'GROUP' && data.type !== 'CHANNEL') {
         throw new middleware_1.BadRequestError('Conversation type must be GROUP or CHANNEL');
     }
-    await verifyUserExists(currentUserId);
+    await (0, validation_helpers_1.verifyUserExists)(currentUserId);
     return prisma_1.prisma.conversation.create({
         data: {
             name: data.name,
@@ -214,7 +196,7 @@ const createGroupOrChannelConversation = async (currentUserId, data) => {
                 },
             },
         },
-        include: MEMBER_INCLUDE_WITH_USER,
+        include: service_constants_1.MEMBER_INCLUDE_WITH_USER,
     });
 };
 exports.createGroupOrChannelConversation = createGroupOrChannelConversation;
@@ -222,7 +204,7 @@ exports.createGroupOrChannelConversation = createGroupOrChannelConversation;
 const findConversationById = async (conversationId, includeMembers = false) => {
     return prisma_1.prisma.conversation.findUnique({
         where: { id: conversationId },
-        include: includeMembers ? MEMBER_INCLUDE_WITH_USER : undefined,
+        include: includeMembers ? service_constants_1.MEMBER_INCLUDE_WITH_USER : undefined,
     });
 };
 exports.findConversationById = findConversationById;
@@ -231,7 +213,7 @@ const listUserConversations = async (userId, filters) => {
     const where = buildConversationWhereClause(userId, filters);
     return prisma_1.prisma.conversation.findMany({
         where,
-        include: MEMBER_INCLUDE_WITH_USER,
+        include: service_constants_1.MEMBER_INCLUDE_WITH_USER,
         orderBy: { updatedAt: 'desc' },
     });
 };
@@ -259,7 +241,7 @@ const updateConversation = async (conversationId, actorId, patch) => {
             isPublic: patch.isPublic,
             isReadOnly: patch.isReadOnly,
         },
-        include: MEMBER_INCLUDE_WITH_USER,
+        include: service_constants_1.MEMBER_INCLUDE_WITH_USER,
     });
 };
 exports.updateConversation = updateConversation;
@@ -290,7 +272,7 @@ const addConversationMembers = async (conversationId, actorId, userIds, role = c
         throw new middleware_1.BadRequestError('No valid users to add');
     }
     // Verify all new users exist
-    await verifyUsersExist(newUserIds);
+    await (0, validation_helpers_1.verifyUsersExist)(newUserIds);
     // Add members using a transaction
     await prisma_1.prisma.$transaction(newUserIds.map((userId) => prisma_1.prisma.conversationMember.create({
         data: {

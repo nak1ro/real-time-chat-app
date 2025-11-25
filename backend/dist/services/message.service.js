@@ -7,70 +7,9 @@ const middleware_1 = require("../middleware");
 const receipt_service_1 = require("./receipt.service");
 const permissions_service_1 = require("./permissions.service");
 const attachment_service_1 = require("./attachment.service");
-// Constants
-const DEFAULT_PAGE_LIMIT = 50;
-const MAX_PAGE_LIMIT = 100;
-const DELETED_MESSAGE_PLACEHOLDER = '[Message deleted]';
-const MESSAGE_USER_SELECT = {
-    id: true,
-    name: true,
-    avatarUrl: true,
-    status: true,
-};
-const MESSAGE_REPLY_TO_INCLUDE = {
-    select: {
-        id: true,
-        text: true,
-        userId: true,
-        createdAt: true,
-        user: {
-            select: {
-                id: true,
-                name: true,
-                avatarUrl: true,
-            },
-        },
-    },
-};
-const MESSAGE_INCLUDE_WITH_RELATIONS = {
-    user: { select: MESSAGE_USER_SELECT },
-    replyTo: MESSAGE_REPLY_TO_INCLUDE,
-    attachments: true,
-    _count: {
-        select: { receipts: true },
-    },
-};
+const service_constants_1 = require("./service-constants");
+const validation_helpers_1 = require("../utils/validation-helpers");
 // Helper Functions
-// Get user's membership in a conversation or throw
-const getUserMembership = async (userId, conversationId) => {
-    const membership = await prisma_1.prisma.conversationMember.findFirst({
-        where: { userId, conversationId },
-    });
-    if (!membership) {
-        throw new middleware_1.AuthorizationError('You are not a member of this conversation');
-    }
-    return membership;
-};
-// Get conversation by ID or throw
-const getConversationOrThrow = async (conversationId) => {
-    const conversation = await prisma_1.prisma.conversation.findUnique({
-        where: { id: conversationId },
-    });
-    if (!conversation) {
-        throw new middleware_1.NotFoundError('Conversation');
-    }
-    return conversation;
-};
-// Get message by ID or throw
-const getMessageOrThrow = async (messageId) => {
-    const message = await prisma_1.prisma.message.findUnique({
-        where: { id: messageId },
-    });
-    if (!message) {
-        throw new middleware_1.NotFoundError('Message');
-    }
-    return message;
-};
 // Verify reply-to message is valid
 const verifyReplyToMessage = async (replyToId, conversationId) => {
     const replyToMessage = await prisma_1.prisma.message.findUnique({
@@ -134,7 +73,7 @@ const createMessage = async (data) => {
                 conversationId,
                 replyToId,
             },
-            include: MESSAGE_INCLUDE_WITH_RELATIONS,
+            include: service_constants_1.MESSAGE_INCLUDE_WITH_RELATIONS,
         });
         // Attach files if provided
         if (attachments && attachments.length > 0) {
@@ -159,9 +98,9 @@ const createMessage = async (data) => {
 exports.createMessage = createMessage;
 // Get messages for a conversation with pagination
 const getConversationMessages = async (conversationId, userId, pagination) => {
-    await getConversationOrThrow(conversationId);
-    await getUserMembership(userId, conversationId);
-    const limit = Math.min(pagination?.limit || DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT);
+    await (0, validation_helpers_1.verifyConversationExists)(conversationId);
+    await (0, validation_helpers_1.verifyMembership)(userId, conversationId);
+    const limit = Math.min(pagination?.limit || service_constants_1.DEFAULT_PAGE_LIMIT, service_constants_1.MAX_PAGE_LIMIT);
     const sortOrder = pagination?.sortOrder || 'desc';
     const cursor = pagination?.cursor;
     const where = buildPaginationWhereClause(conversationId, cursor);
@@ -169,7 +108,7 @@ const getConversationMessages = async (conversationId, userId, pagination) => {
         where,
         take: limit + 1,
         orderBy: [{ createdAt: sortOrder }, { id: sortOrder }],
-        include: MESSAGE_INCLUDE_WITH_RELATIONS,
+        include: service_constants_1.MESSAGE_INCLUDE_WITH_RELATIONS,
     });
     const hasMore = messages.length > limit;
     const returnMessages = hasMore ? messages.slice(0, limit) : messages;
@@ -186,7 +125,7 @@ exports.getConversationMessages = getConversationMessages;
 // Edit a message (author only)
 const editMessage = async (messageId, actorId, text) => {
     validateMessageText(text);
-    const message = await getMessageOrThrow(messageId);
+    const message = await (0, validation_helpers_1.verifyMessageExists)(messageId);
     if (message.deletedAt) {
         throw new middleware_1.BadRequestError('Cannot edit a deleted message');
     }
@@ -202,13 +141,13 @@ const editMessage = async (messageId, actorId, text) => {
             isEdited: true,
             editedAt: new Date(),
         },
-        include: MESSAGE_INCLUDE_WITH_RELATIONS,
+        include: service_constants_1.MESSAGE_INCLUDE_WITH_RELATIONS,
     });
 };
 exports.editMessage = editMessage;
 // Soft delete a message (author or elevated roles only for moderation)
 const softDeleteMessage = async (messageId, actorId) => {
-    const message = await getMessageOrThrow(messageId);
+    const message = await (0, validation_helpers_1.verifyMessageExists)(messageId);
     if (message.deletedAt) {
         throw new middleware_1.BadRequestError('Message is already deleted');
     }
@@ -221,9 +160,9 @@ const softDeleteMessage = async (messageId, actorId) => {
         where: { id: messageId },
         data: {
             deletedAt: new Date(),
-            text: DELETED_MESSAGE_PLACEHOLDER,
+            text: service_constants_1.DELETED_MESSAGE_PLACEHOLDER,
         },
-        include: MESSAGE_INCLUDE_WITH_RELATIONS,
+        include: service_constants_1.MESSAGE_INCLUDE_WITH_RELATIONS,
     });
 };
 exports.softDeleteMessage = softDeleteMessage;

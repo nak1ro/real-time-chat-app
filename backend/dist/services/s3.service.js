@@ -12,6 +12,11 @@ const s3Client = new client_s3_1.S3Client({
     },
 });
 const BUCKET_NAME = process.env.AWS_S3_BUCKET;
+// Helper Functions
+// Build S3 URL
+const buildS3Url = (filename) => {
+    return `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${filename}`;
+};
 // Upload file to S3
 const uploadToS3 = async (file, folder = 'attachments') => {
     const fileExtension = file.originalname.split('.').pop();
@@ -23,8 +28,7 @@ const uploadToS3 = async (file, folder = 'attachments') => {
         ContentType: file.mimetype,
     });
     await s3Client.send(command);
-    // Return public URL
-    return `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${filename}`;
+    return buildS3Url(filename);
 };
 exports.uploadToS3 = uploadToS3;
 // Upload buffer to S3 (for thumbnails)
@@ -36,6 +40,6 @@ const uploadBufferToS3 = async (buffer, filename, mimeType) => {
         ContentType: mimeType,
     });
     await s3Client.send(command);
-    return `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${filename}`;
+    return buildS3Url(filename);
 };
 exports.uploadBufferToS3 = uploadBufferToS3;

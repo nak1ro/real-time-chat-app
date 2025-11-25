@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isPasswordHashed = exports.comparePassword = exports.hashPassword = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const SALT_ROUNDS = 12;
+const BCRYPT_HASH_REGEX = /^\$2[aby]\$\d{2}\$.{53}$/;
 // Hash a plain text password
 const hashPassword = async (password) => {
     return bcrypt_1.default.hash(password, SALT_ROUNDS);
@@ -18,6 +19,6 @@ const comparePassword = async (password, hashedPassword) => {
 exports.comparePassword = comparePassword;
 // Check if a string is already a bcrypt hash
 const isPasswordHashed = (password) => {
-    return /^\$2[aby]\$\d{2}\$.{53}$/.test(password);
+    return BCRYPT_HASH_REGEX.test(password);
 };
 exports.isPasswordHashed = isPasswordHashed;

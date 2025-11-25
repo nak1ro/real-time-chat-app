@@ -1,15 +1,6 @@
-import { MessageDeliveryStatus } from '@prisma/client';
+import { MessageDeliveryStatus, MessageReceipt } from '@prisma/client';
 
-// Receipt with user information
-export interface ReceiptWithUser {
-    id: string;
-    messageId: string;
-    userId: string;
-    status: MessageDeliveryStatus;
-    deliveredAt: Date | null;
-    seenAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
+export interface ReceiptWithUser extends MessageReceipt {
     user: {
         id: string;
         name: string;
@@ -17,7 +8,6 @@ export interface ReceiptWithUser {
     };
 }
 
-// Receipt statistics for a message
 export interface MessageReadStats {
     messageId: string;
     totalRecipients: number;
@@ -31,7 +21,6 @@ export interface MessageReadStats {
     }>;
 }
 
-// Receipt update payload for socket events
 export interface ReceiptUpdatePayload {
     conversationId: string;
     messageId: string;
@@ -41,7 +30,6 @@ export interface ReceiptUpdatePayload {
     timestamp: Date;
 }
 
-// Bulk receipt update for marking multiple messages as read
 export interface BulkReceiptUpdate {
     conversationId: string;
     userId: string;
@@ -49,4 +37,3 @@ export interface BulkReceiptUpdate {
     messagesAffected: number;
     timestamp: Date;
 }
-

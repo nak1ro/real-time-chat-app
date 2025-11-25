@@ -4,31 +4,12 @@ exports.getUnreadMessageCount = exports.getMessageReceipts = exports.getMessageR
 const client_1 = require("@prisma/client");
 const prisma_1 = require("../db/prisma");
 const middleware_1 = require("../middleware");
-// Constants
-const USER_SELECT = {
-    id: true,
-    name: true,
-    avatarUrl: true,
-};
-const RECEIPT_INCLUDE_WITH_USER = {
-    user: {
-        select: USER_SELECT,
-    },
-};
+const service_constants_1 = require("./service-constants");
+const validation_helpers_1 = require("../utils/validation-helpers");
 // Helper Functions - Validation
 // Verify user membership in conversation
 const verifyUserIsMember = async (conversationId, userId) => {
-    const membership = await prisma_1.prisma.conversationMember.findUnique({
-        where: {
-            userId_conversationId: {
-                userId,
-                conversationId,
-            },
-        },
-    });
-    if (!membership) {
-        throw new middleware_1.AuthorizationError('Not a member of this conversation');
-    }
+    await (0, validation_helpers_1.verifyMembership)(userId, conversationId);
 };
 // Get and verify message exists
 const getMessageOrThrow = async (messageId) => {
@@ -101,20 +82,9 @@ const getMessageIdsInConversation = async (conversationId, upToMessageId) => {
     return await getAllMessageIds(conversationId);
 };
 // Helper Functions - Receipt Operations
-// Build receipt timestamp data based on status
-const buildReceiptTimestamps = (status) => {
-    const now = new Date();
-    if (status === client_1.MessageDeliveryStatus.READ) {
-        return { deliveredAt: now, seenAt: now };
-    }
-    if (status === client_1.MessageDeliveryStatus.DELIVERED) {
-        return { deliveredAt: now };
-    }
-    return {};
-};
 // Upsert a single receipt
 const upsertReceipt = async (messageId, userId, status) => {
-    const timestamps = buildReceiptTimestamps(status);
+    const timestamps = (0, service_constants_1.buildReceiptTimestamps)(status);
     await prisma_1.prisma.messageReceipt.upsert({
         where: {
             messageId_userId: {
@@ -238,7 +208,7 @@ const getMessageReadStats = async (messageId) => {
     await getMessageOrThrow(messageId);
     const receipts = await prisma_1.prisma.messageReceipt.findMany({
         where: { messageId },
-        include: RECEIPT_INCLUDE_WITH_USER,
+        include: service_constants_1.RECEIPT_INCLUDE_WITH_USER,
     });
     const stats = calculateReceiptStats(receipts);
     return {
@@ -253,7 +223,7 @@ const getMessageReceipts = async (messageId) => {
     await getMessageOrThrow(messageId);
     return await prisma_1.prisma.messageReceipt.findMany({
         where: { messageId },
-        include: RECEIPT_INCLUDE_WITH_USER,
+        include: service_constants_1.RECEIPT_INCLUDE_WITH_USER,
         orderBy: { updatedAt: 'desc' },
     });
 };

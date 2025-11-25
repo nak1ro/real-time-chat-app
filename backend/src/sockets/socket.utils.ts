@@ -6,14 +6,14 @@ export const SOCKET_EVENTS = {
     CONNECT: 'connection',
     DISCONNECT: 'disconnect',
     ERROR: 'error',
-    
+
     // Conversations
     CONVERSATION_JOIN: 'conversation:join',
     CONVERSATION_LEAVE: 'conversation:leave',
-    
+
     // Rooms
     ROOMS_GET: 'rooms:get',
-    
+
     // Messages
     MESSAGE_SEND: 'message:send',
     MESSAGE_EDIT: 'message:edit',
@@ -21,17 +21,21 @@ export const SOCKET_EVENTS = {
     MESSAGE_NEW: 'message:new',
     MESSAGE_UPDATED: 'message:updated',
     MESSAGE_DELETED: 'message:deleted',
-    
+
     // Presence
     PRESENCE_UPDATE: 'presence:update',
     PRESENCE_HEARTBEAT: 'presence:heartbeat',
     PRESENCE_GET: 'presence:get',
-    
+
     // Receipts
     RECEIPT_READ: 'receipt:read',
     RECEIPT_DELIVERED: 'receipt:delivered',
     RECEIPT_UPDATE: 'receipt:update',
     RECEIPT_GET_STATS: 'receipt:getStats',
+
+    // Reactions
+    REACTION_TOGGLE: 'reaction:toggle',
+    REACTION_UPDATED: 'reaction:updated',
 } as const;
 
 // Create success response
@@ -72,10 +76,10 @@ export const filterSocketRooms = (rooms: Set<string>, socketId: string): string[
 // Format conversation list for logging
 export const formatConversationList = (conversationIds: string[], maxDisplay: number = 3): string => {
     if (conversationIds.length === 0) return 'none';
-    
+
     const displayed = conversationIds.slice(0, maxDisplay);
     const remaining = conversationIds.length - maxDisplay;
-    
+
     return displayed.join(', ') + (remaining > 0 ? ` +${remaining} more` : '');
 };
 

@@ -5,17 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/services/auth.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/auth.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/conversation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/conversation.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/message.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/message.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/moderation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/moderation.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/password.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/password.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/permissions.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/permissions.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/presence.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/presence.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/receipt.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/receipt.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/s3.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/s3.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/token.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/token.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/user.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/user.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/domain/receipt.types.ts" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

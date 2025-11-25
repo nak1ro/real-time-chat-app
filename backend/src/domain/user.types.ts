@@ -16,7 +16,7 @@ export interface CreateUserData {
 export interface UserQueryOptions {
   includeMessages?: boolean;
   includeConversations?: boolean;
-  includeDevices?: boolean;
+
 }
 
 

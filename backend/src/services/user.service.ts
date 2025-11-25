@@ -14,7 +14,7 @@ export const findUserById = async (
         include: {
             messages: options.includeMessages ?? false,
             conversations: options.includeConversations ?? false,
-            devices: options.includeDevices ?? false,
+
         },
     });
 };

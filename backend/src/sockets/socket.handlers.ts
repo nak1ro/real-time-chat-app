@@ -19,6 +19,7 @@ import {
     handleMarkAsDelivered,
     handleGetReadStats,
 } from './socket.receipts';
+import { handleToggleReaction } from './socket.reactions';
 import { SOCKET_EVENTS, createSuccessResponse, invokeCallback } from './socket.utils';
 
 // Register all event handlers for a socket connection
@@ -38,6 +39,8 @@ export const handleConnection = async (io: Server, socket: AuthenticatedSocket):
     registerPresenceHandlers(io, socket);
 
     registerReceiptHandlers(io, socket);
+
+    registerReactionHandlers(io, socket);
 
     registerDisconnectionHandlers(io, socket, userName, userId);
 };
@@ -101,6 +104,13 @@ const registerReceiptHandlers = (io: Server, socket: AuthenticatedSocket): void 
 
     socket.on(SOCKET_EVENTS.RECEIPT_GET_STATS, (messageId, callback) => {
         handleGetReadStats(socket, messageId, callback);
+    });
+};
+
+// Register reaction-related event handlers
+const registerReactionHandlers = (io: Server, socket: AuthenticatedSocket): void => {
+    socket.on(SOCKET_EVENTS.REACTION_TOGGLE, (data, callback) => {
+        handleToggleReaction(io, socket, data, callback);
     });
 };
 
