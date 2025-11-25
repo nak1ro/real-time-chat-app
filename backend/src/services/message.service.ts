@@ -4,6 +4,7 @@ import { CreateMessageData, MessageWithRelations, PaginatedMessages, PaginationO
 import { AuthorizationError, BadRequestError, NotFoundError } from '../middleware';
 import { createReceiptForRecipients } from './receipt.service';
 import { canSendMessage, canModerateMessage } from './permissions.service';
+import { attachFilesToMessage, AttachmentData } from './attachment.service';
 
 // Constants
 
@@ -37,6 +38,7 @@ const MESSAGE_REPLY_TO_INCLUDE = {
 const MESSAGE_INCLUDE_WITH_RELATIONS = {
     user: { select: MESSAGE_USER_SELECT },
     replyTo: MESSAGE_REPLY_TO_INCLUDE,
+    attachments: true,
     _count: {
         select: { receipts: true },
     },
@@ -146,9 +148,10 @@ const buildPaginationWhereClause = (
 
 // Public API
 
+
 // Create a new message in a conversation
 export const createMessage = async (data: CreateMessageData): Promise<MessageWithRelations> => {
-    const { userId, conversationId, text, replyToId } = data;
+    const { userId, conversationId, text, replyToId, attachments } = data;
 
     validateMessageText(text);
 
@@ -172,6 +175,11 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
             },
             include: MESSAGE_INCLUDE_WITH_RELATIONS,
         });
+
+        // Attach files if provided
+        if (attachments && attachments.length > 0) {
+            await attachFilesToMessage(message.id, attachments as any);
+        }
 
         // Create READ receipt for the sender
         await tx.messageReceipt.create({

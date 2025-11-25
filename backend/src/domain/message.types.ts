@@ -38,6 +38,17 @@ export interface CreateMessageData {
     conversationId: string;
     text: string;
     replyToId?: string;
+    attachments?: Array<{
+        url: string;
+        thumbnailUrl?: string;
+        fileName: string;
+        mimeType: string;
+        sizeBytes: number;
+        type: string;
+        width?: number;
+        height?: number;
+        durationMs?: number;
+    }>;
 }
 
 // Pagination options for message queries

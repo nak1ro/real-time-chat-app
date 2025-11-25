@@ -24,3 +24,4 @@ __exportStar(require("./presence.service"), exports);
 __exportStar(require("./receipt.service"), exports);
 __exportStar(require("./permissions.service"), exports);
 __exportStar(require("./moderation.service"), exports);
+__exportStar(require("./attachment.service"), exports);

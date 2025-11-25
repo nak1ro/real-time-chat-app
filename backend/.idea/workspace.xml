@@ -5,11 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.env.development" beforeDir="false" afterPath="$PROJECT_DIR$/.env.development" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/services/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/services/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/services/permissions.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/services/permissions.service.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/services/message.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/services/message.service.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/domain/message.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/domain/message.types.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/services/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/permissions.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/permissions.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/message.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/message.service.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

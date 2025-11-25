@@ -8,4 +8,4 @@ export * from './presence.service';
 export * from './receipt.service';
 export * from './permissions.service';
 export * from './moderation.service';
-export * from './block.service';
+export * from './attachment.service';

@@ -6,6 +6,7 @@ const prisma_1 = require("../db/prisma");
 const middleware_1 = require("../middleware");
 const receipt_service_1 = require("./receipt.service");
 const permissions_service_1 = require("./permissions.service");
+const attachment_service_1 = require("./attachment.service");
 // Constants
 const DEFAULT_PAGE_LIMIT = 50;
 const MAX_PAGE_LIMIT = 100;
@@ -34,6 +35,7 @@ const MESSAGE_REPLY_TO_INCLUDE = {
 const MESSAGE_INCLUDE_WITH_RELATIONS = {
     user: { select: MESSAGE_USER_SELECT },
     replyTo: MESSAGE_REPLY_TO_INCLUDE,
+    attachments: true,
     _count: {
         select: { receipts: true },
     },
@@ -114,7 +116,7 @@ const buildPaginationWhereClause = (conversationId, cursor) => {
 // Public API
 // Create a new message in a conversation
 const createMessage = async (data) => {
-    const { userId, conversationId, text, replyToId } = data;
+    const { userId, conversationId, text, replyToId, attachments } = data;
     validateMessageText(text);
     // Verify user can send messages
     const canSend = await (0, permissions_service_1.canSendMessage)(userId, conversationId);
@@ -134,6 +136,10 @@ const createMessage = async (data) => {
             },
             include: MESSAGE_INCLUDE_WITH_RELATIONS,
         });
+        // Attach files if provided
+        if (attachments && attachments.length > 0) {
+            await (0, attachment_service_1.attachFilesToMessage)(message.id, attachments);
+        }
         // Create READ receipt for the sender
         await tx.messageReceipt.create({
             data: {
