@@ -31,12 +31,11 @@ export const updateCurrentUser = asyncHandler(async (req: Request, res: Response
     const userId = (req as any).user?.id;
     const { name, avatarUrl } = req.body;
 
-    // This would require an update service method
+    const user = await userService.updateUser(userId, { name, avatarUrl });
+
     res.status(200).json({
         status: 'success',
-        data: {
-            message: 'User update not fully implemented',
-        },
+        data: { user },
     });
 });
 

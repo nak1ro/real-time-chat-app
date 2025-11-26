@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createUser = exports.userExistsByName = exports.findUserByName = exports.findUserById = void 0;
+exports.updateUser = exports.createUser = exports.userExistsByName = exports.findUserByName = exports.findUserById = void 0;
 const client_1 = require("@prisma/client");
 const prisma_1 = require("../../db/prisma");
 const middleware_1 = require("../../middleware");
@@ -46,3 +46,23 @@ const createUser = async (data) => {
     });
 };
 exports.createUser = createUser;
+// Update user data
+const updateUser = async (userId, data) => {
+    // If updating name, check it's not taken by another user
+    if (data.name) {
+        const existingUser = await (0, exports.findUserByName)(data.name);
+        if (existingUser && existingUser.id !== userId) {
+            throw new middleware_1.ConflictError('A user with this name already exists', {
+                field: 'name',
+            });
+        }
+    }
+    return prisma_1.prisma.user.update({
+        where: { id: userId },
+        data: {
+            name: data.name,
+            avatarUrl: data.avatarUrl,
+        },
+    });
+};
+exports.updateUser = updateUser;

@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBulkPresences = exports.getUserPresence = void 0;
+exports.updatePresenceHeartbeat = exports.getBulkPresences = exports.getUserPresence = void 0;
 const middleware_1 = require("../../middleware");
 const presenceService = __importStar(require("../../services/users/presence.service"));
 // Get user presence
@@ -55,12 +55,23 @@ exports.getBulkPresences = (0, middleware_1.asyncHandler)(async (req, res) => {
         });
         return;
     }
-    const statuses = await Promise.all(userIds.map(async (userId) => ({
+    const statusMap = await presenceService.getUsersStatus(userIds);
+    // Convert Map to array format
+    const statuses = Array.from(statusMap.entries()).map(([userId, status]) => ({
         userId,
-        status: await presenceService.getUserStatus(userId),
-    })));
+        ...status,
+    }));
     res.status(200).json({
         status: 'success',
         data: { users: statuses },
+    });
+});
+// Update presence heartbeat
+exports.updatePresenceHeartbeat = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
+    await presenceService.updateLastSeen(userId);
+    res.status(200).json({
+        status: 'success',
+        data: { message: 'Heartbeat updated' },
     });
 });

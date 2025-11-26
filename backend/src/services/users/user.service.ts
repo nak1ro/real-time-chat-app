@@ -51,3 +51,28 @@ export const createUser = async (data: CreateUserData): Promise<User> => {
     });
 };
 
+// Update user data
+export const updateUser = async (
+    userId: string,
+    data: { name?: string; avatarUrl?: string }
+): Promise<User> => {
+    // If updating name, check it's not taken by another user
+    if (data.name) {
+        const existingUser = await findUserByName(data.name);
+        if (existingUser && existingUser.id !== userId) {
+            throw new ConflictError('A user with this name already exists', {
+                field: 'name',
+            });
+        }
+    }
+
+    return prisma.user.update({
+        where: { id: userId },
+        data: {
+            name: data.name,
+            avatarUrl: data.avatarUrl,
+        },
+    });
+};
+
+

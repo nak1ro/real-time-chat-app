@@ -26,15 +26,28 @@ export const getBulkPresences = asyncHandler(async (req: Request, res: Response)
         return;
     }
 
-    const statuses = await Promise.all(
-        userIds.map(async (userId: string) => ({
-            userId,
-            status: await presenceService.getUserStatus(userId),
-        }))
-    );
+    const statusMap = await presenceService.getUsersStatus(userIds);
+
+    // Convert Map to array format
+    const statuses = Array.from(statusMap.entries()).map(([userId, status]) => ({
+        userId,
+        ...status,
+    }));
 
     res.status(200).json({
         status: 'success',
         data: { users: statuses },
+    });
+});
+
+// Update presence heartbeat
+export const updatePresenceHeartbeat = asyncHandler(async (req: Request, res: Response) => {
+    const userId = (req as any).user?.id;
+
+    await presenceService.updateLastSeen(userId);
+
+    res.status(200).json({
+        status: 'success',
+        data: { message: 'Heartbeat updated' },
     });
 });
