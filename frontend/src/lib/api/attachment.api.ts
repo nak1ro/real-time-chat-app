@@ -1,4 +1,4 @@
-  // Attachment API - handles file attachment-related API calls
+// Attachment API - handles file attachment-related API calls
 import { apiClient } from './api-client';
 import type { Attachment } from '@/types';
 

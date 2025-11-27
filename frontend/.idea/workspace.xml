@@ -5,41 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e5da075b-33bd-4932-97ef-c5ebf4ee5470" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/lib/api/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/api-client.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/attachment.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/auth.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/conversation.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/mention.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/message.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/moderation.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/notification.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/reaction.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/receipt.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/api/user.api.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/api.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/auth.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/conversation.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/enums.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/mention.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/message.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/moderation.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/notification.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/reaction.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/receipt.types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/user.types.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/prisma/schema.prisma" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/env.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/env.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/config/app-config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/config/app-config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/theme/ThemeToggle.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/theme/ThemeToggle.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/routes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/api/attachment.api.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/api/auth.api.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/providers/ThemeProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/providers/ThemeProvider.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,7 +100,7 @@
       <option name="presentableId" value="Default" />
       <updated>1764180529171</updated>
       <workItem from="1764180530415" duration="3244000" />
-      <workItem from="1764193705169" duration="4094000" />
+      <workItem from="1764193705169" duration="4951000" />
     </task>
     <servers />
   </component>
