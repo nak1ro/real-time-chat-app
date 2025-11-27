@@ -1,9 +1,10 @@
 'use client';
 
 // Protected layout - requires authentication
-// Redirects to /login if not authenticated
+// Redirects to /auth if not authenticated
 import { ReactQueryProvider, AuthProvider } from '@/providers';
 import { AuthGuard } from '@/components/auth';
+import { AppNav, AppNavLayout } from '@/components/navigation';
 
 export default function ProtectedLayout({
   children,
@@ -14,12 +15,12 @@ export default function ProtectedLayout({
     <ReactQueryProvider>
       <AuthProvider>
         <AuthGuard>
-          <div className="min-h-screen bg-background">
+          <AppNav unreadNotifications={3} />
+          <AppNavLayout>
             {children}
-          </div>
+          </AppNavLayout>
         </AuthGuard>
       </AuthProvider>
     </ReactQueryProvider>
   );
 }
-

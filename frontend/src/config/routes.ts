@@ -11,9 +11,9 @@ export const publicRoutes = {
 // Protected routes (authentication required)
 export const protectedRoutes = {
   dashboard: '/dashboard',
-  chat: '/chat',
-  settings: '/settings',
+  chats: '/chats',
   notifications: '/notifications',
+  settings: '/settings',
 } as const;
 
 // Dynamic routes helpers

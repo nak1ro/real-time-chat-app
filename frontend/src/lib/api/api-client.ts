@@ -1,6 +1,6 @@
 // Base API Client with interceptors for auth, error handling, and response parsing
 import { env } from '@/config/env';
-import { getToken, clearToken } from '@/lib/auth/token-storage';
+import { getToken } from '@/lib/auth/token-storage';
 import type { ApiResponse, ApiError } from '@/types';
 
 // Custom error class for API errors
@@ -81,15 +81,6 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
   // Handle error responses
   if (!response.ok) {
-    // If token is invalid (401), clear it
-    if (response.status === 401) {
-      clearToken();
-      // Optionally redirect to login
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-    }
-
     const errorMessage = data?.message || `Request failed with status ${response.status}`;
     const errors = data?.errors;
 
