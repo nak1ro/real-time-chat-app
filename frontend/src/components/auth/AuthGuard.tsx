@@ -10,8 +10,8 @@ interface AuthGuardProps {
   redirectTo?: string;
 }
 
-// Auth guard component - redirects to login if not authenticated
-export function AuthGuard({ children, redirectTo = '/login' }: AuthGuardProps) {
+// Auth guard component - redirects to auth page if not authenticated
+export function AuthGuard({ children, redirectTo = '/auth' }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 

@@ -3,6 +3,7 @@
 // Public routes (no authentication required)
 export const publicRoutes = {
   home: '/',
+  auth: '/auth',
   login: '/login',
   register: '/register',
 } as const;
@@ -30,4 +31,4 @@ export const routes = {
 
 // Default redirects
 export const DEFAULT_LOGIN_REDIRECT = protectedRoutes.dashboard;
-export const DEFAULT_LOGOUT_REDIRECT = publicRoutes.login;
+export const DEFAULT_LOGOUT_REDIRECT = publicRoutes.auth;

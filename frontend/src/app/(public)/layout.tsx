@@ -14,9 +14,7 @@ export default function PublicLayout({
     <ReactQueryProvider>
       <AuthProvider>
         <GuestGuard>
-          <div className="min-h-screen bg-background">
-            {children}
-          </div>
+          {children}
         </GuestGuard>
       </AuthProvider>
     </ReactQueryProvider>

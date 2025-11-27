@@ -8,12 +8,12 @@ export const attachmentApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    return apiClient.upload<{ attachment: Attachment }>('/messages/attachments/upload', formData).then((res) => res.attachment);
+    return apiClient.upload<{ attachment: Attachment }>('/api/messages/attachments/upload', formData).then((res) => res.attachment);
   },
 
   // Get message attachments
   getMessageAttachments: (messageId: string) => {
-    return apiClient.get<{ attachments: Attachment[] }>(`/messages/messages/${messageId}/attachments`).then((res) => res.attachments);
+    return apiClient.get<{ attachments: Attachment[] }>(`/api/messages/messages/${messageId}/attachments`).then((res) => res.attachments);
   },
 };
 

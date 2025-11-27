@@ -9,12 +9,12 @@ import type {
 export const moderationApi = {
   // Apply moderation action
   applyModerationAction: (conversationId: string, data: ApplyModerationActionDto) => {
-    return apiClient.post<ApplyModerationActionResponse>(`/conversations/${conversationId}/moderation`, data);
+    return apiClient.post<ApplyModerationActionResponse>(`/api/conversations/${conversationId}/moderation`, data);
   },
 
   // Get active mute for user
   getActiveMute: (conversationId: string, userId: string) => {
-    return apiClient.get<ActiveMuteResponse>(`/conversations/${conversationId}/moderation/mutes/${userId}`);
+    return apiClient.get<ActiveMuteResponse>(`/api/conversations/${conversationId}/moderation/mutes/${userId}`);
   },
 };
 

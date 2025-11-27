@@ -9,12 +9,12 @@ import type {
 export const reactionApi = {
   // Toggle reaction (add or remove)
   toggleReaction: (messageId: string, data: ToggleReactionDto) => {
-    return apiClient.post<ToggleReactionResponse>(`/messages/messages/${messageId}/reactions`, data);
+    return apiClient.post<ToggleReactionResponse>(`/api/messages/messages/${messageId}/reactions`, data);
   },
 
   // Get message reactions
   getMessageReactions: (messageId: string) => {
-    return apiClient.get<GetReactionsResponse>(`/messages/messages/${messageId}/reactions`);
+    return apiClient.get<GetReactionsResponse>(`/api/messages/messages/${messageId}/reactions`);
   },
 };
 

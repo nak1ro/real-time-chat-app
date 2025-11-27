@@ -8,7 +8,7 @@ import type {
 export const mentionApi = {
   // Get user mentions (paginated)
   getUserMentions: (options?: MentionQueryOptions) => {
-    return apiClient.get<PaginatedMentionsResponse>('/messages/mentions', {
+    return apiClient.get<PaginatedMentionsResponse>('/api/messages/mentions', {
       params: options as any,
     });
   },

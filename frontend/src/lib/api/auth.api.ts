@@ -12,31 +12,31 @@ import type {
 export const authApi = {
   // Register a new user
   register: (data: RegisterDto) => {
-    return apiClient.post<AuthResponse>('/auth/register', data, {
+    return apiClient.post<AuthResponse>('/api/auth/register', data, {
       requiresAuth: false,
     });
   },
 
   // Login user
   login: (data: LoginDto) => {
-    return apiClient.post<AuthResponse>('/auth/login', data, {
+    return apiClient.post<AuthResponse>('/api/auth/login', data, {
       requiresAuth: false,
     });
   },
 
   // Get current authenticated user
   getCurrentUser: () => {
-    return apiClient.get<CurrentUserResponse>('/auth/me');
+    return apiClient.get<CurrentUserResponse>('/api/auth/me');
   },
 
   // Refresh authentication token
   refreshToken: () => {
-    return apiClient.post<TokenRefreshResponse>('/auth/refresh');
+    return apiClient.post<TokenRefreshResponse>('/api/auth/refresh');
   },
 
   // Logout user
   logout: () => {
-    return apiClient.post<LogoutResponse>('/auth/logout');
+    return apiClient.post<LogoutResponse>('/api/auth/logout');
   },
 };
 
