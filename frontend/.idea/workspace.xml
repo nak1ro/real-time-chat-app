@@ -8,15 +8,8 @@
       <change beforePath="$PROJECT_DIR$/../backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/prisma/schema.prisma" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/theme/ThemeToggle.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/theme/ThemeToggle.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/routes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/api/attachment.api.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/api/auth.api.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/providers/ThemeProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/providers/ThemeProvider.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,7 +93,7 @@
       <option name="presentableId" value="Default" />
       <updated>1764180529171</updated>
       <workItem from="1764180530415" duration="3244000" />
-      <workItem from="1764193705169" duration="4951000" />
+      <workItem from="1764193705169" duration="5325000" />
     </task>
     <servers />
   </component>
