@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="" />
+    <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/app/(protected)/chats/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/app/(protected)/chats/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/app/(protected)/notifications/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/app/(protected)/notifications/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/ChatFilter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/ChatFilter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/ChatListPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/ChatListPanel.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/mock-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/mock-data.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/types/notification.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/types/notification.types.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

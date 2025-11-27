@@ -1,7 +1,31 @@
 import { NotificationType } from './enums';
 import { UserBasic } from './user.types';
 
-// Notification
+// UI Notification Item (for display)
+export interface NotificationItem {
+  id: string;
+  type: NotificationType;
+  title: string;
+  preview?: string;
+  timestamp: Date;
+  conversationId?: string;
+  messageId?: string;
+  actor: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+}
+
+// Message-related notification types for filtering
+export const MESSAGE_NOTIFICATION_TYPES: NotificationType[] = [
+  NotificationType.NEW_MESSAGE,
+  NotificationType.MENTION,
+  NotificationType.REACTION,
+  NotificationType.REPLY,
+];
+
+// Notification (from backend)
 export interface Notification {
   id: string;
   userId: string;

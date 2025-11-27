@@ -64,6 +64,7 @@ export default function ChatsPage() {
       >
         {selectedChat ? (
           <ChatDetailPanel
+            key={selectedChat.id}
             chat={selectedChat}
             messages={selectedMessages}
             onBack={handleBack}

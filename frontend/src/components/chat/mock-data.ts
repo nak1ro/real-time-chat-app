@@ -195,6 +195,55 @@ export const mockMessages: Record<string, Message[]> = {
   ],
 };
 
+mockChats.push(
+    {
+      id: '9',
+      name: 'Marketing Squad',
+      type: 'group',
+      lastMessage: 'Dana: Final draft is ready for review!',
+      lastMessageTime: new Date(Date.now() - 4 * 60 * 60 * 1000),
+      unreadCount: 2,
+      isOnline: false,
+    },
+    {
+      id: '10',
+      name: 'Chris Dalton',
+      type: 'direct',
+      lastMessage: 'Let’s catch up this weekend!',
+      lastMessageTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      unreadCount: 0,
+      isOnline: true,
+    },
+    {
+      id: '11',
+      name: 'HR Announcements',
+      type: 'channel',
+      lastMessage: 'Reminder: Submit your timesheets.',
+      lastMessageTime: new Date(Date.now() - 8 * 60 * 60 * 1000),
+      unreadCount: 7,
+      isOnline: false,
+    },
+    {
+      id: '12',
+      name: 'DevOps Team',
+      type: 'group',
+      lastMessage: 'Sam: Deployment completed successfully.',
+      lastMessageTime: new Date(Date.now() - 6 * 60 * 60 * 1000),
+      unreadCount: 0,
+      isOnline: false,
+    },
+    {
+      id: '13',
+      name: 'Mia Roberts',
+      type: 'direct',
+      lastMessage: 'Can you send the file?',
+      lastMessageTime: new Date(Date.now() - 3 * 60 * 60 * 1000),
+      unreadCount: 1,
+      isOnline: false,
+    }
+);
+
+
 // Generate empty messages for other chats
 ['4', '5', '6', '7', '8'].forEach((chatId) => {
   if (!mockMessages[chatId]) {

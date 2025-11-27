@@ -16,19 +16,19 @@ export function ChatFilter({ value, onChange }: ChatFilterProps) {
       type="single"
       value={value}
       onValueChange={(v) => v && onChange(v as ChatFilterType)}
-      className="justify-start bg-muted/50 p-1 rounded-lg"
+      className="w-full bg-muted/50 p-1 rounded-lg"
     >
       <ToggleGroupItem
         value="all"
         size="sm"
-        className="text-xs px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+        className="flex-1 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm"
       >
         All
       </ToggleGroupItem>
       <ToggleGroupItem
         value="direct"
         size="sm"
-        className="text-xs px-2.5 gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+        className="flex-1 text-xs gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
       >
         <MessageCircle className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Direct</span>
@@ -36,7 +36,7 @@ export function ChatFilter({ value, onChange }: ChatFilterProps) {
       <ToggleGroupItem
         value="group"
         size="sm"
-        className="text-xs px-2.5 gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+        className="flex-1 text-xs gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
       >
         <Users className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Groups</span>
@@ -44,7 +44,7 @@ export function ChatFilter({ value, onChange }: ChatFilterProps) {
       <ToggleGroupItem
         value="channel"
         size="sm"
-        className="text-xs px-2.5 gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+        className="flex-1 text-xs gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
       >
         <Megaphone className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Channels</span>

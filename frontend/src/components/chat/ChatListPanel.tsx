@@ -2,7 +2,7 @@
 
 // Chat list panel component
 import { useState, useMemo } from 'react';
-import { Input, ScrollArea } from '@/components/ui';
+import { Input } from '@/components/ui';
 import { Search } from 'lucide-react';
 import { ChatListItem } from './ChatListItem';
 import { ChatFilter } from './ChatFilter';
@@ -39,7 +39,7 @@ export function ChatListPanel({ chats, selectedChatId, onSelectChat }: ChatListP
   return (
     <div className="flex flex-col h-full">
       {/* Search Input */}
-      <div className="p-3 space-y-3 border-b border-border">
+      <div className="sticky top-0 z-10 p-3 space-y-3 border-b border-border bg-background">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -54,7 +54,7 @@ export function ChatListPanel({ chats, selectedChatId, onSelectChat }: ChatListP
       </div>
 
       {/* Chat List */}
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="p-2 space-y-1">
           {filteredChats.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
@@ -71,7 +71,7 @@ export function ChatListPanel({ chats, selectedChatId, onSelectChat }: ChatListP
             ))
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }
