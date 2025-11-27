@@ -1,96 +1,51 @@
 'use client';
 
-// Dashboard page (protected)
+// Dashboard page - main authenticated view
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/theme';
-import Link from 'next/link';
+import { ProfileActionsCard, QuickStatsCard, PeopleOnlineCard } from '@/components/dashboard';
+import { LogOut } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
-    <div className="container mx-auto py-6 px-4">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            Logout
-          </Button>
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+          <h1 className="text-lg font-semibold">Dashboard</h1>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Welcome back!</CardTitle>
-            <CardDescription>You're logged in as {user?.name}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12 md:h-14 md:w-14">
-                <AvatarFallback className="text-base">
-                  {user?.name ? getInitials(user.name) : '?'}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium">{user?.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-6">
+        {/* Desktop: 2-column grid | Mobile: single column */}
+        <div className="grid gap-5 lg:grid-cols-12">
+          {/* Left Column: Profile & People Online */}
+          <div className="space-y-5 lg:col-span-5 xl:col-span-4">
+            <ProfileActionsCard />
+            <PeopleOnlineCard />
+          </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Quick Actions</CardTitle>
-            <CardDescription>Get started with these actions</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button variant="outline" size="sm" className="w-full justify-start" asChild>
-              <Link href="/chats">Start a new chat</Link>
-            </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start" asChild>
-              <Link href="/chats">Browse channels</Link>
-            </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start" asChild>
-              <Link href="/notifications">View notifications</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Status</CardTitle>
-            <CardDescription>Your current status</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-green-500" />
-              <span>Online</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Right Column: Quick Stats */}
+          <div className="lg:col-span-7 xl:col-span-8">
+            <QuickStatsCard />
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
-
