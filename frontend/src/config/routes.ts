@@ -3,8 +3,8 @@
 // Public routes (no authentication required)
 export const publicRoutes = {
   home: '/',
-  login: '/ (protected)/login',
-  register: '/ (protected)/register',
+  login: '/login',
+  register: '/register',
 } as const;
 
 // Protected routes (authentication required)
@@ -27,3 +27,7 @@ export const routes = {
   ...protectedRoutes,
   dynamic: dynamicRoutes,
 } as const;
+
+// Default redirects
+export const DEFAULT_LOGIN_REDIRECT = protectedRoutes.dashboard;
+export const DEFAULT_LOGOUT_REDIRECT = publicRoutes.login;
