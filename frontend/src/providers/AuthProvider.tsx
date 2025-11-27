@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { AuthContext, type AuthState } from '@/context/AuthContext';
 import { authApi } from '@/lib/api';
 import { getToken, setToken, clearToken } from '@/lib/auth/token-storage';
+import { queryKeys } from '@/lib/react-query/query-keys';
 import type { User, LoginDto, RegisterDto } from '@/types';
 
 interface AuthProviderProps {
@@ -11,6 +13,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const queryClient = useQueryClient();
   const [state, setState] = useState<AuthState>({
     user: null,
     token: null,
@@ -26,6 +29,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (storedToken) {
         try {
           const { user } = await authApi.getCurrentUser();
+          // Hydrate React Query cache
+          queryClient.setQueryData(queryKeys.auth.me(), user);
           setState({
             user,
             token: storedToken,
@@ -35,6 +40,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } catch (error) {
           // Token is invalid, clear it
           clearToken();
+          queryClient.removeQueries({ queryKey: queryKeys.auth.me() });
           setState({
             user: null,
             token: null,
@@ -48,7 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     initAuth();
-  }, []);
+  }, [queryClient]);
 
   // Login function
   const login = useCallback(async (credentials: LoginDto) => {
@@ -57,6 +63,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const { user, token } = await authApi.login(credentials);
       setToken(token);
+      // Hydrate React Query cache with user data
+      queryClient.setQueryData(queryKeys.auth.me(), user);
       setState({
         user,
         token,
@@ -67,7 +75,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setState((prev) => ({ ...prev, isLoading: false }));
       throw error;
     }
-  }, []);
+  }, [queryClient]);
 
   // Register function
   const register = useCallback(async (data: RegisterDto) => {
@@ -76,6 +84,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const { user, token } = await authApi.register(data);
       setToken(token);
+      // Hydrate React Query cache with user data
+      queryClient.setQueryData(queryKeys.auth.me(), user);
       setState({
         user,
         token,
@@ -86,7 +96,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setState((prev) => ({ ...prev, isLoading: false }));
       throw error;
     }
-  }, []);
+  }, [queryClient]);
 
   // Logout function
   const logout = useCallback(async () => {
@@ -96,6 +106,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Ignore logout errors
     } finally {
       clearToken();
+      // Clear React Query cache
+      queryClient.setQueryData(queryKeys.auth.me(), null);
+      queryClient.removeQueries({ queryKey: queryKeys.auth.all });
       setState({
         user: null,
         token: null,
@@ -103,7 +116,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isLoading: false,
       });
     }
-  }, []);
+  }, [queryClient]);
 
   // Get current user
   const getUser = useCallback(async (): Promise<User | null> => {
@@ -113,12 +126,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const { user } = await authApi.getCurrentUser();
+      queryClient.setQueryData(queryKeys.auth.me(), user);
       setState((prev) => ({ ...prev, user }));
       return user;
     } catch (error) {
       return null;
     }
-  }, [state.token]);
+  }, [state.token, queryClient]);
 
   // Refresh user data
   const refreshUser = useCallback(async () => {
@@ -128,12 +142,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const { user } = await authApi.getCurrentUser();
+      queryClient.setQueryData(queryKeys.auth.me(), user);
       setState((prev) => ({ ...prev, user }));
     } catch (error) {
       // Token might be expired, logout
       await logout();
     }
-  }, [state.token, logout]);
+  }, [state.token, queryClient, logout]);
 
   // Memoize context value
   const contextValue = useMemo(

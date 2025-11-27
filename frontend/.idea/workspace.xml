@@ -9,9 +9,10 @@
       <change beforePath="$PROJECT_DIR$/../backend/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/prisma/schema.prisma" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/tsconfig.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/context/AuthContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/AuthContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/react-query/query-client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/react-query/query-client.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/react-query/query-keys.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/react-query/query-keys.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/providers/AuthProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/providers/AuthProvider.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/providers/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/providers/ReactQueryProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/providers/ReactQueryProvider.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +96,7 @@
       <option name="presentableId" value="Default" />
       <updated>1764180529171</updated>
       <workItem from="1764180530415" duration="3244000" />
-      <workItem from="1764193705169" duration="6539000" />
+      <workItem from="1764193705169" duration="7823000" />
     </task>
     <servers />
   </component>
