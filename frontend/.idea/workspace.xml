@@ -9,11 +9,14 @@
       <change beforePath="$PROJECT_DIR$/../backend/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/prisma/schema.prisma" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/tsconfig.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/ (protected)/layout.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/ (protected)/login/page.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/ (protected)/register/page.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/ (public)/ layout.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/routes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/context/SocketContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/SocketContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/config/socket-config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/config/socket-config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/socket/events.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/socket/events.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/socket/listeners.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/socket/listeners.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/socket/socket-client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/socket/socket-client.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/providers/SocketProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/providers/SocketProvider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/providers/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/providers/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +100,7 @@
       <option name="presentableId" value="Default" />
       <updated>1764180529171</updated>
       <workItem from="1764180530415" duration="3244000" />
-      <workItem from="1764193705169" duration="9309000" />
+      <workItem from="1764193705169" duration="11790000" />
     </task>
     <servers />
   </component>

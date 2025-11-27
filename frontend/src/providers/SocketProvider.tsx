@@ -1,0 +1,169 @@
+'use client';
+
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { SocketContext, type SocketStatus } from '@/context/SocketContext';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  createSocket,
+  getSocket,
+  disconnectSocket,
+  type TypedSocket,
+} from '@/lib/socket/socket-client';
+import { SOCKET_EVENTS, type SocketResponse } from '@/lib/socket/events';
+import { socketConfig } from '@/lib/config/socket-config';
+
+interface SocketProviderProps {
+  children: React.ReactNode;
+}
+
+export function SocketProvider({ children }: SocketProviderProps) {
+  const { token, isAuthenticated } = useAuth();
+  const [socket, setSocket] = useState<TypedSocket | null>(null);
+  const [status, setStatus] = useState<SocketStatus>('disconnected');
+  const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Connect to socket
+  const connect = useCallback(() => {
+    if (!token) {
+      console.warn('Cannot connect socket: no auth token');
+      return;
+    }
+
+    setStatus('connecting');
+
+    const newSocket = createSocket(token);
+
+    // Connection handlers
+    newSocket.on(SOCKET_EVENTS.CONNECT, () => {
+      console.log('Socket connected');
+      setStatus('connected');
+      setSocket(newSocket);
+
+      // Start heartbeat
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+      }
+      heartbeatRef.current = setInterval(() => {
+        newSocket.emit(SOCKET_EVENTS.PRESENCE_HEARTBEAT);
+      }, socketConfig.heartbeatInterval);
+    });
+
+    newSocket.on(SOCKET_EVENTS.DISCONNECT, (reason) => {
+      console.log('Socket disconnected:', reason);
+      setStatus('disconnected');
+
+      // Stop heartbeat
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+        heartbeatRef.current = null;
+      }
+    });
+
+    newSocket.on(SOCKET_EVENTS.CONNECT_ERROR, (error) => {
+      console.error('Socket connection error:', error.message);
+      setStatus('error');
+    });
+
+    // Actually connect
+    newSocket.connect();
+  }, [token]);
+
+  // Disconnect from socket
+  const disconnect = useCallback(() => {
+    // Stop heartbeat
+    if (heartbeatRef.current) {
+      clearInterval(heartbeatRef.current);
+      heartbeatRef.current = null;
+    }
+
+    disconnectSocket();
+    setSocket(null);
+    setStatus('disconnected');
+  }, []);
+
+  // Join a conversation room
+  const joinConversation = useCallback(async (conversationId: string): Promise<boolean> => {
+    const currentSocket = getSocket();
+    if (!currentSocket?.connected) {
+      console.warn('Cannot join conversation: socket not connected');
+      return false;
+    }
+
+    return new Promise((resolve) => {
+      currentSocket.emit(
+        SOCKET_EVENTS.CONVERSATION_JOIN,
+        conversationId,
+        (response: SocketResponse<{ conversationId: string }>) => {
+          if (response.success) {
+            console.log('Joined conversation:', conversationId);
+            resolve(true);
+          } else {
+            console.error('Failed to join conversation:', response.error);
+            resolve(false);
+          }
+        }
+      );
+    });
+  }, []);
+
+  // Leave a conversation room
+  const leaveConversation = useCallback(async (conversationId: string): Promise<void> => {
+    const currentSocket = getSocket();
+    if (!currentSocket?.connected) {
+      return;
+    }
+
+    return new Promise((resolve) => {
+      currentSocket.emit(
+        SOCKET_EVENTS.CONVERSATION_LEAVE,
+        conversationId,
+        () => {
+          console.log('Left conversation:', conversationId);
+          resolve();
+        }
+      );
+    });
+  }, []);
+
+  // Auto-connect when authenticated, disconnect when not
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      // Small delay to ensure token is stored
+      const timer = setTimeout(connect, socketConfig.authReconnectDelay);
+      return () => clearTimeout(timer);
+    } else {
+      disconnect();
+    }
+  }, [isAuthenticated, token, connect, disconnect]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+      }
+      disconnectSocket();
+    };
+  }, []);
+
+  // Memoize context value
+  const contextValue = useMemo(
+    () => ({
+      socket,
+      status,
+      isConnected: status === 'connected',
+      connect,
+      disconnect,
+      joinConversation,
+      leaveConversation,
+    }),
+    [socket, status, connect, disconnect, joinConversation, leaveConversation]
+  );
+
+  return (
+    <SocketContext.Provider value={contextValue}>
+      {children}
+    </SocketContext.Provider>
+  );
+}
+
