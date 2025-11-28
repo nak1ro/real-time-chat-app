@@ -1,77 +1,100 @@
-// Conversation API - handles conversation-related API calls
 import { apiClient } from './api-client';
 import type {
   Conversation,
-  CreateDirectConversationDto,
-  CreateConversationDto,
-  UpdateConversationDto,
+  CreateDirectConversationData,
+  CreateConversationData,
+  UpdateConversationPatch,
   ConversationFilters,
-  AddMembersDto,
-  UpdateMemberRoleDto,
-  GenerateSlugDto,
+  AddMembersData,
+  UpdateMemberRoleData,
+  GenerateSlugData,
+  ConversationResponse,
+  ConversationsListResponse,
+  PublicChannelsResponse,
   SlugResponse,
-  JoinChannelResponse,
+  LeaveConversationResponse,
 } from '@/types';
 
 export const conversationApi = {
-  // Create direct conversation
-  createDirectConversation: (data: CreateDirectConversationDto) => {
-    return apiClient.post<{ conversation: Conversation }>('/api/conversations/direct', data).then((res) => res.conversation);
+  // Create a direct (1-on-1) conversation
+  createDirect: (data: CreateDirectConversationData): Promise<Conversation> => {
+    return apiClient
+      .post<ConversationResponse>('/api/conversations/direct', data)
+      .then((res) => res.conversation);
   },
 
-  // Create group or channel conversation
-  createGroupOrChannel: (data: CreateConversationDto) => {
-    return apiClient.post<{ conversation: Conversation }>('/api/conversations', data).then((res) => res.conversation);
+  // Create a group or channel conversation
+  create: (data: CreateConversationData): Promise<Conversation> => {
+    return apiClient
+      .post<ConversationResponse>('/api/conversations', data)
+      .then((res) => res.conversation);
   },
 
-  // List user's conversations
-  listUserConversations: (filters?: ConversationFilters) => {
-    return apiClient.get<{ conversations: Conversation[] }>('/api/conversations', { params: filters as any }).then((res) => res.conversations);
+  // List all conversations for current user
+  list: (filters?: ConversationFilters): Promise<Conversation[]> => {
+    return apiClient
+      .get<ConversationsListResponse>('/api/conversations', { params: filters as any })
+      .then((res) => res.conversations);
   },
 
   // Get conversation by ID
-  getConversationById: (conversationId: string) => {
-    return apiClient.get<{ conversation: Conversation }>(`/api/conversations/${conversationId}`).then((res) => res.conversation);
+  getById: (id: string): Promise<Conversation> => {
+    return apiClient
+      .get<ConversationResponse>(`/api/conversations/${id}`)
+      .then((res) => res.conversation);
   },
 
-  // Update conversation
-  updateConversation: (conversationId: string, data: UpdateConversationDto) => {
-    return apiClient.patch<{ conversation: Conversation }>(`/api/conversations/${conversationId}`, data).then((res) => res.conversation);
+  // Update conversation details
+  update: (id: string, data: UpdateConversationPatch): Promise<Conversation> => {
+    return apiClient
+      .patch<ConversationResponse>(`/api/conversations/${id}`, data)
+      .then((res) => res.conversation);
   },
 
-  // Add members to conversation
-  addMembers: (conversationId: string, data: AddMembersDto) => {
-    return apiClient.post<{ conversation: Conversation }>(`/api/conversations/${conversationId}/members`, data).then((res) => res.conversation);
+  // Add members to a conversation
+  addMembers: (id: string, data: AddMembersData): Promise<Conversation> => {
+    return apiClient
+      .post<ConversationResponse>(`/api/conversations/${id}/members`, data)
+      .then((res) => res.conversation);
   },
 
-  // Remove member from conversation
-  removeMember: (conversationId: string, memberId: string) => {
-    return apiClient.delete<{ conversation: Conversation }>(`/api/conversations/${conversationId}/members/${memberId}`).then((res) => res.conversation);
+  // Remove a member from a conversation
+  removeMember: (id: string, memberId: string): Promise<Conversation> => {
+    return apiClient
+      .delete<ConversationResponse>(`/api/conversations/${id}/members/${memberId}`)
+      .then((res) => res.conversation);
   },
 
-  // Leave conversation
-  leaveConversation: (conversationId: string) => {
-    return apiClient.post<{ message: string }>(`/api/conversations/${conversationId}/leave`);
+  // Leave a conversation
+  leave: (id: string): Promise<LeaveConversationResponse> => {
+    return apiClient.post<LeaveConversationResponse>(`/api/conversations/${id}/leave`);
   },
 
-  // Update member role
-  updateMemberRole: (conversationId: string, memberId: string, data: UpdateMemberRoleDto) => {
-    return apiClient.patch<{ conversation: Conversation }>(`/api/conversations/${conversationId}/members/${memberId}/role`, data).then((res) => res.conversation);
+  // Update a member's role in a conversation
+  updateMemberRole: (id: string, memberId: string, data: UpdateMemberRoleData): Promise<Conversation> => {
+    return apiClient
+      .patch<ConversationResponse>(`/api/conversations/${id}/members/${memberId}/role`, data)
+      .then((res) => res.conversation);
   },
 
-  // List public channels
-  listPublicChannels: (filters?: ConversationFilters) => {
-    return apiClient.get<{ channels: Conversation[] }>('/api/conversations/public', { params: filters as any }).then((res) => res.channels);
+  // List all public channels
+  listPublic: (filters?: { name?: string }): Promise<Conversation[]> => {
+    return apiClient
+      .get<PublicChannelsResponse>('/api/conversations/public', { params: filters as any })
+      .then((res) => res.channels);
   },
 
-  // Join channel by slug
-  joinChannelBySlug: (slug: string) => {
-    return apiClient.post<JoinChannelResponse>(`/api/conversations/public/${slug}/join`);
+  // Join a public channel by slug
+  joinBySlug: (slug: string): Promise<Conversation> => {
+    return apiClient
+      .post<ConversationResponse>(`/api/conversations/public/${slug}/join`)
+      .then((res) => res.conversation);
   },
 
-  // Generate slug from name
-  generateSlug: (data: GenerateSlugDto) => {
-    return apiClient.post<SlugResponse>('/api/conversations/slug', data);
+  // Generate a unique slug from a name
+  generateSlug: (data: GenerateSlugData): Promise<string> => {
+    return apiClient
+      .post<SlugResponse>('/api/conversations/slug', data)
+      .then((res) => res.slug);
   },
 };
-

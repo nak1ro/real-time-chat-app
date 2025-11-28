@@ -5,20 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/ChatDetailPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/ChatDetailPanel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/ChatFilter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/ChatFilter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/ChatHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/ChatHeader.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/ChatListItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/ChatListItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/ChatListPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/ChatListPanel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/MessageBubble.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/MessageBubble.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/MessageList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/MessageList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/mock-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/chat/mock-data.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/chat/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/types/chat.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/lib/socket/events.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/lib/socket/events.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/types/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/types/message.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/types/message.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/types/receipt.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/types/receipt.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/hooks/useAuth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/hooks/useAuth.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/providers/AuthProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/providers/AuthProvider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/types/enums.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/types/enums.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

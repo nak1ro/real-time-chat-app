@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { AuthContext, type AuthState } from '@/context/AuthContext';
 import { authApi } from '@/lib/api';
-import { getToken, setToken, clearToken } from '@/lib/auth/token-storage';
+import { getToken, setToken, clearToken, hasToken } from '@/lib/auth/token-storage';
 import { queryKeys } from '@/lib/react-query/query-keys';
 import type { User, LoginDto, RegisterDto } from '@/types';
 
@@ -14,143 +14,127 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const queryClient = useQueryClient();
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    token: null,
-    isAuthenticated: false,
-    isLoading: true,
+  const [token, setTokenState] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize token from storage on mount
+  useEffect(() => {
+    const storedToken = getToken();
+    setTokenState(storedToken);
+    setIsInitialized(true);
+  }, []);
+
+  // Query for current user when we have a token
+  const {
+    data: user,
+    isLoading: isUserLoading,
+    refetch: refetchUser,
+  } = useQuery({
+    queryKey: queryKeys.auth.me(),
+    queryFn: async (): Promise<User> => {
+      const response = await authApi.getCurrentUser();
+      return response.user;
+    },
+    enabled: isInitialized && !!token,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: (failureCount, error: any) => {
+      if (error?.statusCode === 401) {
+        return false;
+      }
+      return failureCount < 2;
+    },
   });
 
-  // Initialize auth state from stored token
+  // Handle invalid token when query fails
   useEffect(() => {
-    const initAuth = async () => {
-      const storedToken = getToken();
-      
-      if (storedToken) {
-        try {
-          const { user } = await authApi.getCurrentUser();
-          // Hydrate React Query cache
-          queryClient.setQueryData(queryKeys.auth.me(), user);
-          setState({
-            user,
-            token: storedToken,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-        } catch (error) {
-          // Token is invalid, clear it
+    if (isInitialized && token && !isUserLoading && !user) {
+      const timer = setTimeout(() => {
+        const currentUser = queryClient.getQueryData(queryKeys.auth.me());
+        if (!currentUser && hasToken()) {
           clearToken();
+          setTokenState(null);
           queryClient.removeQueries({ queryKey: queryKeys.auth.me() });
-          setState({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
         }
-      } else {
-        setState((prev) => ({ ...prev, isLoading: false }));
-      }
-    };
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isInitialized, token, isUserLoading, user, queryClient]);
 
-    initAuth();
-  }, [queryClient]);
+  const isLoading = !isInitialized || (!!token && isUserLoading);
+  const isAuthenticated = !!token && !!user;
 
-  // Login function
   const login = useCallback(async (credentials: LoginDto) => {
-    setState((prev) => ({ ...prev, isLoading: true }));
-    
-    try {
-      const { user, token } = await authApi.login(credentials);
-      setToken(token);
-      // Hydrate React Query cache with user data
-      queryClient.setQueryData(queryKeys.auth.me(), user);
-      setState({
-        user,
-        token,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } catch (error) {
-      setState((prev) => ({ ...prev, isLoading: false }));
-      throw error;
-    }
+    const response = await authApi.login(credentials);
+    setToken(response.token);
+    setTokenState(response.token);
+    queryClient.setQueryData(queryKeys.auth.me(), response.user);
   }, [queryClient]);
 
-  // Register function
   const register = useCallback(async (data: RegisterDto) => {
-    setState((prev) => ({ ...prev, isLoading: true }));
-    
-    try {
-      const { user, token } = await authApi.register(data);
-      setToken(token);
-      // Hydrate React Query cache with user data
-      queryClient.setQueryData(queryKeys.auth.me(), user);
-      setState({
-        user,
-        token,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } catch (error) {
-      setState((prev) => ({ ...prev, isLoading: false }));
-      throw error;
-    }
+    const response = await authApi.register(data);
+    setToken(response.token);
+    setTokenState(response.token);
+    queryClient.setQueryData(queryKeys.auth.me(), response.user);
   }, [queryClient]);
 
-  // Logout function
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
-    } catch (error) {
-      // Ignore logout errors
+    } catch {
+      // Ignore logout API errors
     } finally {
       clearToken();
-      // Clear React Query cache
+      setTokenState(null);
       queryClient.setQueryData(queryKeys.auth.me(), null);
       queryClient.removeQueries({ queryKey: queryKeys.auth.all });
-      setState({
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
     }
   }, [queryClient]);
 
-  // Get current user
   const getUser = useCallback(async (): Promise<User | null> => {
-    if (!state.token) {
+    if (!token) {
       return null;
     }
-
     try {
-      const { user } = await authApi.getCurrentUser();
-      queryClient.setQueryData(queryKeys.auth.me(), user);
-      setState((prev) => ({ ...prev, user }));
-      return user;
-    } catch (error) {
+      const response = await authApi.getCurrentUser();
+      queryClient.setQueryData(queryKeys.auth.me(), response.user);
+      return response.user;
+    } catch {
       return null;
     }
-  }, [state.token, queryClient]);
+  }, [token, queryClient]);
 
-  // Refresh user data
   const refreshUser = useCallback(async () => {
-    if (!state.token) {
+    if (!token) {
       return;
     }
-
     try {
-      const { user } = await authApi.getCurrentUser();
-      queryClient.setQueryData(queryKeys.auth.me(), user);
-      setState((prev) => ({ ...prev, user }));
-    } catch (error) {
-      // Token might be expired, logout
+      await refetchUser();
+    } catch {
       await logout();
     }
-  }, [state.token, queryClient, logout]);
+  }, [token, refetchUser, logout]);
 
-  // Memoize context value
+  // Sync with React Query cache updates from hooks
+  useEffect(() => {
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (event.query.queryKey[0] === 'auth' && event.query.queryKey[1] === 'me') {
+        const currentToken = getToken();
+        if (currentToken !== token) {
+          setTokenState(currentToken);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [queryClient, token]);
+
+  const state: AuthState = {
+    user: user ?? null,
+    token,
+    isAuthenticated,
+    isLoading,
+  };
+
   const contextValue = useMemo(
     () => ({
       ...state,
@@ -169,4 +153,3 @@ export function AuthProvider({ children }: AuthProviderProps) {
     </AuthContext.Provider>
   );
 }
-

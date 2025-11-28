@@ -1,7 +1,7 @@
 import { ConversationType, MemberRole } from './enums';
 import { UserBasic } from './user.types';
 
-// Conversation Member
+// Conversation member with user and role info
 export interface ConversationMember {
   id: string;
   userId: string;
@@ -12,29 +12,29 @@ export interface ConversationMember {
   user: UserBasic;
 }
 
-// Conversation
+// Full conversation object from API
 export interface Conversation {
   id: string;
-  name: string;
   type: ConversationType;
-  description: string | null;
+  name: string | null;
   slug: string | null;
+  description: string | null;
+  avatarUrl: string | null;
   isPublic: boolean;
   isReadOnly: boolean;
-  avatarUrl: string | null;
   createdAt: Date;
-  updatedAt: Date;
-  createdById: string | null;
+  updatedAt?: Date;
+  createdById?: string | null;
   members: ConversationMember[];
 }
 
-// Create Direct Conversation DTO
-export interface CreateDirectConversationDto {
+// Request DTO for creating direct conversation
+export interface CreateDirectConversationData {
   otherUserId: string;
 }
 
-// Create Group/Channel Conversation DTO
-export interface CreateConversationDto {
+// Request DTO for creating group or channel
+export interface CreateConversationData {
   name: string;
   type: ConversationType;
   description?: string;
@@ -44,8 +44,8 @@ export interface CreateConversationDto {
   avatarUrl?: string;
 }
 
-// Update Conversation DTO
-export interface UpdateConversationDto {
+// Request DTO for updating conversation
+export interface UpdateConversationPatch {
   name?: string;
   description?: string;
   avatarUrl?: string;
@@ -53,36 +53,55 @@ export interface UpdateConversationDto {
   isReadOnly?: boolean;
 }
 
-// Conversation Filters
+// Query filters for listing conversations
 export interface ConversationFilters {
   type?: ConversationType;
   isPublic?: boolean;
   name?: string;
 }
 
-// Add Members DTO
-export interface AddMembersDto {
+// Request DTO for adding members
+export interface AddMembersData {
   userIds: string[];
   role?: MemberRole;
 }
 
-// Update Member Role DTO
-export interface UpdateMemberRoleDto {
+// Request DTO for updating member role
+export interface UpdateMemberRoleData {
   role: MemberRole;
 }
 
-// Generate Slug DTO
-export interface GenerateSlugDto {
+// Request DTO for generating slug
+export interface GenerateSlugData {
   name: string;
 }
 
-// Slug Response
+// Response types
+export interface ConversationResponse {
+  conversation: Conversation;
+}
+
+export interface ConversationsListResponse {
+  conversations: Conversation[];
+}
+
+export interface PublicChannelsResponse {
+  channels: Conversation[];
+}
+
 export interface SlugResponse {
   slug: string;
 }
 
-// Join Channel By Slug Response
-export interface JoinChannelResponse {
-  conversation: Conversation;
+export interface LeaveConversationResponse {
+  message: string;
 }
 
+// Legacy aliases for backward compatibility
+export type CreateDirectConversationDto = CreateDirectConversationData;
+export type CreateConversationDto = CreateConversationData;
+export type UpdateConversationDto = UpdateConversationPatch;
+export type AddMembersDto = AddMembersData;
+export type UpdateMemberRoleDto = UpdateMemberRoleData;
+export type GenerateSlugDto = GenerateSlugData;
+export type JoinChannelResponse = ConversationResponse;
