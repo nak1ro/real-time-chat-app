@@ -13,6 +13,8 @@ import type {
   PermissionCheckParams,
   PermissionResponse,
   HeartbeatResponse,
+  OnlineContact,
+  OnlineContactsResponse,
 } from '@/types';
 
 export const userApi = {
@@ -96,5 +98,12 @@ export const userApi = {
     return apiClient
       .get<PermissionResponse>('/api/users/permissions', { params: params as any })
       .then((res) => res.canPerform);
+  },
+
+  // Get online contacts (users with direct conversations who are currently online)
+  getOnlineContacts: (): Promise<OnlineContact[]> => {
+    return apiClient
+      .get<OnlineContactsResponse>('/api/users/contacts/online')
+      .then((res) => res.contacts);
   },
 };

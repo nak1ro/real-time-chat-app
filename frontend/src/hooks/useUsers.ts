@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { userApi } from '@/lib/api';
 import { queryKeys } from '@/lib/react-query/query-keys';
-import type { User, UpdateUserData, UserPresence } from '@/types';
+import type { User, UpdateUserData, UserPresence, OnlineContact } from '@/types';
 
 // Hook to get a user by ID
 export function useUser(id: string | undefined) {
@@ -99,6 +99,19 @@ export function usePermissionCheck(
     queryFn: () => userApi.checkPermission({ conversationId: conversationId!, action }),
     enabled,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+// Hook to get online contacts (users with direct conversations who are online)
+export function useOnlineContacts(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
+
+  return useQuery({
+    queryKey: queryKeys.users.onlineContacts(),
+    queryFn: () => userApi.getOnlineContacts(),
+    enabled,
+    staleTime: 30 * 1000, // Consider stale after 30 seconds
+    refetchInterval: 60 * 1000, // Refetch every minute
   });
 }
 

@@ -51,3 +51,15 @@ export const updatePresenceHeartbeat = asyncHandler(async (req: Request, res: Re
         data: { message: 'Heartbeat updated' },
     });
 });
+
+// Get online contacts (users with direct conversations who are currently online)
+export const getOnlineContacts = asyncHandler(async (req: Request, res: Response) => {
+    const userId = (req as any).user?.id;
+
+    const contacts = await presenceService.getOnlineContacts(userId);
+
+    res.status(200).json({
+        status: 'success',
+        data: { contacts },
+    });
+});

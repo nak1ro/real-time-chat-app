@@ -78,6 +78,19 @@ export interface HeartbeatResponse {
   message: string;
 }
 
+// Online contact (user with direct conversation who is online)
+export interface OnlineContact {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  status: Status;
+  lastSeenAt: Date | null;
+}
+
+export interface OnlineContactsResponse {
+  contacts: OnlineContact[];
+}
+
 // Legacy aliases for backward compatibility
 export type UserSearchQuery = UserSearchParams;
 export type BulkPresenceRequest = BulkPresenceData;

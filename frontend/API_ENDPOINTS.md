@@ -333,6 +333,38 @@ All user endpoints require authentication.
 
 ---
 
+### GET /api/users/contacts/online
+**Description**: Get list of online contacts (users with direct conversations who are currently online)
+
+**Authentication**: Required
+
+**Request Body**: None
+
+**Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "contacts": [
+      {
+        "id": "string",
+        "name": "string",
+        "avatarUrl": "string | null",
+        "status": "ONLINE",
+        "lastSeenAt": "Date"
+      }
+    ]
+  }
+}
+```
+
+**Notes**:
+- Only returns users who have a DIRECT conversation with the authenticated user
+- Only includes users whose status is currently `ONLINE`
+- Useful for showing online contacts in a sidebar or quick-access list
+
+---
+
 ## User Permissions
 
 **Base Path**: `/api/users`

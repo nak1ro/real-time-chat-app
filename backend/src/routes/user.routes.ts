@@ -22,6 +22,7 @@ const upload = multer({
 router.get('/me', userController.getCurrentUser);
 router.patch('/me', upload.single('avatar'), userController.updateCurrentUser);
 router.get('/search', userController.searchUsers);
+router.get('/contacts/online', presenceController.getOnlineContacts);
 router.get('/:id', userController.getUserById);
 
 // Presence routes

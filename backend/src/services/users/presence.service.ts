@@ -137,3 +137,44 @@ export const cancelPendingOffline = (userId: string): void => {
     }
 };
 
+// Get online contacts for a user (users with DIRECT conversations who are online)
+export const getOnlineContacts = async (userId: string) => {
+    // Get all direct conversations for this user with the other member's info
+    const directConversations = await prisma.conversation.findMany({
+        where: {
+            type: 'DIRECT',
+            members: {
+                some: { userId },
+            },
+        },
+        include: {
+            members: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatarUrl: true,
+                            status: true,
+                            lastSeenAt: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    // Extract the other user from each direct conversation and filter online only
+    const onlineContacts = directConversations
+        .map((conv) => {
+            // Find the other member (not the current user)
+            const otherMember = conv.members.find((m) => m.userId !== userId);
+            return otherMember?.user;
+        })
+        .filter((user): user is NonNullable<typeof user> => {
+            return user !== undefined && user.status === Status.ONLINE;
+        });
+
+    return onlineContacts;
+};
+

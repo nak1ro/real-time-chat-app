@@ -13,6 +13,7 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.users.all, id] as const,
     search: (query: string) => [...queryKeys.users.all, 'search', query] as const,
     presence: (id: string) => [...queryKeys.users.all, 'presence', id] as const,
+    onlineContacts: () => [...queryKeys.users.all, 'contacts', 'online'] as const,
   },
 
   // Conversations
