@@ -5,13 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="831a3119-8bab-4792-bbfd-f918c61440bc" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.env.development" beforeDir="false" afterPath="$PROJECT_DIR$/.env.development" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env.production" beforeDir="false" afterPath="$PROJECT_DIR$/.env.production" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/components/dashboard/ProfileActionsCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/dashboard/ProfileActionsCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/lib/api/user.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/lib/api/user.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/types/user.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/types/user.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +70,7 @@
       <workItem from="1763655936022" duration="12000" />
       <workItem from="1763655949276" duration="10151000" />
       <workItem from="1763750627716" duration="20487000" />
-      <workItem from="1764356953412" duration="826000" />
+      <workItem from="1764356953412" duration="1820000" />
     </task>
     <servers />
   </component>
