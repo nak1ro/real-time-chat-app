@@ -4,9 +4,11 @@ import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { Users, Megaphone } from 'lucide-react';
 import type { Conversation, Message } from '@/types';
+import type { ConversationMember } from '@/types/conversation.types';
 
 interface ChatListItemProps {
   conversation: Conversation;
+  currentUserId?: string;
   lastMessage?: Message | null;
   unreadCount?: number;
   isOnline?: boolean;
@@ -42,12 +44,36 @@ function getInitials(name: string | null): string {
     .slice(0, 2);
 }
 
-function getDisplayName(conversation: Conversation): string {
-  if (conversation.name) return conversation.name;
-  if (conversation.type === 'DIRECT' && conversation.members.length > 0) {
-    const otherMember = conversation.members.find((m) => m.user);
+/**
+ * Get the other member in a direct conversation (excluding the current user)
+ */
+function getOtherMember(
+  conversation: Conversation,
+  currentUserId?: string
+): ConversationMember | undefined {
+  if (conversation.type !== 'DIRECT' || conversation.members.length === 0) {
+    return undefined;
+  }
+
+  // If we have a currentUserId, find the member that is NOT the current user
+  if (currentUserId) {
+    return conversation.members.find((m) => m.userId !== currentUserId && m.user);
+  }
+
+  // Fallback: return the first member with a user (legacy behavior)
+  return conversation.members.find((m) => m.user);
+}
+
+function getDisplayName(conversation: Conversation, currentUserId?: string): string {
+  // For direct conversations, always show the other user's name (ignore conversation.name)
+  if (conversation.type === 'DIRECT') {
+    const otherMember = getOtherMember(conversation, currentUserId);
     return otherMember?.user?.name || 'Unknown';
   }
+
+  // For groups/channels, use the conversation name if available
+  if (conversation.name) return conversation.name;
+
   return 'Unnamed';
 }
 
@@ -59,6 +85,7 @@ function getLastMessagePreview(message?: Message | null): string {
 
 export function ChatListItem({
   conversation,
+  currentUserId,
   lastMessage,
   unreadCount = 0,
   isOnline = false,
@@ -67,7 +94,16 @@ export function ChatListItem({
 }: ChatListItemProps) {
   const isGroup = conversation.type === 'GROUP';
   const isChannel = conversation.type === 'CHANNEL';
-  const displayName = getDisplayName(conversation);
+  const isDirect = conversation.type === 'DIRECT';
+
+  // For direct conversations, get the other user's info
+  const otherMember = isDirect ? getOtherMember(conversation, currentUserId) : undefined;
+  const displayName = getDisplayName(conversation, currentUserId);
+
+  // For direct convos, use the other user's avatar; otherwise use conversation avatar
+  const avatarUrl = isDirect
+    ? otherMember?.user?.avatarUrl
+    : conversation.avatarUrl;
 
   return (
     <button
@@ -79,7 +115,7 @@ export function ChatListItem({
     >
       <div className="relative flex-shrink-0">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={conversation.avatarUrl || undefined} alt={displayName} />
+          <AvatarImage src={avatarUrl || undefined} alt={displayName} />
           <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
             {isChannel ? (
               <Megaphone className="h-5 w-5" />
@@ -90,7 +126,7 @@ export function ChatListItem({
             )}
           </AvatarFallback>
         </Avatar>
-        {conversation.type === 'DIRECT' && isOnline && (
+        {isDirect && isOnline && (
           <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-background" />
         )}
       </div>

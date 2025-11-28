@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e5da075b-33bd-4932-97ef-c5ebf4ee5470" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/chat/ChatListItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat/ChatListItem.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/chat/ChatListPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat/ChatListPanel.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/api/conversation.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/api/conversation.api.ts" afterDir="false" />
     </list>
@@ -93,7 +92,7 @@
       <updated>1764180529171</updated>
       <workItem from="1764180530415" duration="3244000" />
       <workItem from="1764193705169" duration="13219000" />
-      <workItem from="1764349309445" duration="8917000" />
+      <workItem from="1764349309445" duration="9627000" />
     </task>
     <servers />
   </component>

@@ -17,13 +17,15 @@ import {
   Separator,
   Skeleton,
 } from '@/components/ui';
-import { Pencil, Plus, MessageSquarePlus, Hash } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import { UpdateProfileModal } from '@/components/profile';
+import { CreateChannelModal } from '@/components/chat';
 
 export function ProfileActionsCard() {
   const { user, isLoading: isUserLoading } = useAuth();
   const { data: presence, isLoading: isPresenceLoading } = useUserPresence(user?.id);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Derive status from presence API or fall back to user.status
   const status = presence?.status ?? user?.status ?? Status.OFFLINE;
@@ -68,10 +70,9 @@ export function ProfileActionsCard() {
     }
   };
 
-  // Handle create chat/channel click (dummy for now)
+  // Handle create chat/channel click
   const handleCreateChat = () => {
-    // TODO: Open create chat/channel modal
-    console.log('Create chat or channel clicked');
+    setIsCreateModalOpen(true);
   };
 
   // Loading skeleton
@@ -167,6 +168,7 @@ export function ProfileActionsCard() {
       </Card>
 
       <UpdateProfileModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} />
+      <CreateChannelModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} />
     </>
   );
 }

@@ -7,3 +7,4 @@ export { MessageBubble } from './MessageBubble';
 export { MessageInput } from './MessageInput';
 export { ChatFilter, type ConversationFilter } from './ChatFilter';
 export { EmptyChatState } from './EmptyChatState';
+export { CreateChannelModal } from './CreateChannelModal';
