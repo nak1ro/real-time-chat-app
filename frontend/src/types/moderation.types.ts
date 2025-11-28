@@ -1,33 +1,34 @@
-import { ModerationActionType } from './enums';
+// Moderation action types matching API docs
+export type ModerationAction = 'MUTE_USER' | 'KICK_USER' | 'BAN_USER' | 'DELETE_MESSAGE';
 
-// Moderation Action
-export interface ModerationAction {
+// Mute status object from API
+export interface MuteStatus {
   id: string;
-  action: ModerationActionType;
-  reason: string | null;
+  conversationId: string;
+  userId: string;
   expiresAt: Date | null;
   createdAt: Date;
-  actorId: string;
-  targetUserId: string | null;
-  conversationId: string | null;
-  messageId: string | null;
 }
 
-// Apply Moderation Action DTO
-export interface ApplyModerationActionDto {
-  action: ModerationActionType;
+// Request DTO for applying moderation action
+export interface ApplyModerationData {
+  action: ModerationAction;
   targetUserId?: string;
   messageId?: string;
   reason?: string;
-  durationMinutes?: number;
+  expiresAt?: string;
 }
 
-// Apply Moderation Action Response
-export interface ApplyModerationActionResponse {
-  moderationAction: ModerationAction;
+// Response types
+export interface ModerationResponse {
+  message: string;
 }
 
-// Active Mute Response
-export interface ActiveMuteResponse {
-  mute: ModerationAction | null;
+export interface MuteStatusResponse {
+  mute: MuteStatus | null;
 }
+
+// Legacy aliases for backward compatibility
+export type ApplyModerationActionDto = ApplyModerationData;
+export type ApplyModerationActionResponse = ModerationResponse;
+export type ActiveMuteResponse = MuteStatusResponse;

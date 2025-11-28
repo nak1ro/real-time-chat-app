@@ -1,40 +1,45 @@
-// Notification API - handles notification-related API calls
 import { apiClient } from './api-client';
 import type {
-  PaginatedNotificationsResponse,
-  NotificationQueryOptions,
-  UnreadCountResponse,
-  MarkAsReadResponse,
-  MarkAllAsReadResponse,
-  MarkConversationAsReadResponse,
+  Notification,
+  NotificationQueryParams,
+  PaginatedNotifications,
+  NotificationResponse,
+  NotificationUnreadCountResponse,
+  MarkAllReadResponse,
+  MarkConversationReadResponse,
 } from '@/types';
 
 export const notificationApi = {
-  // Get user notifications (paginated)
-  getUserNotifications: (options?: NotificationQueryOptions) => {
-    return apiClient.get<PaginatedNotificationsResponse>('/api/messages/notifications', {
-      params: options as any,
+  // Get notifications for current user (paginated)
+  list: (params?: NotificationQueryParams): Promise<PaginatedNotifications> => {
+    return apiClient.get<PaginatedNotifications>('/api/notifications', {
+      params: params as any,
     });
   },
 
   // Get unread notification count
-  getUnreadNotificationCount: () => {
-    return apiClient.get<UnreadCountResponse>('/api/messages/notifications/unread/count');
+  getUnreadCount: (): Promise<number> => {
+    return apiClient
+      .get<NotificationUnreadCountResponse>('/api/notifications/unread/count')
+      .then((res) => res.unreadCount);
   },
 
-  // Mark notification as read
-  markAsRead: (notificationId: string) => {
-    return apiClient.patch<MarkAsReadResponse>(`/api/messages/notifications/${notificationId}/read`);
+  // Mark a notification as read
+  markAsRead: (id: string): Promise<Notification> => {
+    return apiClient
+      .patch<NotificationResponse>(`/api/notifications/${id}/read`)
+      .then((res) => res.notification);
   },
 
   // Mark all notifications as read
-  markAllAsRead: () => {
-    return apiClient.post<MarkAllAsReadResponse>('/api/messages/notifications/read-all');
+  markAllAsRead: (): Promise<MarkAllReadResponse> => {
+    return apiClient.post<MarkAllReadResponse>('/api/notifications/read-all');
   },
 
-  // Mark conversation notifications as read
-  markConversationAsRead: (conversationId: string) => {
-    return apiClient.post<MarkConversationAsReadResponse>(`/api/messages/conversations/${conversationId}/notifications/read`);
+  // Mark all notifications for a conversation as read
+  markConversationAsRead: (conversationId: string): Promise<MarkConversationReadResponse> => {
+    return apiClient.post<MarkConversationReadResponse>(
+      `/api/conversations/${conversationId}/notifications/read`
+    );
   },
 };
-

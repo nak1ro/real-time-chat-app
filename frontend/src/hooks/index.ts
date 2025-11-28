@@ -71,6 +71,28 @@ export {
   useMessageActions,
 } from './useMessages';
 
+// Notification hooks
+export {
+  useNotifications,
+  useInfiniteNotifications,
+  useNotificationUnreadCount,
+  useMarkNotificationAsRead,
+  useMarkAllNotificationsAsRead,
+  useMarkConversationNotificationsAsRead,
+  useNotificationActions,
+} from './useNotifications';
+
+// Moderation hooks
+export {
+  useMuteStatus,
+  useApplyModeration,
+  useMuteUser,
+  useKickUser,
+  useBanUser,
+  useDeleteMessageModeration,
+  useModerationActions,
+} from './useModeration';
+
 // Socket hooks
 export { useSocket } from './useSocket';
 

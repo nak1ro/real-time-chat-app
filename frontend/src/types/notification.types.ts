@@ -1,79 +1,71 @@
-import { NotificationType } from './enums';
 import { UserBasic } from './user.types';
 
-// UI Notification Item (for display)
-export interface NotificationItem {
-  id: string;
-  type: NotificationType;
-  title: string;
-  preview?: string;
-  timestamp: Date;
-  conversationId?: string;
-  messageId?: string;
-  actor: {
-    id: string;
-    name: string;
-    avatarUrl: string | null;
-  };
-}
+// Notification types from API
+export type NotificationType = 'MENTION' | 'REACTION' | 'MESSAGE' | 'SYSTEM';
 
-// Message-related notification types for filtering
-export const MESSAGE_NOTIFICATION_TYPES: NotificationType[] = [
-  NotificationType.NEW_MESSAGE,
-  NotificationType.MENTION,
-  NotificationType.REACTION,
-  NotificationType.REPLY,
-];
-
-// Notification (from backend)
+// Full notification object from API
 export interface Notification {
   id: string;
   userId: string;
   type: NotificationType;
   title: string;
-  body: string;
+  content: string;
   isRead: boolean;
-  conversationId: string | null;
-  messageId: string | null;
-  actorId: string | null;
+  relatedMessageId: string | null;
+  relatedConversationId: string | null;
+  relatedUserId: string | null;
   createdAt: Date;
-  readAt: Date | null;
-  actor?: UserBasic | null;
 }
 
-// Paginated Notifications Response
-export interface PaginatedNotificationsResponse {
-  notifications: Notification[];
-  nextCursor: string | null;
-  hasMore: boolean;
-  total?: number;
-}
-
-// Notification Query Options
-export interface NotificationQueryOptions {
+// Query parameters for listing notifications
+export interface NotificationQueryParams {
   limit?: number;
   cursor?: string;
   unreadOnly?: boolean;
 }
 
-// Unread Count Response
-export interface UnreadCountResponse {
-  unreadCount: number;
+// Paginated notifications response
+export interface PaginatedNotifications {
+  notifications: Notification[];
+  nextCursor: string | null;
+  hasMore: boolean;
 }
 
-// Mark As Read Response
-export interface MarkAsReadResponse {
+// Response types
+export interface NotificationResponse {
   notification: Notification;
 }
 
-// Mark All As Read Response
-export interface MarkAllAsReadResponse {
+export interface NotificationUnreadCountResponse {
+  unreadCount: number;
+}
+
+export interface MarkAllReadResponse {
   message: string;
   count: number;
 }
 
-// Mark Conversation As Read Response
-export interface MarkConversationAsReadResponse {
+export interface MarkConversationReadResponse {
   message: string;
   count: number;
 }
+
+// UI notification item for display
+export interface NotificationItem {
+  id: string;
+  type: NotificationType;
+  title: string;
+  content: string;
+  timestamp: Date;
+  conversationId: string | null;
+  messageId: string | null;
+  isRead: boolean;
+}
+
+// Legacy aliases for backward compatibility
+export type NotificationQueryOptions = NotificationQueryParams;
+export type PaginatedNotificationsResponse = PaginatedNotifications;
+export type UnreadCountResponse = NotificationUnreadCountResponse;
+export type MarkAsReadResponse = NotificationResponse;
+export type MarkAllAsReadResponse = MarkAllReadResponse;
+export type MarkConversationAsReadResponse = MarkConversationReadResponse;
