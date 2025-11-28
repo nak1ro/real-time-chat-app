@@ -1,20 +1,16 @@
-// Reaction API - handles message reaction-related API calls
 import { apiClient } from './api-client';
-import type {
-  ToggleReactionDto,
-  ToggleReactionResponse,
-  GetReactionsResponse,
-} from '@/types';
+import type { ToggleReactionData, ToggleReactionResponse, ReactionsResponse, Reaction } from '@/types';
 
 export const reactionApi = {
-  // Toggle reaction (add or remove)
-  toggleReaction: (messageId: string, data: ToggleReactionDto) => {
-    return apiClient.post<ToggleReactionResponse>(`/api/messages/messages/${messageId}/reactions`, data);
+  // Toggle reaction on a message (add if not present, remove if present)
+  toggle: (messageId: string, data: ToggleReactionData): Promise<ToggleReactionResponse> => {
+    return apiClient.post<ToggleReactionResponse>(`/api/messages/${messageId}/reactions`, data);
   },
 
-  // Get message reactions
-  getMessageReactions: (messageId: string) => {
-    return apiClient.get<GetReactionsResponse>(`/api/messages/messages/${messageId}/reactions`);
+  // Get all reactions for a message
+  getForMessage: (messageId: string): Promise<Reaction[]> => {
+    return apiClient
+      .get<ReactionsResponse>(`/api/messages/${messageId}/reactions`)
+      .then((res) => res.reactions);
   },
 };
-

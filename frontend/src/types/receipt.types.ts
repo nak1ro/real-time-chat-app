@@ -1,6 +1,7 @@
 import { MessageDeliveryStatus } from './enums';
+import { UserBasic } from './user.types';
 
-// Receipt with User Info (matching backend ReceiptWithUser)
+// Receipt with user info
 export interface ReceiptWithUser {
   id: string;
   messageId: string;
@@ -10,45 +11,47 @@ export interface ReceiptWithUser {
   updatedAt: Date;
   deliveredAt: Date | null;
   seenAt: Date | null;
-  user: {
-    id: string;
-    name: string;
-    avatarUrl: string | null;
-  };
+  user: UserBasic;
 }
 
-// Message Read Stats
+// User who read a message
+export interface ReadByUser {
+  userId: string;
+  userName: string;
+  seenAt: Date | null;
+}
+
+// Message read statistics
 export interface MessageReadStats {
   messageId: string;
   totalRecipients: number;
   sentCount: number;
   deliveredCount: number;
   readCount: number;
-  readBy: Array<{
-    userId: string;
-    userName: string;
-    seenAt: Date | null;
-  }>;
+  readBy: ReadByUser[];
 }
 
-// Mark Messages As Read DTO
-export interface MarkMessagesAsReadDto {
+// Request DTO for marking messages as read
+export interface MarkAsReadData {
+  upToMessageId: string;
+}
+
+// Response from marking messages as read
+export interface BulkReceiptUpdate {
+  conversationId: string;
+  userId: string;
   lastReadMessageId: string;
-}
-
-// Mark Messages As Read Response
-export interface MarkMessagesAsReadResponse {
   messagesAffected: number;
   timestamp: Date;
 }
 
-// Unread Count Response (for conversations)
-export interface ConversationUnreadCountResponse {
-  conversationId: string;
+// Unread count response
+export interface UnreadCountResponse {
   unreadCount: number;
 }
 
-// Get Message Receipts Response
-export interface GetMessageReceiptsResponse {
-  stats: MessageReadStats;
-}
+// Legacy aliases for backward compatibility
+export type MarkMessagesAsReadDto = MarkAsReadData;
+export type MarkMessagesAsReadResponse = BulkReceiptUpdate;
+export type ConversationUnreadCountResponse = UnreadCountResponse & { conversationId: string };
+export type GetMessageReceiptsResponse = { stats: MessageReadStats };

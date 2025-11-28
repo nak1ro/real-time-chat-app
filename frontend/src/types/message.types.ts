@@ -1,7 +1,7 @@
 import { AttachmentType, MessageDeliveryStatus, Status } from './enums';
 import { UserBasic } from './user.types';
 
-// Message User (includes status for presence display)
+// User info included in message responses
 export interface MessageUser {
   id: string;
   name: string;
@@ -9,24 +9,8 @@ export interface MessageUser {
   status: Status | null;
 }
 
-// Attachment
-export interface Attachment {
-  id: string;
-  messageId: string;
-  url: string;
-  fileName: string | null;
-  mimeType: string | null;
-  sizeBytes: number | null;
-  type: AttachmentType;
-  width: number | null;
-  height: number | null;
-  durationMs: number | null;
-  thumbnailUrl: string | null;
-  createdAt: Date;
-}
-
-// Attachment Upload Data
-export interface AttachmentUploadData {
+// Attachment metadata for creating messages
+export interface AttachmentData {
   url: string;
   thumbnailUrl?: string;
   fileName: string;
@@ -38,7 +22,23 @@ export interface AttachmentUploadData {
   durationMs?: number;
 }
 
-// Reply-To Message (minimal info)
+// Full attachment object from API
+export interface Attachment {
+  id: string;
+  messageId: string;
+  url: string;
+  thumbnailUrl: string | null;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  type: AttachmentType;
+  width: number | null;
+  height: number | null;
+  durationMs: number | null;
+  createdAt: Date;
+}
+
+// Minimal reply-to message info
 export interface MessageReplyTo {
   id: string;
   text: string;
@@ -47,7 +47,25 @@ export interface MessageReplyTo {
   user: UserBasic;
 }
 
-// Message Receipt
+// Message reaction object
+export interface Reaction {
+  id: string;
+  messageId: string;
+  userId: string;
+  emoji: string;
+  createdAt: Date;
+  user?: UserBasic;
+}
+
+// Grouped reactions by emoji for UI
+export interface GroupedReaction {
+  emoji: string;
+  count: number;
+  users: UserBasic[];
+  hasCurrentUser: boolean;
+}
+
+// Message receipt object
 export interface MessageReceipt {
   id: string;
   messageId: string;
@@ -60,85 +78,96 @@ export interface MessageReceipt {
   user?: UserBasic;
 }
 
-// Message Reaction
-export interface MessageReaction {
-  id: string;
-  emoji: string;
-  userId: string;
-  messageId: string;
-  createdAt: Date;
-  user: UserBasic;
-}
-
-// Grouped Reactions (by emoji)
-export interface GroupedReaction {
-  emoji: string;
-  count: number;
-  users: UserBasic[];
-  hasCurrentUser: boolean;
-}
-
-// Message Mention
+// Message mention object
 export interface MessageMention {
   id: string;
   messageId: string;
   userId: string;
+  mentionedUserId: string;
   createdAt: Date;
+  message?: Message;
 }
 
-// Message (full, matching backend MessageWithRelations)
+// Full message object from API
 export interface Message {
   id: string;
-  text: string;
-  createdAt: Date;
-  isEdited: boolean;
-  editedAt: Date | null;
-  deletedAt: Date | null;
-  userId: string;
   conversationId: string;
+  userId: string;
+  text: string;
   replyToId: string | null;
+  isEdited: boolean;
+  isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   user?: MessageUser;
   replyTo?: MessageReplyTo | null;
   attachments?: Attachment[];
-  reactions?: MessageReaction[];
+  reactions?: Reaction[];
   receipts?: MessageReceipt[];
-  // mentions array returned by backend when fetching messages
   mentions?: MessageMention[];
-  // mentionedUserIds returned by backend when creating a message
-  mentionedUserIds?: string[];
   _count?: {
     receipts?: number;
   };
 }
 
-// Create Message DTO
-export interface CreateMessageDto {
+// Request DTO for creating messages
+export interface CreateMessageData {
   conversationId: string;
   text: string;
   replyToId?: string;
-  attachments?: AttachmentUploadData[];
+  attachments?: AttachmentData[];
 }
 
-// Create Message Response
-export interface CreateMessageResponse {
-  message: Message;
-  mentionedUserIds?: string[];
-}
-
-// Edit Message DTO
-export interface EditMessageDto {
+// Request DTO for editing messages
+export interface EditMessageData {
   text: string;
 }
 
-// Paginated Messages Response
-export interface PaginatedMessagesResponse {
+// Pagination options for messages
+export interface MessagePaginationOptions {
+  limit?: number;
+  cursor?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+// Paginated messages response
+export interface PaginatedMessages {
   messages: Message[];
   nextCursor: string | null;
   hasMore: boolean;
   total?: number;
 }
 
-// Upload Attachment Response
-export interface UploadAttachmentResponse {
-  attachment: Attachment;
+// Response types
+export interface MessageResponse {
+  message: Message;
+  mentionedUserIds?: string[];
 }
+
+export interface AttachmentsResponse {
+  attachments: Attachment[];
+}
+
+export interface UploadedAttachment {
+  url: string;
+  thumbnailUrl: string | null;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  type: string;
+  width: number | null;
+  height: number | null;
+  durationMs: number | null;
+}
+
+export interface UploadAttachmentResponse {
+  attachment: UploadedAttachment;
+}
+
+// Legacy aliases for backward compatibility
+export type MessageReaction = Reaction;
+export type CreateMessageDto = CreateMessageData;
+export type EditMessageDto = EditMessageData;
+export type PaginatedMessagesResponse = PaginatedMessages;
+export type AttachmentUploadData = AttachmentData;
+export type CreateMessageResponse = MessageResponse;

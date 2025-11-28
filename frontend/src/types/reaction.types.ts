@@ -1,22 +1,21 @@
-import { MessageReaction, GroupedReaction } from './message.types';
+import { Reaction } from './message.types';
 
-// Toggle Reaction DTO
-export interface ToggleReactionDto {
+// Request DTO for toggling reaction
+export interface ToggleReactionData {
   emoji: string;
 }
 
-// Toggle Reaction Response
+// Response from toggling reaction
 export interface ToggleReactionResponse {
   action: 'added' | 'removed';
-  reaction?: MessageReaction;
+  reaction: Reaction | null;
 }
 
-// Get Reactions Response
-export interface GetReactionsResponse {
-  reactions: MessageReaction[];
+// Response from getting reactions
+export interface ReactionsResponse {
+  reactions: Reaction[];
 }
 
-// Grouped Reactions Response (optional, for UI grouping)
-export interface GroupedReactionsResponse {
-  grouped: GroupedReaction[];
-}
+// Legacy aliases
+export type ToggleReactionDto = ToggleReactionData;
+export type GetReactionsResponse = ReactionsResponse;

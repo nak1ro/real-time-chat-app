@@ -42,6 +42,23 @@ export {
   useConversationActions,
 } from './useConversations';
 
+// Message hooks
+export {
+  useMessages,
+  useInfiniteMessages,
+  useCreateMessage,
+  useEditMessage,
+  useDeleteMessage,
+  useUploadAttachment,
+  useMessageAttachments,
+  useToggleReaction,
+  useMessageReactions,
+  useMarkAsRead,
+  useMessageReadStats,
+  useUnreadCount,
+  useMessageActions,
+} from './useMessages';
+
 // Socket hooks
 export { useSocket } from './useSocket';
 
