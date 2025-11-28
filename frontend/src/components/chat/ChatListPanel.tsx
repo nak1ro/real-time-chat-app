@@ -4,8 +4,10 @@ import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui';
 import { Search } from 'lucide-react';
 import { ChatListItem } from './ChatListItem';
+import { UserListItem } from './UserListItem';
 import { ChatFilter, type ConversationFilter } from './ChatFilter';
 import type { Conversation, Message } from '@/types';
+import type { User } from '@/types/user.types';
 import { conversationApi } from '@/lib/api';
 import { useConversations } from '@/hooks';
 
@@ -31,14 +33,18 @@ function getDisplayName(conversation: Conversation): string {
 }
 
 export function ChatListPanel({
-  selectedConversationId,
-  onSelectConversation,
-}: ChatListPanelProps) {
+                                selectedConversationId,
+                                onSelectConversation,
+                              }: ChatListPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<ConversationFilter>('ALL');
   const [searchMode, setSearchMode] = useState<'LOCAL' | 'GLOBAL'>('LOCAL');
-  const [globalResults, setGlobalResults] = useState<{ conversations: Conversation[]; users: any[] }>({ conversations: [], users: [] });
+  const [globalResults, setGlobalResults] = useState<{
+    conversations: Conversation[];
+    users: User[];
+  }>({ conversations: [], users: [] });
   const [isSearching, setIsSearching] = useState(false);
+
   const { data: conversations = [], isLoading, error } = useConversations();
 
   const conversationsWithMeta = useMemo<ConversationWithMeta[]>(() => {
@@ -55,16 +61,17 @@ export function ChatListPanel({
     if (searchMode === 'GLOBAL' && searchQuery.trim()) {
       setIsSearching(true);
       const timer = setTimeout(() => {
-        conversationApi.search(searchQuery, filter === 'ALL' ? undefined : filter)
-          .then((results) => {
-            setGlobalResults(results);
-          })
-          .catch((err) => {
-            console.error('Search failed', err);
-          })
-          .finally(() => {
-            setIsSearching(false);
-          });
+        conversationApi
+            .search(searchQuery, filter === 'ALL' ? undefined : filter)
+            .then((results) => {
+              setGlobalResults(results);
+            })
+            .catch((err) => {
+              console.error('Search failed', err);
+            })
+            .finally(() => {
+              setIsSearching(false);
+            });
       }, 500);
 
       return () => clearTimeout(timer);
@@ -96,112 +103,132 @@ export function ChatListPanel({
     });
   }, [conversationsWithMeta, filter, searchQuery, searchMode]);
 
-  const handleGlobalResultClick = (conversationId: string) => {
-    // If conversation exists in local list, select it
-    // If not, we might need to join or fetch it (handled by parent or we just select it and let parent fetch)
-    // For now, assume onSelectConversation handles it
+  const handleGlobalConversationClick = (conversationId: string) => {
     onSelectConversation(conversationId);
   };
 
+  const handleUserResultClick = async (userId: string) => {
+    try {
+      // Get or create a direct conversation with this user
+      const conversation = await conversationApi.createDirect({ otherUserId: userId });
+      onSelectConversation(conversation.id);
+    } catch (err) {
+      console.error('Failed to open direct conversation', err);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="sticky top-0 z-10 p-3 space-y-3 border-b border-border bg-background">
-        <div className="flex gap-2 bg-muted/50 p-1 rounded-lg">
-          <button
-            onClick={() => setSearchMode('LOCAL')}
-            className={`flex-1 text-xs py-1.5 rounded-md transition-all ${searchMode === 'LOCAL'
-              ? 'bg-background shadow-sm text-foreground font-medium'
-              : 'text-muted-foreground hover:text-foreground'
-              }`}
-          >
-            My Chats
-          </button>
-          <button
-            onClick={() => setSearchMode('GLOBAL')}
-            className={`flex-1 text-xs py-1.5 rounded-md transition-all ${searchMode === 'GLOBAL'
-              ? 'bg-background shadow-sm text-foreground font-medium'
-              : 'text-muted-foreground hover:text-foreground'
-              }`}
-          >
-            Global Search
-          </button>
+      <div className="flex flex-col h-full">
+        <div className="sticky top-0 z-10 p-3 space-y-3 border-b border-border bg-background">
+          <div className="flex gap-2 bg-muted/50 p-1 rounded-lg">
+            <button
+                onClick={() => setSearchMode('LOCAL')}
+                className={`flex-1 text-xs py-1.5 rounded-md transition-all ${
+                    searchMode === 'LOCAL'
+                        ? 'bg-background shadow-sm text-foreground font-medium'
+                        : 'text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              My Chats
+            </button>
+            <button
+                onClick={() => setSearchMode('GLOBAL')}
+                className={`flex-1 text-xs py-1.5 rounded-md transition-all ${
+                    searchMode === 'GLOBAL'
+                        ? 'bg-background shadow-sm text-foreground font-medium'
+                        : 'text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              Global Search
+            </button>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+                type="text"
+                placeholder={
+                  searchMode === 'LOCAL'
+                      ? 'Search my chats...'
+                      : 'Search people and conversations...'
+                }
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+            />
+          </div>
+          <ChatFilter value={filter} onChange={setFilter} />
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder={searchMode === 'LOCAL' ? "Search my chats..." : "Search all conversations..."}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <ChatFilter value={filter} onChange={setFilter} />
-      </div>
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div className="p-2 space-y-1">
+            {searchMode === 'LOCAL' ? (
+                    isLoading ? (
+                        <div className="py-8 text-center text-sm text-muted-foreground">
+                          Loading chats...
+                        </div>
+                    ) : error ? (
+                        <div className="py-8 text-center text-sm text-destructive">
+                          Failed to load chats:{' '}
+                          {error instanceof Error ? error.message : 'Unknown error'}
+                        </div>
+                    ) : filteredConversations.length === 0 ? (
+                        <div className="py-8 text-center text-sm text-muted-foreground">
+                          {searchQuery || filter !== 'ALL' ? 'No chats found' : 'No chats yet'}
+                        </div>
+                    ) : (
+                        filteredConversations.map(
+                            ({ conversation, lastMessage, unreadCount, isOnline }) => (
+                                <ChatListItem
+                                    key={conversation.id}
+                                    conversation={conversation}
+                                    lastMessage={lastMessage}
+                                    unreadCount={unreadCount}
+                                    isOnline={isOnline}
+                                    isActive={conversation.id === selectedConversationId}
+                                    onClick={() => onSelectConversation(conversation.id)}
+                                />
+                            )
+                        )
+                    )
+                ) : // GLOBAL mode
+                isSearching ? (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      Searching...
+                    </div>
+                ) : globalResults.conversations.length === 0 &&
+                globalResults.users.length === 0 ? (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      {searchQuery
+                          ? 'No matching results found'
+                          : 'Type to search globally'}
+                    </div>
+                ) : (
+                    <>
+                      {globalResults.conversations.map((conversation) => (
+                          <ChatListItem
+                              key={conversation.id}
+                              conversation={conversation}
+                              lastMessage={null}
+                              unreadCount={0}
+                              isOnline={false}
+                              isActive={conversation.id === selectedConversationId}
+                              onClick={() => handleGlobalConversationClick(conversation.id)}
+                          />
+                      ))}
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="p-2 space-y-1">
-          {searchMode === 'LOCAL' ? (
-            isLoading ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">Loading chats...</div>
-            ) : error ? (
-              <div className="py-8 text-center text-sm text-destructive">
-                Failed to load chats: {error instanceof Error ? error.message : 'Unknown error'}
-              </div>
-            ) : filteredConversations.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                {searchQuery || filter !== 'ALL' ? 'No chats found' : 'No chats yet'}
-              </div>
-            ) : (
-              filteredConversations.map(({ conversation, lastMessage, unreadCount, isOnline }) => (
-                <ChatListItem
-                  key={conversation.id}
-                  conversation={conversation}
-                  lastMessage={lastMessage}
-                  unreadCount={unreadCount}
-                  isOnline={isOnline}
-                  isActive={conversation.id === selectedConversationId}
-                  onClick={() => onSelectConversation(conversation.id)}
-                />
-              ))
-            )
-          ) : (
-            // Global Search Results
-            isSearching ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">Searching...</div>
-            ) : (
-              globalResults.conversations.length === 0 && globalResults.users.length === 0 ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">
-                  {searchQuery ? 'No matching results found' : 'Type to search global conversations'}
-                </div>
-              ) : (
-                <>
-                  {globalResults.conversations.map((conversation) => (
-                    <ChatListItem
-                      key={conversation.id}
-                      conversation={conversation}
-                      lastMessage={null} // No last message for global search results usually
-                      unreadCount={0}
-                      isOnline={false}
-                      isActive={conversation.id === selectedConversationId}
-                      onClick={() => handleGlobalResultClick(conversation.id)}
-                    />
-                  ))}
-                  {/* Render users if needed, or maybe ChatListItem handles users too if they are returned as conversations?
-                              The API returns { conversations, users }.
-                              For now, let's just render conversations.
-                              If users are needed, we'd need a UserListItem component or map them to a conversation-like structure.
-                              The prompt said "Search among user's own chats" vs "Search all conversations".
-                              It didn't explicitly ask for User search results in the UI, but the API supports it.
-                              I'll stick to conversations for now to match the "ChatListItem" type.
-                           */}
-                </>
-              )
-            )
-          )}
+                      {globalResults.users.map((user) => (
+                          <UserListItem
+                              key={user.id}
+                              user={user}
+                              isActive={false}
+                              onClick={() => handleUserResultClick(user.id)}
+                          />
+                      ))}
+                    </>
+                )}
+          </div>
         </div>
       </div>
-    </div>
   );
 }
