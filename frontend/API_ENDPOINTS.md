@@ -467,6 +467,50 @@ All conversation endpoints require authentication.
 
 ---
 
+### GET /api/conversations/search
+**Description**: Search for public conversations and users by name
+
+**Authentication**: Required
+
+**Query Parameters**:
+- `q`: string (required) - Search query string
+- `type`: string (optional) - Filter by conversation type: `DIRECT`, `GROUP`, `CHANNEL`. If omitted, searches all public conversations and users.
+
+**Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "conversations": [
+      {
+        "id": "string",
+        "type": "DIRECT | GROUP | CHANNEL",
+        "name": "string | null",
+        "slug": "string | null",
+        "description": "string | null",
+        "avatarUrl": "string | null",
+        "isPublic": "boolean",
+        "isReadOnly": "boolean",
+        "createdAt": "Date",
+        "members": [...]
+      }
+    ],
+    "users": [
+      {
+        "id": "string",
+        "name": "string",
+        "avatarUrl": "string | null",
+        "status": "Status | null",
+        "lastSeenAt": "Date | null",
+        "createdAt": "Date"
+      }
+    ]
+  }
+}
+```
+
+---
+
 ### GET /api/conversations/:id
 **Description**: Get conversation by ID
 

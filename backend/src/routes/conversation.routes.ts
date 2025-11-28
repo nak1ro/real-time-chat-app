@@ -10,6 +10,7 @@ router.use(authenticate);
 
 // Public channels (must be before /:id routes to avoid conflicts)
 router.get('/public', conversationController.listPublicChannels);
+router.get('/search', conversationController.search);
 router.post('/public/:slug/join', conversationController.joinChannelBySlug);
 
 // Conversation CRUD

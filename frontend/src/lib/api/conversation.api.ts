@@ -97,4 +97,12 @@ export const conversationApi = {
       .post<SlugResponse>('/api/conversations/slug', data)
       .then((res) => res.slug);
   },
+
+  // Search conversations and users
+  search: (query: string, type?: string): Promise<{ conversations: Conversation[]; users: any[] }> => {
+    return apiClient
+      .get<{ conversations: Conversation[]; users: any[] }>('/api/conversations/search', {
+        params: { q: query, type },
+      });
+  },
 };

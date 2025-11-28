@@ -719,3 +719,97 @@ export const generateSlug = async (name: string): Promise<string> => {
     return slug;
 };
 
+
+
+// Search conversations and users
+export const searchConversations = async (
+    query: string,
+    currentUserId: string,
+    type?: string
+): Promise<{ conversations: Conversation[]; users: User[] }> => {
+    if (!query || query.trim().length === 0) {
+        return { conversations: [], users: [] };
+    }
+
+    const searchQuery = query.trim();
+    const conversationWhere: Prisma.ConversationWhereInput = {
+        OR: [
+            { name: { contains: searchQuery, mode: 'insensitive' } },
+            { description: { contains: searchQuery, mode: 'insensitive' } },
+        ],
+    };
+
+    let searchUsers = false;
+
+    // Apply filters based on type
+    if (type === 'DIRECT') {
+        // Direct messages: Only existing DMs where user is a member
+        conversationWhere.type = PrismaConversationType.DIRECT;
+        conversationWhere.members = {
+            some: { userId: currentUserId },
+        };
+        // Do not search for new users in "Direct" filter, only existing convos
+        searchUsers = false;
+    } else if (type === 'GROUP') {
+        // Groups: Public groups OR private groups where user is a member
+        conversationWhere.type = PrismaConversationType.GROUP;
+        conversationWhere.AND = [
+            {
+                OR: [
+                    { isPublic: true },
+                    { members: { some: { userId: currentUserId } } },
+                ],
+            },
+        ];
+        searchUsers = false;
+    } else if (type === 'CHANNEL') {
+        // Channels: Public channels OR private channels where user is a member
+        conversationWhere.type = PrismaConversationType.CHANNEL;
+        conversationWhere.AND = [
+            {
+                OR: [
+                    { isPublic: true },
+                    { members: { some: { userId: currentUserId } } },
+                ],
+            },
+        ];
+        searchUsers = false;
+    } else {
+        // All (Default): Public convos OR any convo where user is a member
+        conversationWhere.AND = [
+            {
+                OR: [
+                    { isPublic: true },
+                    { members: { some: { userId: currentUserId } } },
+                ],
+            },
+        ];
+        searchUsers = true;
+    }
+
+    const conversations = await prisma.conversation.findMany({
+        where: conversationWhere,
+        orderBy: {
+            updatedAt: 'desc',
+        },
+        take: 20,
+    });
+
+    let users: User[] = [];
+    if (searchUsers) {
+        users = await prisma.user.findMany({
+            where: {
+                id: { not: currentUserId },
+                OR: [
+                    { name: { contains: searchQuery, mode: 'insensitive' } },
+                ],
+            },
+            orderBy: {
+                name: 'asc',
+            },
+            take: 20,
+        });
+    }
+
+    return { conversations, users };
+};

@@ -190,3 +190,20 @@ export const generateSlug = asyncHandler(async (req: Request, res: Response) => 
         data: { slug },
     });
 });
+
+// Search conversations and users
+export const search = asyncHandler(async (req: Request, res: Response) => {
+    const currentUserId = (req as any).user?.id;
+    const { q, type } = req.query;
+
+    const results = await conversationService.searchConversations(
+        q as string,
+        currentUserId,
+        type as string
+    );
+
+    res.status(200).json({
+        status: 'success',
+        data: results,
+    });
+});
