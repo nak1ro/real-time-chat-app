@@ -27,7 +27,7 @@ export interface UserWithStatus extends UserBasic {
 // Request DTO for updating user profile
 export interface UpdateUserData {
   name?: string;
-  avatarUrl?: string;
+  avatar?: File;
 }
 
 // Search query parameters

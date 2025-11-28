@@ -1,4 +1,5 @@
 import { apiClient } from './api-client';
+import { getToken } from '@/lib/auth/token-storage';
 import type {
   User,
   UpdateUserData,
@@ -24,9 +25,37 @@ export const userApi = {
 
   // Update current user profile
   updateMe: (data: UpdateUserData): Promise<User> => {
-    return apiClient
-      .patch<UserResponse>('/api/users/me', data)
-      .then((res) => res.user);
+    const formData = new FormData();
+
+    if (data.name !== undefined) {
+      formData.append('name', data.name);
+    }
+
+    if (data.avatar) {
+      formData.append('avatar', data.avatar);
+    }
+
+    // Use a custom fetch for PATCH with FormData since apiClient.upload only supports POST
+    const token = getToken();
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/users/me`, {
+      method: 'PATCH',
+      headers,
+      body: formData,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ message: 'Request failed' }));
+          throw new Error(error.message || `Request failed with status ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((res) => res.data.user);
   },
 
   // Get user by ID

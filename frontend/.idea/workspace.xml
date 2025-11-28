@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e5da075b-33bd-4932-97ef-c5ebf4ee5470" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../backend/API_ENDPOINTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/API_ENDPOINTS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/dist/controllers/users/user.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/dist/controllers/users/user.controller.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/dist/routes/user.routes.js" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/dist/routes/user.routes.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/src/controllers/users/user.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/src/controllers/users/user.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/src/routes/user.routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/src/routes/user.routes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/.env.production" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.env.production" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/enums.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/enums.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/dashboard/ProfileActionsCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/dashboard/ProfileActionsCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/api/user.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/api/user.api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/user.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/user.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +94,7 @@
       <updated>1764180529171</updated>
       <workItem from="1764180530415" duration="3244000" />
       <workItem from="1764193705169" duration="13219000" />
-      <workItem from="1764349309445" duration="3439000" />
+      <workItem from="1764349309445" duration="4528000" />
     </task>
     <servers />
   </component>
