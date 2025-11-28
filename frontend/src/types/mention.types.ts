@@ -1,24 +1,29 @@
 import { Message } from './message.types';
 
-// Mention with Message
-export interface MentionWithMessage {
+// Full mention object from API
+export interface Mention {
   id: string;
   messageId: string;
   userId: string;
+  mentionedUserId: string;
   createdAt: Date;
-  message: Message;
+  message?: Message;
 }
 
-// Paginated Mentions Response
-export interface PaginatedMentionsResponse {
-  mentions: MentionWithMessage[];
-  nextCursor: string | null;
-  hasMore: boolean;
-  total?: number;
-}
-
-// Mention Query Options
-export interface MentionQueryOptions {
+// Query parameters for listing mentions
+export interface MentionQueryParams {
   limit?: number;
   cursor?: string;
 }
+
+// Paginated mentions response
+export interface PaginatedMentions {
+  mentions: Mention[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+// Legacy aliases for backward compatibility
+export type MentionWithMessage = Mention;
+export type MentionQueryOptions = MentionQueryParams;
+export type PaginatedMentionsResponse = PaginatedMentions;

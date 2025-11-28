@@ -71,6 +71,12 @@ export {
   useMessageActions,
 } from './useMessages';
 
+// Mention hooks
+export {
+  useMentions,
+  useInfiniteMentions,
+} from './useMentions';
+
 // Notification hooks
 export {
   useNotifications,

@@ -1,7 +1,4 @@
-import { UserBasic } from './user.types';
-
-// Notification types from API
-export type NotificationType = 'MENTION' | 'REACTION' | 'MESSAGE' | 'SYSTEM';
+import { NotificationType } from './enums';
 
 // Full notification object from API
 export interface Notification {
@@ -50,17 +47,29 @@ export interface MarkConversationReadResponse {
   count: number;
 }
 
-// UI notification item for display
+// UI notification item for display in components
 export interface NotificationItem {
   id: string;
   type: NotificationType;
   title: string;
-  content: string;
+  preview?: string;
   timestamp: Date;
-  conversationId: string | null;
-  messageId: string | null;
-  isRead: boolean;
+  conversationId?: string;
+  messageId?: string;
+  actor: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
 }
+
+// Message-related notification types for filtering
+export const MESSAGE_NOTIFICATION_TYPES: NotificationType[] = [
+  NotificationType.NEW_MESSAGE,
+  NotificationType.MENTION,
+  NotificationType.REACTION,
+  NotificationType.REPLY,
+];
 
 // Legacy aliases for backward compatibility
 export type NotificationQueryOptions = NotificationQueryParams;
@@ -68,3 +77,6 @@ export type PaginatedNotificationsResponse = PaginatedNotifications;
 export type MarkAsReadResponse = NotificationResponse;
 export type MarkAllAsReadResponse = MarkAllReadResponse;
 export type MarkConversationAsReadResponse = MarkConversationReadResponse;
+
+// Re-export the enum for convenience
+export { NotificationType };
