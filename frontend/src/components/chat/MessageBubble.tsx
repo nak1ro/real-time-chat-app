@@ -4,10 +4,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { Check, CheckCheck } from 'lucide-react';
-import type { Message } from './types';
+import type { ChatMessage } from '@/types/chat.types';
 
 interface MessageBubbleProps {
-  message: Message;
+  message: ChatMessage;
   showAvatar?: boolean;
 }
 

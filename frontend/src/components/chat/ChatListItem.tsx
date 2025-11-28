@@ -3,7 +3,7 @@
 // Individual chat list item component
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { Chat } from './types';
+import type { Chat } from '@/types/chat.types';
 import { Users, Megaphone } from 'lucide-react';
 
 interface ChatListItemProps {

@@ -9,6 +9,6 @@ export { MessageInput } from './MessageInput';
 export { ChatFilter } from './ChatFilter';
 export { EmptyChatState } from './EmptyChatState';
 
-export type { Chat, Message, ChatType, ChatFilter as ChatFilterType } from './types';
+export type { Chat, ChatMessage, ChatType, ChatFilter as ChatFilterType } from '@/types/chat.types';
 export { mockChats, mockMessages } from './mock-data';
 

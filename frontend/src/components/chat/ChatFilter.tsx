@@ -3,7 +3,7 @@
 // Chat type filter component
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui';
 import { MessageCircle, Users, Megaphone } from 'lucide-react';
-import type { ChatFilter as ChatFilterType } from './types';
+import type { ChatFilter as ChatFilterType } from '@/types/chat.types';
 
 interface ChatFilterProps {
   value: ChatFilterType;

@@ -4,10 +4,10 @@
 import { useRef, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui';
 import { MessageBubble } from './MessageBubble';
-import type { Message } from './types';
+import type { ChatMessage } from '@/types/chat.types';
 
 interface MessageListProps {
-  messages: Message[];
+  messages: ChatMessage[];
 }
 
 export function MessageList({ messages }: MessageListProps) {

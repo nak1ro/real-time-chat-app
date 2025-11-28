@@ -1,5 +1,13 @@
-import { AttachmentType, MessageDeliveryStatus } from './enums';
+import { AttachmentType, MessageDeliveryStatus, Status } from './enums';
 import { UserBasic } from './user.types';
+
+// Message User (includes status for presence display)
+export interface MessageUser {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  status: Status | null;
+}
 
 // Attachment
 export interface Attachment {
@@ -78,7 +86,7 @@ export interface MessageMention {
   createdAt: Date;
 }
 
-// Message (full)
+// Message (full, matching backend MessageWithRelations)
 export interface Message {
   id: string;
   text: string;
@@ -89,11 +97,15 @@ export interface Message {
   userId: string;
   conversationId: string;
   replyToId: string | null;
-  user: UserBasic;
-  replyTo: MessageReplyTo | null;
+  user?: MessageUser;
+  replyTo?: MessageReplyTo | null;
   attachments?: Attachment[];
   reactions?: MessageReaction[];
   receipts?: MessageReceipt[];
+  // mentions array returned by backend when fetching messages
+  mentions?: MessageMention[];
+  // mentionedUserIds returned by backend when creating a message
+  mentionedUserIds?: string[];
   _count?: {
     receipts?: number;
   };

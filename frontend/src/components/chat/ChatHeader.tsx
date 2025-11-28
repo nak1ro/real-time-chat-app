@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui';
 import { ArrowLeft, Search, MoreVertical, Trash2, Ban, X } from 'lucide-react';
-import type { Chat } from './types';
+import type { Chat } from '@/types/chat.types';
 import { cn } from '@/lib/utils';
 
 interface ChatHeaderProps {

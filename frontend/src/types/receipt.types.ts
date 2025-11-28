@@ -1,7 +1,6 @@
 import { MessageDeliveryStatus } from './enums';
-import { UserBasic } from './user.types';
 
-// Receipt with User Info
+// Receipt with User Info (matching backend ReceiptWithUser)
 export interface ReceiptWithUser {
   id: string;
   messageId: string;
@@ -11,7 +10,11 @@ export interface ReceiptWithUser {
   updatedAt: Date;
   deliveredAt: Date | null;
   seenAt: Date | null;
-  user: UserBasic;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
 }
 
 // Message Read Stats

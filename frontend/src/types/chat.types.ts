@@ -1,4 +1,4 @@
-// Chat component types
+// Chat UI component types
 
 export type ChatType = 'direct' | 'group' | 'channel';
 
@@ -13,7 +13,7 @@ export interface Chat {
   isOnline?: boolean;
 }
 
-export interface Message {
+export interface ChatMessage {
   id: string;
   chatId: string;
   senderId: string;

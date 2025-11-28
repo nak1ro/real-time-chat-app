@@ -1,6 +1,6 @@
 // Socket event constants and payload types
-import type { Message, MessageReaction, Notification } from '@/types';
-import type { Status } from '@/types/enums';
+import type { Message, Notification } from '@/types';
+import type { Status, MessageDeliveryStatus } from '@/types/enums';
 
 // Event names matching backend
 export const SOCKET_EVENTS = {
@@ -67,7 +67,7 @@ export interface ReceiptUpdatePayload {
   conversationId: string;
   messageId: string;
   userId: string;
-  status: 'SENT' | 'DELIVERED' | 'READ';
+  status: MessageDeliveryStatus;
   seenAt: Date | null;
   timestamp: Date;
 }
@@ -81,17 +81,17 @@ export interface BulkReceiptUpdate {
   timestamp: Date;
 }
 
-// Reaction update payload
+// Reaction update payload (matches backend socket.reactions.ts emit)
 export interface ReactionUpdatePayload {
   messageId: string;
-  conversationId: string;
-  reaction: MessageReaction;
+  emoji: string;
+  userId: string;
   action: 'added' | 'removed';
 }
 
-// Notification count update
+// Notification count update (matches backend socket.notifications.ts emit)
 export interface NotificationCountUpdate {
-  unreadCount: number;
+  count: number;
 }
 
 // Socket response types

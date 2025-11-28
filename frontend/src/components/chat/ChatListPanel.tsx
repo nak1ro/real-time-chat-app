@@ -6,7 +6,7 @@ import { Input } from '@/components/ui';
 import { Search } from 'lucide-react';
 import { ChatListItem } from './ChatListItem';
 import { ChatFilter } from './ChatFilter';
-import type { Chat, ChatFilter as ChatFilterType } from './types';
+import type { Chat, ChatFilter as ChatFilterType } from '@/types/chat.types';
 
 interface ChatListPanelProps {
   chats: Chat[];

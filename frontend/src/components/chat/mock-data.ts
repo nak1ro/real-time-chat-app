@@ -1,5 +1,5 @@
 // Mock data for chat components
-import type { Chat, Message } from './types';
+import type { Chat, ChatMessage } from '@/types/chat.types';
 
 export const mockChats: Chat[] = [
   {
@@ -76,7 +76,7 @@ export const mockChats: Chat[] = [
   },
 ];
 
-export const mockMessages: Record<string, Message[]> = {
+export const mockMessages: Record<string, ChatMessage[]> = {
   '1': [
     {
       id: 'm1',

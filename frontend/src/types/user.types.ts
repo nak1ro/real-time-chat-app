@@ -1,6 +1,8 @@
 import { Status } from './enums';
 
 // User Response (from backend)
+// Note: updatedAt is optional because auth endpoints use mapUserToResponse which excludes it,
+// while user endpoints return the full Prisma User object which includes it.
 export interface User {
   id: string;
   name: string;
@@ -8,6 +10,7 @@ export interface User {
   status: Status | null;
   lastSeenAt: Date | null;
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 // Minimal User Info (used in messages, reactions, etc.)

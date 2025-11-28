@@ -5,11 +5,11 @@ import { useState, useCallback } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
-import type { Chat, Message } from './types';
+import type { Chat, ChatMessage } from '@/types/chat.types';
 
 interface ChatDetailPanelProps {
   chat: Chat;
-  messages: Message[];
+  messages: ChatMessage[];
   onBack?: () => void;
   showBackButton?: boolean;
 }
@@ -20,10 +20,10 @@ export function ChatDetailPanel({
   onBack,
   showBackButton = false,
 }: ChatDetailPanelProps) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
 
   const handleSendMessage = useCallback((content: string) => {
-    const newMessage: Message = {
+    const newMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
       chatId: chat.id,
       senderId: 'me',
