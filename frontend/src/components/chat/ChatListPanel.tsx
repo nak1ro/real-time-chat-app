@@ -7,6 +7,7 @@ import { ChatListItem } from './ChatListItem';
 import { ChatFilter, type ConversationFilter } from './ChatFilter';
 import type { Conversation, Message } from '@/types';
 import { conversationApi } from '@/lib/api';
+import { useConversations } from '@/hooks';
 
 interface ConversationWithMeta {
   conversation: Conversation;
@@ -16,7 +17,6 @@ interface ConversationWithMeta {
 }
 
 interface ChatListPanelProps {
-  conversations: ConversationWithMeta[];
   selectedConversationId: string | null;
   onSelectConversation: (conversationId: string) => void;
 }
@@ -31,7 +31,6 @@ function getDisplayName(conversation: Conversation): string {
 }
 
 export function ChatListPanel({
-  conversations,
   selectedConversationId,
   onSelectConversation,
 }: ChatListPanelProps) {
@@ -40,6 +39,16 @@ export function ChatListPanel({
   const [searchMode, setSearchMode] = useState<'LOCAL' | 'GLOBAL'>('LOCAL');
   const [globalResults, setGlobalResults] = useState<{ conversations: Conversation[]; users: any[] }>({ conversations: [], users: [] });
   const [isSearching, setIsSearching] = useState(false);
+  const { data: conversations = [], isLoading, error } = useConversations();
+
+  const conversationsWithMeta = useMemo<ConversationWithMeta[]>(() => {
+    return conversations.map((conversation) => ({
+      conversation,
+      lastMessage: null as Message | null,
+      unreadCount: 0,
+      isOnline: false,
+    }));
+  }, [conversations]);
 
   // Debounced global search
   useEffect(() => {
@@ -73,7 +82,7 @@ export function ChatListPanel({
   const filteredConversations = useMemo(() => {
     if (searchMode === 'GLOBAL') return []; // Handled separately
 
-    return conversations.filter(({ conversation, lastMessage }) => {
+    return conversationsWithMeta.filter(({ conversation, lastMessage }) => {
       if (filter !== 'ALL' && conversation.type !== filter) {
         return false;
       }
@@ -85,7 +94,7 @@ export function ChatListPanel({
       }
       return true;
     });
-  }, [conversations, filter, searchQuery, searchMode]);
+  }, [conversationsWithMeta, filter, searchQuery, searchMode]);
 
   const handleGlobalResultClick = (conversationId: string) => {
     // If conversation exists in local list, select it
@@ -134,7 +143,13 @@ export function ChatListPanel({
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="p-2 space-y-1">
           {searchMode === 'LOCAL' ? (
-            filteredConversations.length === 0 ? (
+            isLoading ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">Loading chats...</div>
+            ) : error ? (
+              <div className="py-8 text-center text-sm text-destructive">
+                Failed to load chats: {error instanceof Error ? error.message : 'Unknown error'}
+              </div>
+            ) : filteredConversations.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
                 {searchQuery || filter !== 'ALL' ? 'No chats found' : 'No chats yet'}
               </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { conversationApi } from '@/lib/api';
 import { queryKeys } from '@/lib/react-query/query-keys';
 import type {
@@ -10,7 +10,6 @@ import type {
   CreateConversationData,
   UpdateConversationPatch,
   AddMembersData,
-  UpdateMemberRoleData,
   MemberRole,
 } from '@/types';
 

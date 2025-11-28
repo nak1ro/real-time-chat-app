@@ -16,10 +16,10 @@ export default function ChatsPage() {
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
 
   // Fetch conversations
-  const { data: conversations = [], isLoading: isLoadingConversations } = useConversations();
+  const { data: conversations = [] } = useConversations();
 
   // Fetch messages for selected conversation
-  const { data: messagesData, isLoading: isLoadingMessages } = useMessages(
+  const { data: messagesData } = useMessages(
     selectedConversationId || undefined
   );
 
@@ -27,26 +27,16 @@ export default function ChatsPage() {
   const createMessage = useCreateMessage();
 
   // Get selected conversation
-  const selectedConversation = useMemo(
+  const selectedConversation = useMemo<Conversation | null>(
     () => conversations.find((c) => c.id === selectedConversationId) || null,
     [conversations, selectedConversationId]
   );
 
   // Get messages for selected conversation
-  const messages = useMemo(
+  const messages = useMemo<Message[]>(
     () => messagesData?.messages || [],
     [messagesData]
   );
-
-  // Build conversations with metadata for the list panel
-  const conversationsWithMeta = useMemo(() => {
-    return conversations.map((conversation) => ({
-      conversation,
-      lastMessage: null as Message | null, // TODO: Add last message from API or cache
-      unreadCount: 0, // TODO: Add unread count from API
-      isOnline: false, // TODO: Add presence status
-    }));
-  }, [conversations]);
 
   // Handle conversation selection
   const handleSelectConversation = useCallback((conversationId: string) => {
@@ -79,7 +69,6 @@ export default function ChatsPage() {
         )}
       >
         <ChatListPanel
-          conversations={conversationsWithMeta}
           selectedConversationId={selectedConversationId}
           onSelectConversation={handleSelectConversation}
         />
