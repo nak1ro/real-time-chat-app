@@ -65,7 +65,6 @@ export interface NotificationItem {
 // Legacy aliases for backward compatibility
 export type NotificationQueryOptions = NotificationQueryParams;
 export type PaginatedNotificationsResponse = PaginatedNotifications;
-export type UnreadCountResponse = NotificationUnreadCountResponse;
 export type MarkAsReadResponse = NotificationResponse;
 export type MarkAllAsReadResponse = MarkAllReadResponse;
 export type MarkConversationAsReadResponse = MarkConversationReadResponse;

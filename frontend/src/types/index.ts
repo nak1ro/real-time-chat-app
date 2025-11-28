@@ -1,5 +1,3 @@
-// Central export for all types
-
 // API types
 export * from './api.types';
 export * from './enums';
@@ -14,4 +12,3 @@ export * from './reaction.types';
 export * from './mention.types';
 export * from './receipt.types';
 export * from './moderation.types';
-export * from './chat.types';

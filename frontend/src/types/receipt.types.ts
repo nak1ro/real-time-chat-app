@@ -46,12 +46,13 @@ export interface BulkReceiptUpdate {
 }
 
 // Unread count response
-export interface UnreadCountResponse {
+export interface MessageUnreadCountResponse {
   unreadCount: number;
 }
 
 // Legacy aliases for backward compatibility
 export type MarkMessagesAsReadDto = MarkAsReadData;
 export type MarkMessagesAsReadResponse = BulkReceiptUpdate;
-export type ConversationUnreadCountResponse = UnreadCountResponse & { conversationId: string };
+export type ConversationUnreadCountResponse = MessageUnreadCountResponse & { conversationId: string };
 export type GetMessageReceiptsResponse = { stats: MessageReadStats };
+export type UnreadCountResponse = MessageUnreadCountResponse;

@@ -42,13 +42,3 @@ export enum ModerationActionType {
   DELETE_MESSAGE = 'DELETE_MESSAGE',
   PIN_MESSAGE = 'PIN_MESSAGE',
 }
-
-export enum NotificationType {
-  NEW_MESSAGE = 'NEW_MESSAGE',
-  MENTION = 'MENTION',
-  REACTION = 'REACTION',
-  REPLY = 'REPLY',
-  CONVERSATION_INVITE = 'CONVERSATION_INVITE',
-  ROLE_CHANGE = 'ROLE_CHANGE',
-}
-

@@ -1,19 +1,18 @@
 'use client';
 
-// Message list component with scrollable area
 import { useRef, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui';
 import { MessageBubble } from './MessageBubble';
-import type { ChatMessage } from '@/types/chat.types';
+import type { Message } from '@/types';
 
 interface MessageListProps {
-  messages: ChatMessage[];
+  messages: Message[];
+  currentUserId: string;
 }
 
-export function MessageList({ messages }: MessageListProps) {
+export function MessageList({ messages, currentUserId }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -26,12 +25,11 @@ export function MessageList({ messages }: MessageListProps) {
     );
   }
 
-  // Group consecutive messages from the same sender
   const shouldShowAvatar = (index: number): boolean => {
     if (index === 0) return true;
     const prevMessage = messages[index - 1];
     const currentMessage = messages[index];
-    return prevMessage.senderId !== currentMessage.senderId;
+    return prevMessage.userId !== currentMessage.userId;
   };
 
   return (
@@ -41,6 +39,7 @@ export function MessageList({ messages }: MessageListProps) {
           <MessageBubble
             key={message.id}
             message={message}
+            isOwn={message.userId === currentUserId}
             showAvatar={shouldShowAvatar(index)}
           />
         ))}
@@ -49,4 +48,3 @@ export function MessageList({ messages }: MessageListProps) {
     </ScrollArea>
   );
 }
-

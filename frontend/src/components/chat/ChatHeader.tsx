@@ -1,6 +1,5 @@
 'use client';
 
-// Chat header component
 import { useState } from 'react';
 import {
   Avatar,
@@ -15,16 +14,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui';
 import { ArrowLeft, Search, MoreVertical, Trash2, Ban, X } from 'lucide-react';
-import type { Chat } from '@/types/chat.types';
 import { cn } from '@/lib/utils';
+import type { Conversation } from '@/types';
 
 interface ChatHeaderProps {
-  chat: Chat;
+  conversation: Conversation;
+  isOnline?: boolean;
   onBack?: () => void;
   showBackButton?: boolean;
 }
 
-function getInitials(name: string): string {
+function getInitials(name: string | null): string {
+  if (!name) return '?';
   return name
     .split(' ')
     .map((n) => n[0])
@@ -33,14 +34,43 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-export function ChatHeader({ chat, onBack, showBackButton = false }: ChatHeaderProps) {
+function getDisplayName(conversation: Conversation): string {
+  if (conversation.name) return conversation.name;
+  if (conversation.type === 'DIRECT' && conversation.members.length > 0) {
+    const otherMember = conversation.members.find((m) => m.user);
+    return otherMember?.user?.name || 'Unknown';
+  }
+  return 'Unnamed';
+}
+
+function getSubtitle(conversation: Conversation, isOnline: boolean): React.ReactNode {
+  if (conversation.type === 'DIRECT') {
+    return isOnline ? (
+      <span className="text-emerald-600 dark:text-emerald-400">Online</span>
+    ) : (
+      'Offline'
+    );
+  }
+  if (conversation.type === 'GROUP') {
+    const memberCount = conversation.members.length;
+    return `${memberCount} member${memberCount !== 1 ? 's' : ''}`;
+  }
+  return 'Channel';
+}
+
+export function ChatHeader({
+  conversation,
+  isOnline = false,
+  onBack,
+  showBackButton = false,
+}: ChatHeaderProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const displayName = getDisplayName(conversation);
 
   return (
     <div className="border-b border-border bg-background">
       <div className="flex items-center gap-2 h-14 px-3">
-        {/* Back button (mobile only) */}
         {showBackButton && (
           <Button
             variant="ghost"
@@ -52,35 +82,22 @@ export function ChatHeader({ chat, onBack, showBackButton = false }: ChatHeaderP
           </Button>
         )}
 
-        {/* Avatar and info */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src={chat.avatarUrl} alt={chat.name} />
+            <AvatarImage src={conversation.avatarUrl || undefined} alt={displayName} />
             <AvatarFallback className="bg-primary/10 text-primary text-sm">
-              {getInitials(chat.name)}
+              {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <h2 className="font-semibold truncate">{chat.name}</h2>
+            <h2 className="font-semibold truncate">{displayName}</h2>
             <p className="text-xs text-muted-foreground">
-              {chat.type === 'direct' ? (
-                chat.isOnline ? (
-                  <span className="text-emerald-600 dark:text-emerald-400">Online</span>
-                ) : (
-                  'Offline'
-                )
-              ) : chat.type === 'group' ? (
-                'Group chat'
-              ) : (
-                'Channel'
-              )}
+              {getSubtitle(conversation, isOnline)}
             </p>
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-1 flex-shrink-0">
-          {/* Search toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -90,7 +107,6 @@ export function ChatHeader({ chat, onBack, showBackButton = false }: ChatHeaderP
             <Search className="h-4 w-4" />
           </Button>
 
-          {/* Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -102,17 +118,20 @@ export function ChatHeader({ chat, onBack, showBackButton = false }: ChatHeaderP
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete chat
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive focus:text-destructive">
-                <Ban className="h-4 w-4 mr-2" />
-                Block user
-              </DropdownMenuItem>
+              {conversation.type === 'DIRECT' && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-destructive focus:text-destructive">
+                    <Ban className="h-4 w-4 mr-2" />
+                    Block user
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      {/* In-chat search (expandable) */}
       {showSearch && (
         <div className="px-3 pb-3 flex items-center gap-2">
           <div className="relative flex-1">
@@ -142,4 +161,3 @@ export function ChatHeader({ chat, onBack, showBackButton = false }: ChatHeaderP
     </div>
   );
 }
-
