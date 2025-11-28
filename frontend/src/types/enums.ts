@@ -31,18 +31,7 @@ export enum MessageDeliveryStatus {
   READ = 'READ',
 }
 
-export enum ModerationActionType {
-  KICK = 'KICK',
-  BAN = 'BAN',
-  UNBAN = 'UNBAN',
-  MUTE = 'MUTE',
-  UNMUTE = 'UNMUTE',
-  MAKE_ADMIN = 'MAKE_ADMIN',
-  REMOVE_ADMIN = 'REMOVE_ADMIN',
-  DELETE_MESSAGE = 'DELETE_MESSAGE',
-  PIN_MESSAGE = 'PIN_MESSAGE',
-}
-
+// UI notification types (extended from backend for richer notifications)
 export enum NotificationType {
   NEW_MESSAGE = 'NEW_MESSAGE',
   MENTION = 'MENTION',

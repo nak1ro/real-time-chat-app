@@ -32,18 +32,29 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const userController = __importStar(require("../controllers/users/user.controller"));
 const presenceController = __importStar(require("../controllers/users/presence.controller"));
 const permissionsController = __importStar(require("../controllers/users/permissions.controller"));
 const middleware_1 = require("../middleware");
+const multer_1 = __importDefault(require("multer"));
 const router = (0, express_1.Router)();
 // All routes require authentication
 router.use(middleware_1.authenticate);
+// Configure multer for avatar uploads
+const upload = (0, multer_1.default)({
+    storage: multer_1.default.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit for avatars
+    },
+});
 // User routes
 router.get('/me', userController.getCurrentUser);
-router.patch('/me', userController.updateCurrentUser);
+router.patch('/me', upload.single('avatar'), userController.updateCurrentUser);
 router.get('/search', userController.searchUsers);
 router.get('/:id', userController.getUserById);
 // Presence routes

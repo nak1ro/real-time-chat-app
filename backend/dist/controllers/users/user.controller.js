@@ -36,6 +36,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.searchUsers = exports.updateCurrentUser = exports.getUserById = exports.getCurrentUser = void 0;
 const middleware_1 = require("../../middleware");
 const userService = __importStar(require("../../services/users/user.service"));
+const s3_service_1 = require("../../services/shared/s3.service");
+// Allowed image MIME types for avatars
+const ALLOWED_AVATAR_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+];
 // Get current user
 exports.getCurrentUser = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
@@ -57,7 +65,18 @@ exports.getUserById = (0, middleware_1.asyncHandler)(async (req, res) => {
 // Update current user
 exports.updateCurrentUser = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
-    const { name, avatarUrl } = req.body;
+    const { name } = req.body;
+    const file = req.file;
+    let avatarUrl;
+    // If avatar file is provided, validate and upload it
+    if (file) {
+        // Validate file type
+        if (!ALLOWED_AVATAR_TYPES.includes(file.mimetype)) {
+            throw new middleware_1.BadRequestError(`Invalid avatar file type. Allowed types: ${ALLOWED_AVATAR_TYPES.join(', ')}`);
+        }
+        // Upload to S3 in the 'avatars' folder
+        avatarUrl = await (0, s3_service_1.uploadToS3)(file, 'avatars');
+    }
     const user = await userService.updateUser(userId, { name, avatarUrl });
     res.status(200).json({
         status: 'success',

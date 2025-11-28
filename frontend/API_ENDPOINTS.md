@@ -86,7 +86,7 @@ All authentication endpoints except `/register` and `/login` require a valid JWT
 
 **Request Body**: None
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -112,7 +112,7 @@ All authentication endpoints except `/register` and `/login` require a valid JWT
 
 **Request Body**: None
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -131,7 +131,7 @@ All authentication endpoints except `/register` and `/login` require a valid JWT
 
 **Request Body**: None
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -156,7 +156,7 @@ All user endpoints require authentication.
 
 **Request Body**: None
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -180,11 +180,12 @@ All user endpoints require authentication.
 
 **Authentication**: Required
 
-**Request Body**: 
+**Request Body**: multipart/form-data
 - `name`: string (optional) - New username
-- `avatarUrl`: string (optional) - New avatar URL
+- `avatar`: File (optional) - Avatar image file (max 5MB)
+  - Allowed types: `image/jpeg`, `image/png`, `image/gif`, `image/webp`
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -211,7 +212,7 @@ All user endpoints require authentication.
 **Query Parameters**:
 - `query`: string (required) - Search query string
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -240,7 +241,7 @@ All user endpoints require authentication.
 **Path Parameters**:
 - `id`: string - User ID
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -271,14 +272,14 @@ All user endpoints require authentication.
 **Path Parameters**:
 - `userId`: string - User ID to check presence for
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
   "data": {
     "status": {
       "userId": "string",
-      "status": "ONLINE | OFFLINE",
+      "status": "ONLINE | OFFLINE | AWAY",
       "lastSeenAt": "Date | null"
     }
   }
@@ -292,10 +293,10 @@ All user endpoints require authentication.
 
 **Authentication**: Required
 
-**Request Body**: 
+**Request Body**:
 - `userIds`: string[] (required) - Array of user IDs
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -303,7 +304,7 @@ All user endpoints require authentication.
     "users": [
       {
         "userId": "string",
-        "status": "ONLINE | OFFLINE",
+        "status": "ONLINE | OFFLINE | AWAY",
         "lastSeenAt": "Date | null"
       }
     ]
@@ -320,7 +321,7 @@ All user endpoints require authentication.
 
 **Request Body**: None
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -345,7 +346,7 @@ All user endpoints require authentication.
 - `conversationId`: string (required) - Conversation ID to check permissions for
 - `action`: string (required) - Action to check: `sendMessage`, `manageMembers`, or `moderateMessage`
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -368,10 +369,10 @@ All conversation endpoints require authentication.
 
 **Authentication**: Required
 
-**Request Body**: 
+**Request Body**:
 - `otherUserId`: string (required) - ID of the other user
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -408,7 +409,7 @@ All conversation endpoints require authentication.
 - `isReadOnly`: boolean (optional) - Whether only admins/moderators can post (default: false)
 - `avatarUrl`: string (optional) - Conversation avatar URL
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -441,7 +442,7 @@ All conversation endpoints require authentication.
 - `isPublic`: boolean (optional) - Filter by public status
 - `name`: string (optional) - Filter by name (partial match)
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -474,7 +475,7 @@ All conversation endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Conversation ID
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -512,7 +513,7 @@ All conversation endpoints require authentication.
 - `isPublic`: boolean (optional) - Update public visibility
 - `isReadOnly`: boolean (optional) - Update read-only status
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -532,11 +533,11 @@ All conversation endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Conversation ID
 
-**Request Body**: 
+**Request Body**:
 - `userIds`: string[] (required) - Array of user IDs to add
 - `role`: string (optional) - Member role: `MEMBER`, `MODERATOR`, or `ADMIN` (default: MEMBER)
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -557,7 +558,7 @@ All conversation endpoints require authentication.
 - `id`: string - Conversation ID
 - `memberId`: string - User ID of member to remove
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -577,7 +578,7 @@ All conversation endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Conversation ID
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -598,10 +599,10 @@ All conversation endpoints require authentication.
 - `id`: string - Conversation ID
 - `memberId`: string - User ID of member to update
 
-**Request Body**: 
+**Request Body**:
 - `role`: string (required) - New role: `MEMBER`, `MODERATOR`, or `ADMIN`
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -621,7 +622,7 @@ All conversation endpoints require authentication.
 **Query Parameters**:
 - `name`: string (optional) - Filter by name (partial match)
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -654,7 +655,7 @@ All conversation endpoints require authentication.
 **Path Parameters**:
 - `slug`: string - Channel slug
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -671,10 +672,10 @@ All conversation endpoints require authentication.
 
 **Authentication**: Required
 
-**Request Body**: 
+**Request Body**:
 - `name`: string (required) - Channel name to convert to slug
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -698,14 +699,14 @@ All conversation endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Conversation ID
 
-**Request Body**: 
+**Request Body**:
 - `action`: string (required) - Moderation action: `MUTE_USER`, `KICK_USER`, `BAN_USER`, `DELETE_MESSAGE`
 - `targetUserId`: string (optional) - User ID for user-based actions
 - `messageId`: string (optional) - Message ID for message-based actions
 - `reason`: string (optional) - Reason for moderation action
 - `expiresAt`: string (optional) - ISO date string for temporary actions
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -726,7 +727,7 @@ All conversation endpoints require authentication.
 - `id`: string - Conversation ID
 - `userId`: string - User ID to check
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -770,7 +771,7 @@ All message endpoints require authentication.
   - `height`: number (optional) - Image/video height
   - `durationMs`: number (optional) - Audio/video duration in milliseconds
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -853,10 +854,10 @@ All message endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Message ID
 
-**Request Body**: 
+**Request Body**:
 - `text`: string (required) - New message text
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -876,7 +877,7 @@ All message endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Message ID
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -900,7 +901,7 @@ All message endpoints require authentication.
 **Request Body**: multipart/form-data
 - `file`: File (required) - File to upload (max 50MB)
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -930,7 +931,7 @@ All message endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Message ID
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -970,7 +971,7 @@ All message endpoints require authentication.
 - `limit`: number (optional) - Number of mentions to return
 - `cursor`: string (optional) - Pagination cursor
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -1005,10 +1006,10 @@ All message endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Message ID
 
-**Request Body**: 
+**Request Body**:
 - `emoji`: string (required) - Emoji character or code
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -1035,7 +1036,7 @@ All message endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Message ID
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -1072,7 +1073,7 @@ All message endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Conversation ID
 
-**Request Body**: 
+**Request Body**:
 - `upToMessageId`: string (required) - All messages up to and including this ID will be marked as read
 
 **Response**: `BulkReceiptUpdate`
@@ -1130,7 +1131,7 @@ All message endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Conversation ID
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -1158,7 +1159,7 @@ All notification endpoints require authentication.
 - `cursor`: string (optional) - Pagination cursor
 - `unreadOnly`: boolean (optional) - Only return unread notifications (default: false)
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -1190,7 +1191,7 @@ All notification endpoints require authentication.
 
 **Authentication**: Required
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -1210,7 +1211,7 @@ All notification endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Notification ID
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -1227,7 +1228,7 @@ All notification endpoints require authentication.
 
 **Authentication**: Required
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",
@@ -1248,7 +1249,7 @@ All notification endpoints require authentication.
 **Path Parameters**:
 - `id`: string - Conversation ID
 
-**Response**: 
+**Response**:
 ```json
 {
   "status": "success",

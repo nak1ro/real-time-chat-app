@@ -1,6 +1,15 @@
 import { Request, Response } from 'express';
-import { asyncHandler } from '../../middleware';
+import { asyncHandler, BadRequestError } from '../../middleware';
 import * as userService from '../../services/users/user.service';
+import { uploadToS3 } from '../../services/shared/s3.service';
+
+// Allowed image MIME types for avatars
+const ALLOWED_AVATAR_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+];
 
 // Get current user
 export const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
@@ -29,7 +38,23 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
 // Update current user
 export const updateCurrentUser = asyncHandler(async (req: Request, res: Response) => {
     const userId = (req as any).user?.id;
-    const { name, avatarUrl } = req.body;
+    const { name } = req.body;
+    const file = req.file;
+
+    let avatarUrl: string | undefined;
+
+    // If avatar file is provided, validate and upload it
+    if (file) {
+        // Validate file type
+        if (!ALLOWED_AVATAR_TYPES.includes(file.mimetype)) {
+            throw new BadRequestError(
+                `Invalid avatar file type. Allowed types: ${ALLOWED_AVATAR_TYPES.join(', ')}`
+            );
+        }
+
+        // Upload to S3 in the 'avatars' folder
+        avatarUrl = await uploadToS3(file, 'avatars');
+    }
 
     const user = await userService.updateUser(userId, { name, avatarUrl });
 

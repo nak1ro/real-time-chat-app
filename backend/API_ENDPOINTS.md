@@ -180,9 +180,10 @@ All user endpoints require authentication.
 
 **Authentication**: Required
 
-**Request Body**: 
+**Request Body**: multipart/form-data
 - `name`: string (optional) - New username
-- `avatarUrl`: string (optional) - New avatar URL
+- `avatar`: File (optional) - Avatar image file (max 5MB)
+  - Allowed types: `image/jpeg`, `image/png`, `image/gif`, `image/webp`
 
 **Response**: 
 ```json
