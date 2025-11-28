@@ -1,53 +1,71 @@
-// User API - handles user-related API calls
 import { apiClient } from './api-client';
 import type {
   User,
   UpdateUserData,
-  UserSearchQuery,
+  UserSearchParams,
   UserPresence,
-  BulkPresenceRequest,
+  BulkPresenceData,
+  UserResponse,
+  UsersResponse,
+  PresenceResponse,
   BulkPresenceResponse,
+  PermissionCheckParams,
+  PermissionResponse,
+  HeartbeatResponse,
 } from '@/types';
 
 export const userApi = {
-  // Get current user
-  getCurrentUser: () => {
-    return apiClient.get<{ user: User }>('/api/users/me').then((res) => res.user);
+  // Get current user profile
+  getMe: (): Promise<User> => {
+    return apiClient
+      .get<UserResponse>('/api/users/me')
+      .then((res) => res.user);
   },
 
-  // Update current user
-  updateCurrentUser: (data: UpdateUserData) => {
-    return apiClient.patch<{ user: User }>('/api/users/me', data).then((res) => res.user);
+  // Update current user profile
+  updateMe: (data: UpdateUserData): Promise<User> => {
+    return apiClient
+      .patch<UserResponse>('/api/users/me', data)
+      .then((res) => res.user);
   },
 
   // Get user by ID
-  getUserById: (userId: string) => {
-    return apiClient.get<{ user: User }>(`/api/users/${userId}`).then((res) => res.user);
+  getById: (id: string): Promise<User> => {
+    return apiClient
+      .get<UserResponse>(`/api/users/${id}`)
+      .then((res) => res.user);
   },
 
-  // Search users
-  searchUsers: (query: UserSearchQuery) => {
-    return apiClient.get<{ users: User[] }>('/api/users/search', { params: query as any }).then((res) => res.users);
+  // Search users by name
+  search: (params: UserSearchParams): Promise<User[]> => {
+    return apiClient
+      .get<UsersResponse>('/api/users/search', { params: params as any })
+      .then((res) => res.users);
   },
 
-  // Get user presence
-  getUserPresence: (userId: string) => {
-    return apiClient.get<{ presence: UserPresence }>(`/api/users/${userId}/presence`).then((res) => res.presence);
+  // Get presence status for a user
+  getPresence: (userId: string): Promise<UserPresence> => {
+    return apiClient
+      .get<PresenceResponse>(`/api/users/${userId}/presence`)
+      .then((res) => res.status);
   },
 
-  // Get bulk user presences
-  getBulkPresences: (data: BulkPresenceRequest) => {
-    return apiClient.post<BulkPresenceResponse>('/api/users/presence/bulk', data);
+  // Get presence status for multiple users
+  getBulkPresence: (data: BulkPresenceData): Promise<UserPresence[]> => {
+    return apiClient
+      .post<BulkPresenceResponse>('/api/users/presence/bulk', data)
+      .then((res) => res.users);
   },
 
-  // Update presence heartbeat
-  updatePresenceHeartbeat: () => {
-    return apiClient.post<{ message: string }>('/api/users/presence/heartbeat');
+  // Send presence heartbeat
+  sendHeartbeat: (): Promise<HeartbeatResponse> => {
+    return apiClient.post<HeartbeatResponse>('/api/users/presence/heartbeat');
   },
 
-  // Check permissions
-  checkPermissions: () => {
-    return apiClient.get<{ permissions: Record<string, boolean> }>('/api/users/permissions');
+  // Check permission for an action in a conversation
+  checkPermission: (params: PermissionCheckParams): Promise<boolean> => {
+    return apiClient
+      .get<PermissionResponse>('/api/users/permissions', { params: params as any })
+      .then((res) => res.canPerform);
   },
 };
-

@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e5da075b-33bd-4932-97ef-c5ebf4ee5470" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../backend/API_ENDPOINTS.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/API_ENDPOINTS.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/hooks/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/hooks/useAuth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/useAuth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/api/conversation.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/api/conversation.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/providers/AuthProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/providers/AuthProvider.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/conversation.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/conversation.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/enums.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/enums.ts" afterDir="false" />
-    </list>
+    <list default="true" id="e5da075b-33bd-4932-97ef-c5ebf4ee5470" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

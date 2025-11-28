@@ -25,6 +25,18 @@ export {
   useClearCurrentUser,
 } from './useCurrentUser';
 
+// User hooks
+export {
+  useUser,
+  useUserSearch,
+  useUpdateProfile,
+  useUserPresence,
+  useBulkPresence,
+  useHeartbeat,
+  usePermissionCheck,
+  useUserActions,
+} from './useUsers';
+
 // Conversation hooks
 export {
   useConversations,
