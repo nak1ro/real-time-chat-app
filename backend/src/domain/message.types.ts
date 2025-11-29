@@ -14,6 +14,8 @@ export interface MessageReplyTo {
     text: string;
     userId: string;
     createdAt: Date;
+    deletedAt?: Date | null;
+    isDeleted?: boolean;
     user: {
         id: string;
         name: string;
@@ -30,6 +32,8 @@ export interface MessageWithRelations extends Message {
     _count?: {
         receipts?: number;
     };
+    // Computed field for frontend compatibility (derived from deletedAt)
+    isDeleted?: boolean;
 }
 
 // Input for creating a message

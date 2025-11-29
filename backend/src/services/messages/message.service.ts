@@ -57,13 +57,14 @@ const validateMessageText = (text: string): void => {
 };
 
 // Build pagination where clause
+// Note: We include soft-deleted messages so they can be displayed as "deleted" in the UI
 const buildPaginationWhereClause = (
     conversationId: string,
     cursor?: string
 ): Prisma.MessageWhereInput => {
     const where: Prisma.MessageWhereInput = {
         conversationId,
-        deletedAt: null,
+        // Removed deletedAt: null filter to include soft-deleted messages
     };
 
     if (cursor) {
@@ -71,6 +72,29 @@ const buildPaginationWhereClause = (
     }
 
     return where;
+};
+
+// Transform a message to include isDeleted boolean for frontend compatibility
+const addIsDeletedField = <T extends { deletedAt: Date | null; replyTo?: { deletedAt: Date | null } | null }>(
+    message: T
+): T & { isDeleted: boolean; replyTo?: (T['replyTo'] & { isDeleted: boolean }) | null } => {
+    const result = {
+        ...message,
+        isDeleted: message.deletedAt !== null,
+    };
+
+    // Also transform replyTo if it exists
+    if (message.replyTo) {
+        return {
+            ...result,
+            replyTo: {
+                ...message.replyTo,
+                isDeleted: message.replyTo.deletedAt !== null,
+            },
+        };
+    }
+
+    return result as T & { isDeleted: boolean; replyTo?: (T['replyTo'] & { isDeleted: boolean }) | null };
 };
 
 // Public API
@@ -81,7 +105,7 @@ import { processMentions } from './mention.service';
 // ... (existing imports)
 
 // Create a new message in a conversation
-export const createMessage = async (data: CreateMessageData): Promise<MessageWithRelations & { mentionedUserIds: string[] }> => {
+export const createMessage = async (data: CreateMessageData): Promise<MessageWithRelations & { mentionedUserIds: string[]; isDeleted: boolean }> => {
     const { userId, conversationId, text, replyToId, attachments } = data;
 
     validateMessageText(text);
@@ -143,7 +167,7 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
     // (Notifications will be sent via socket in the handler)
     // This is handled in the socket layer to include notification IDs
 
-    return { ...result, mentionedUserIds };
+    return { ...addIsDeletedField(result), mentionedUserIds };
 };
 
 // Get messages for a conversation with pagination
@@ -175,8 +199,11 @@ export const getConversationMessages = async (
             ? returnMessages[returnMessages.length - 1].id
             : null;
 
+    // Add isDeleted field to each message for frontend compatibility
+    const messagesWithIsDeleted = returnMessages.map(addIsDeletedField);
+
     return {
-        messages: returnMessages,
+        messages: messagesWithIsDeleted,
         nextCursor,
         hasMore,
     };
@@ -187,7 +214,7 @@ export const editMessage = async (
     messageId: string,
     actorId: string,
     text: string
-): Promise<MessageWithRelations> => {
+): Promise<MessageWithRelations & { isDeleted: boolean }> => {
     validateMessageText(text);
 
     const message = await verifyMessageExists(messageId);
@@ -203,7 +230,7 @@ export const editMessage = async (
         throw new BadRequestError('New text is the same as current text');
     }
 
-    return await prisma.message.update({
+    const updatedMessage = await prisma.message.update({
         where: { id: messageId },
         data: {
             text: trimmedText,
@@ -212,13 +239,15 @@ export const editMessage = async (
         },
         include: MESSAGE_INCLUDE_WITH_RELATIONS,
     });
+
+    return addIsDeletedField(updatedMessage);
 };
 
 // Soft delete a message (author or elevated roles only for moderation)
 export const softDeleteMessage = async (
     messageId: string,
     actorId: string
-): Promise<MessageWithRelations> => {
+): Promise<MessageWithRelations & { isDeleted: boolean }> => {
     const message = await verifyMessageExists(messageId);
 
     if (message.deletedAt) {
@@ -231,7 +260,7 @@ export const softDeleteMessage = async (
         throw new AuthorizationError('You can only delete your own messages or must be OWNER/ADMIN');
     }
 
-    return await prisma.message.update({
+    const deletedMessage = await prisma.message.update({
         where: { id: messageId },
         data: {
             deletedAt: new Date(),
@@ -239,5 +268,7 @@ export const softDeleteMessage = async (
         },
         include: MESSAGE_INCLUDE_WITH_RELATIONS,
     });
+
+    return addIsDeletedField(deletedMessage);
 };
 

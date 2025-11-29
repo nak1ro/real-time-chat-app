@@ -25,6 +25,7 @@ export const MESSAGE_REPLY_TO_INCLUDE = {
         text: true,
         userId: true,
         createdAt: true,
+        deletedAt: true,
         user: {
             select: {
                 id: true,

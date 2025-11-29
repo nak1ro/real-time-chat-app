@@ -29,12 +29,15 @@ import type {
     BulkReceiptUpdate as SocketBulkReceiptUpdate,
 } from '@/lib/socket/events';
 
-// ============================================================================
-// Query Hooks (HTTP - for initial data fetching and pagination)
-// ============================================================================
+// Helper type for the messages query data structure
+interface MessagesQueryData {
+    messages: Message[];
+    nextCursor: string | null;
+    hasMore: boolean;
+    total?: number;
+}
 
 // Hook to get messages for a conversation (paginated)
-// Default sort order is 'asc' so oldest messages appear first, newest at bottom
 export function useMessages(conversationId: string | undefined, options?: MessagePaginationOptions) {
     return useQuery({
         queryKey: queryKeys.messages.list(conversationId!),
@@ -45,7 +48,6 @@ export function useMessages(conversationId: string | undefined, options?: Messag
 }
 
 // Hook to get messages with infinite scroll
-// Default sort order is 'asc' so oldest messages appear first, newest at bottom
 export function useInfiniteMessages(conversationId: string | undefined, options?: Omit<MessagePaginationOptions, 'cursor'>) {
     return useInfiniteQuery({
         queryKey: [...queryKeys.messages.list(conversationId!), 'infinite'],
@@ -112,10 +114,6 @@ export function useUploadAttachment(options?: {
         },
     });
 }
-
-// ============================================================================
-// Socket-based Mutation Hooks
-// ============================================================================
 
 // Socket response types (matching backend response structure)
 interface SendMessageSocketResponse {
@@ -256,7 +254,26 @@ export function useDeleteMessage(options?: {
             return response.message;
         },
         onSuccess: (message) => {
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.list(message.conversationId)});
+            // Optimistically update the cache to mark the message as deleted
+            // This ensures the message shows "This message was deleted" instead of disappearing
+            queryClient.setQueryData<MessagesQueryData>(
+                queryKeys.messages.list(message.conversationId),
+                (oldData) => {
+                    if (!oldData) return oldData;
+                    
+                    return {
+                        ...oldData,
+                        messages: oldData.messages.map((msg) =>
+                            msg.id === message.id
+                                ? { ...msg, isDeleted: true, text: '' }
+                                : msg
+                        ),
+                    };
+                }
+            );
+            
+            // Also update conversations list to reflect the change
+            queryClient.invalidateQueries({queryKey: queryKeys.conversations.list()});
             options?.onSuccess?.(message);
         },
         onError: (error: Error) => {
@@ -354,10 +371,6 @@ export function useMarkAsRead(options?: {
     });
 }
 
-// ============================================================================
-// Real-time Socket Listeners Hook
-// ============================================================================
-
 export interface UseMessageSocketListenersOptions {
     conversationId: string | undefined;
     onNewMessage?: (message: Message) => void;
@@ -406,7 +419,23 @@ export function useMessageSocketListeners({
         console.log('[useMessageSocketListeners] Message deleted:', message.id);
 
         if (conversationId && message.conversationId === conversationId) {
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.list(conversationId)});
+            // Optimistically update the cache to mark the message as deleted
+            // This ensures the message shows "This message was deleted" instead of disappearing
+            queryClient.setQueryData<MessagesQueryData>(
+                queryKeys.messages.list(conversationId),
+                (oldData) => {
+                    if (!oldData) return oldData;
+                    
+                    return {
+                        ...oldData,
+                        messages: oldData.messages.map((msg) =>
+                            msg.id === message.id
+                                ? { ...msg, isDeleted: true, text: '' }
+                                : msg
+                        ),
+                    };
+                }
+            );
             onMessageDeleted?.(message);
         }
     }, [conversationId, queryClient, onMessageDeleted]);
@@ -477,10 +506,6 @@ export function useMessageSocketListeners({
         handleReceiptUpdated,
     ]);
 }
-
-// ============================================================================
-// Utility Hooks
-// ============================================================================
 
 // Utility hook combining all message operations
 export function useMessageActions() {

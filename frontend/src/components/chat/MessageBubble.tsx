@@ -3,7 +3,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { Check, CheckCheck } from 'lucide-react';
+import { Check, CheckCheck, Trash2 } from 'lucide-react';
 import type { Message } from '@/types';
 
 interface MessageBubbleProps {
@@ -27,10 +27,97 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
+// Truncate text to specified number of lines (approximated by character count)
+function truncateText(text: string, maxLength: number = 80): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength).trim() + '...';
+}
+
+// Reply preview component
+function ReplyPreview({ 
+  replyTo, 
+  isOwn 
+}: { 
+  replyTo: NonNullable<Message['replyTo']>; 
+  isOwn: boolean;
+}) {
+  // Check if the reply-to message is deleted using isDeleted field or empty text as fallback
+  const isReplyDeleted = ('isDeleted' in replyTo && replyTo.isDeleted) || !replyTo.text || replyTo.text === '';
+  const senderName = replyTo.user?.name || 'Unknown';
+  
+  const displayText = isReplyDeleted 
+    ? 'This message was deleted' 
+    : truncateText(replyTo.text);
+
+  return (
+    <div
+      className={cn(
+        'flex rounded-t-xl overflow-hidden mb-0.5',
+        isOwn ? 'bg-primary/20' : 'bg-muted-foreground/10'
+      )}
+    >
+      {/* Accent bar */}
+      <div
+        className={cn(
+          'w-1 flex-shrink-0',
+          isOwn ? 'bg-primary-foreground/50' : 'bg-primary'
+        )}
+      />
+      
+      {/* Reply content */}
+      <div className="flex flex-col gap-0.5 px-2.5 py-2 min-w-0">
+        {/* Sender name */}
+        <span
+          className={cn(
+            'text-xs font-semibold truncate',
+            isOwn ? 'text-primary-foreground/80' : 'text-primary'
+          )}
+        >
+          {senderName}
+        </span>
+        
+        {/* Reply text */}
+        <span
+          className={cn(
+            'text-xs line-clamp-2 break-words',
+            isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground',
+            isReplyDeleted && 'italic'
+          )}
+        >
+          {displayText}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Deleted message content
+function DeletedMessageContent({ isOwn }: { isOwn: boolean }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Trash2 
+        className={cn(
+          'h-3.5 w-3.5 flex-shrink-0',
+          isOwn ? 'text-primary-foreground/50' : 'text-muted-foreground/70'
+        )} 
+      />
+      <span 
+        className={cn(
+          'italic',
+          isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground'
+        )}
+      >
+        This message was deleted
+      </span>
+    </div>
+  );
+}
+
 export function MessageBubble({ message, isOwn, showAvatar = true, onContextMenu }: MessageBubbleProps) {
   const senderName = message.user?.name || 'Unknown';
   const senderAvatar = message.user?.avatarUrl;
   const isRead = (message._count?.receipts ?? 0) > 0;
+  const hasReply = !!message.replyTo;
 
   // Long-press detection for mobile
   const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -94,29 +181,43 @@ export function MessageBubble({ message, isOwn, showAvatar = true, onContextMenu
           </span>
         )}
 
+        {/* Message bubble with optional reply preview */}
         <div
           className={cn(
-            'px-3 py-2 rounded-2xl text-sm',
+            'rounded-2xl text-sm overflow-hidden',
             isOwn
               ? 'bg-primary text-primary-foreground rounded-br-md'
               : 'bg-muted rounded-bl-md',
-            message.isDeleted && 'italic opacity-60'
+            // When there's a reply, we need different padding structure
+            !hasReply && 'px-3 py-2'
           )}
           onContextMenu={handleRightClick}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           onTouchMove={handleTouchMove}
         >
-          <p className="whitespace-pre-wrap break-words">
-            {message.isDeleted ? 'This message was deleted' : message.text}
-          </p>
+          {/* Reply preview */}
+          {hasReply && message.replyTo && (
+            <ReplyPreview replyTo={message.replyTo} isOwn={isOwn} />
+          )}
+
+          {/* Message content */}
+          <div className={cn(hasReply && 'px-3 py-2')}>
+            {message.isDeleted ? (
+              <DeletedMessageContent isOwn={isOwn} />
+            ) : (
+              <p className="whitespace-pre-wrap break-words">
+                {message.text}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-1 px-1">
           <span className="text-[10px] text-muted-foreground">
             {formatTime(message.createdAt)}
           </span>
-          {message.isEdited && (
+          {message.isEdited && !message.isDeleted && (
             <span className="text-[10px] text-muted-foreground">(edited)</span>
           )}
           {isOwn && (

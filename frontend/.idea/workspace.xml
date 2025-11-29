@@ -5,14 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e5da075b-33bd-4932-97ef-c5ebf4ee5470" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(protected)/chats/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(protected)/chats/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat/ChatDetailPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat/ChatDetailPanel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat/MessageBubble.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat/MessageBubble.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat/MessageInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat/MessageInput.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat/MessageList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat/MessageList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/chat/MessageContextMenu.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat/MessageContextMenu.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

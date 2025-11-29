@@ -95,8 +95,8 @@ export function MessageInput({
               <p className="text-xs font-medium text-primary">
                 Replying to {replyToMessage.user?.name || 'Unknown'}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {replyToMessage.text}
+              <p className={`text-xs text-muted-foreground truncate ${replyToMessage.isDeleted ? 'italic' : ''}`}>
+                {replyToMessage.isDeleted ? 'This message was deleted' : replyToMessage.text}
               </p>
             </div>
             <Button

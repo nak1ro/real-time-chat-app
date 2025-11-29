@@ -44,6 +44,7 @@ export interface MessageReplyTo {
   text: string;
   userId: string;
   createdAt: Date;
+  isDeleted?: boolean;
   user: UserBasic;
 }
 
