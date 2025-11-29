@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { Check, CheckCheck } from 'lucide-react';
@@ -9,6 +10,7 @@ interface MessageBubbleProps {
   message: Message;
   isOwn: boolean;
   showAvatar?: boolean;
+  onContextMenu?: (message: Message, position: { x: number; y: number }) => void;
 }
 
 function formatTime(date: Date | string): string {
@@ -25,10 +27,48 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-export function MessageBubble({ message, isOwn, showAvatar = true }: MessageBubbleProps) {
+export function MessageBubble({ message, isOwn, showAvatar = true, onContextMenu }: MessageBubbleProps) {
   const senderName = message.user?.name || 'Unknown';
   const senderAvatar = message.user?.avatarUrl;
   const isRead = (message._count?.receipts ?? 0) > 0;
+
+  // Long-press detection for mobile
+  const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const touchStartPos = React.useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+
+    longPressTimerRef.current = setTimeout(() => {
+      if (onContextMenu && touchStartPos.current) {
+        onContextMenu(message, touchStartPos.current);
+      }
+    }, 500); // 500ms for long-press
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    touchStartPos.current = null;
+  };
+
+  const handleTouchMove = () => {
+    // Cancel long-press if user moves finger
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleRightClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onContextMenu) {
+      onContextMenu(message, { x: e.clientX, y: e.clientY });
+    }
+  };
 
   return (
     <div
@@ -62,6 +102,10 @@ export function MessageBubble({ message, isOwn, showAvatar = true }: MessageBubb
               : 'bg-muted rounded-bl-md',
             message.isDeleted && 'italic opacity-60'
           )}
+          onContextMenu={handleRightClick}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchMove={handleTouchMove}
         >
           <p className="whitespace-pre-wrap break-words">
             {message.isDeleted ? 'This message was deleted' : message.text}

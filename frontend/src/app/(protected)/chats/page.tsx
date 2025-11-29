@@ -12,6 +12,8 @@ import {
   useConversations,
   useMessages,
   useCreateMessage,
+  useEditMessage,
+  useDeleteMessage,
   useMessageSocketListeners,
   useSocket,
 } from '@/hooks';
@@ -51,7 +53,7 @@ export default function ChatsPage() {
   const { socket, status, isConnected, joinConversation, leaveConversation } = useSocket();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
-  
+
   // Track the previous conversation to leave when switching
   const previousConversationIdRef = useRef<string | null>(null);
 
@@ -70,6 +72,26 @@ export default function ChatsPage() {
     },
     onError: (error) => {
       console.error('[ChatsPage] Failed to create message:', error.message);
+    },
+  });
+
+  // Edit message mutation
+  const editMessage = useEditMessage({
+    onSuccess: (message) => {
+      console.log('[ChatsPage] Message edited successfully:', message.id);
+    },
+    onError: (error) => {
+      console.error('[ChatsPage] Failed to edit message:', error.message);
+    },
+  });
+
+  // Delete message mutation
+  const deleteMessage = useDeleteMessage({
+    onSuccess: (message) => {
+      console.log('[ChatsPage] Message deleted successfully:', message.id);
+    },
+    onError: (error) => {
+      console.error('[ChatsPage] Failed to delete message:', error.message);
     },
   });
 
@@ -154,7 +176,7 @@ export default function ChatsPage() {
   }, []);
 
   // Handle send message
-  const handleSendMessage = useCallback((text: string) => {
+  const handleSendMessage = useCallback((text: string, replyToId?: string) => {
     if (!selectedConversationId || !text.trim()) return;
 
     console.log('[ChatsPage] Sending message to conversation:', selectedConversationId);
@@ -162,8 +184,28 @@ export default function ChatsPage() {
     createMessage.mutate({
       conversationId: selectedConversationId,
       text: text.trim(),
+      replyToId,
     });
   }, [selectedConversationId, createMessage]);
+
+  // Handle edit message
+  const handleEditMessage = useCallback((messageId: string, text: string) => {
+    if (!text.trim()) return;
+
+    console.log('[ChatsPage] Editing message:', messageId);
+
+    editMessage.mutate({
+      id: messageId,
+      data: { text: text.trim() },
+    });
+  }, [editMessage]);
+
+  // Handle delete message
+  const handleDeleteMessage = useCallback((messageId: string) => {
+    console.log('[ChatsPage] Deleting message:', messageId);
+
+    deleteMessage.mutate(messageId);
+  }, [deleteMessage]);
 
   return (
     <div className="h-[calc(100vh-3.5rem)] md:h-screen flex flex-col">
@@ -205,6 +247,8 @@ export default function ChatsPage() {
               onBack={handleBack}
               showBackButton={mobileView === 'detail'}
               onSendMessage={handleSendMessage}
+              onEditMessage={handleEditMessage}
+              onDeleteMessage={handleDeleteMessage}
               isSending={createMessage.isPending}
             />
           ) : (

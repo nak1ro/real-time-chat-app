@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
@@ -12,7 +13,9 @@ interface ChatDetailPanelProps {
   isOnline?: boolean;
   onBack?: () => void;
   showBackButton?: boolean;
-  onSendMessage: (text: string) => void;
+  onSendMessage: (text: string, replyToId?: string) => void;
+  onEditMessage?: (messageId: string, text: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
   isSending?: boolean;
 }
 
@@ -24,8 +27,40 @@ export function ChatDetailPanel({
   onBack,
   showBackButton = false,
   onSendMessage,
+  onEditMessage,
+  onDeleteMessage,
   isSending = false,
 }: ChatDetailPanelProps) {
+  const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+
+  const handleReply = (message: Message) => {
+    setReplyToMessage(message);
+    setEditingMessage(null); // Cancel edit if replying
+  };
+
+  const handleEdit = (message: Message) => {
+    setEditingMessage(message);
+    setReplyToMessage(null); // Cancel reply if editing
+  };
+
+  const handleDelete = (messageId: string) => {
+    onDeleteMessage?.(messageId);
+  };
+
+  const handleCancelReply = () => {
+    setReplyToMessage(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
+  };
+
+  const handleEditSave = (messageId: string, text: string) => {
+    onEditMessage?.(messageId, text);
+    setEditingMessage(null);
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header - fixed at top */}
@@ -37,15 +72,29 @@ export function ChatDetailPanel({
           showBackButton={showBackButton}
         />
       </div>
-      
+
       {/* Message list - scrollable */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        <MessageList messages={messages} currentUserId={currentUserId} />
+        <MessageList
+          messages={messages}
+          currentUserId={currentUserId}
+          onReply={handleReply}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       </div>
-      
+
       {/* Input - fixed at bottom */}
       <div className="flex-shrink-0">
-        <MessageInput onSend={onSendMessage} disabled={isSending} />
+        <MessageInput
+          onSend={onSendMessage}
+          disabled={isSending}
+          replyToMessage={replyToMessage}
+          onCancelReply={handleCancelReply}
+          editingMessage={editingMessage}
+          onCancelEdit={handleCancelEdit}
+          onEditSave={handleEditSave}
+        />
       </div>
     </div>
   );

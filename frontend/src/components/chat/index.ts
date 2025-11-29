@@ -5,6 +5,7 @@ export { ChatHeader } from './ChatHeader';
 export { MessageList } from './MessageList';
 export { MessageBubble } from './MessageBubble';
 export { MessageInput } from './MessageInput';
+export { MessageContextMenu } from './MessageContextMenu';
 export { ChatFilter, type ConversationFilter } from './ChatFilter';
 export { EmptyChatState } from './EmptyChatState';
 export { CreateChannelModal } from './CreateChannelModal';
