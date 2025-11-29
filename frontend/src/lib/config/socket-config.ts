@@ -16,8 +16,9 @@ export const socketConfig = {
     transports: ['websocket', 'polling'] as ('websocket' | 'polling')[],
   },
 
-  // Heartbeat interval (ms)
-  heartbeatInterval: 30000,
+  // Heartbeat interval (ms) - must be LESS than backend's HEARTBEAT_TIMEOUT_MS (30s)
+  // Using 20s to give buffer for network latency
+  heartbeatInterval: 20000,
 
   // Reconnect delay after auth change (ms)
   authReconnectDelay: 100,

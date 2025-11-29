@@ -41,11 +41,16 @@ export function SocketProvider({ children }: SocketProviderProps) {
       setStatus('connected');
       setSocket(newSocket);
 
-      // Start heartbeat
+      // Send IMMEDIATE heartbeat to reset server's timeout timer
+      console.log('[SocketProvider] Sending initial heartbeat...');
+      newSocket.emit(SOCKET_EVENTS.PRESENCE_HEARTBEAT);
+
+      // Start heartbeat interval for subsequent pings
       if (heartbeatRef.current) {
         clearInterval(heartbeatRef.current);
       }
       heartbeatRef.current = setInterval(() => {
+        console.log('[SocketProvider] Sending heartbeat...');
         newSocket.emit(SOCKET_EVENTS.PRESENCE_HEARTBEAT);
       }, socketConfig.heartbeatInterval);
     });
