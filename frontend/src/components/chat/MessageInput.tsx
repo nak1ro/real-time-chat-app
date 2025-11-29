@@ -13,6 +13,7 @@ interface MessageInputProps {
 export function MessageInput({ onSend, disabled = false }: MessageInputProps) {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const shouldRefocusRef = useRef(false);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -22,9 +23,19 @@ export function MessageInput({ onSend, disabled = false }: MessageInputProps) {
     }
   }, [message]);
 
+  // Refocus when disabled becomes false after sending
+  useEffect(() => {
+    if (!disabled && shouldRefocusRef.current) {
+      shouldRefocusRef.current = false;
+      textareaRef.current?.focus();
+    }
+  }, [disabled]);
+
   const handleSend = () => {
     const trimmed = message.trim();
     if (trimmed && !disabled) {
+      // Mark that we should refocus after the mutation completes
+      shouldRefocusRef.current = true;
       onSend(trimmed);
       setMessage('');
     }

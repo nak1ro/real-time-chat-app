@@ -5,14 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e5da075b-33bd-4932-97ef-c5ebf4ee5470" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/lib/socket/emitWithAck.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(protected)/chats/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(protected)/chats/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/hooks/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/chat/MessageInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat/MessageInput.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/hooks/useMessages.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/useMessages.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/api/message.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/api/message.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/socket/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/socket/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
