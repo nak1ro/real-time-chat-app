@@ -19,7 +19,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="h-full flex items-center justify-center">
         <p className="text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
       </div>
     );
@@ -33,8 +33,8 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
   };
 
   return (
-    <ScrollArea className="flex-1 px-4">
-      <div className="py-4 space-y-3">
+    <ScrollArea className="h-full">
+      <div className="px-4 py-4 space-y-3">
         {messages.map((message, index) => (
           <MessageBubble
             key={message.id}

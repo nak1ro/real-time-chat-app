@@ -27,15 +27,26 @@ export function ChatDetailPanel({
   isSending = false,
 }: ChatDetailPanelProps) {
   return (
-    <div className="flex flex-col h-full">
-      <ChatHeader
-        conversation={conversation}
-        isOnline={isOnline}
-        onBack={onBack}
-        showBackButton={showBackButton}
-      />
-      <MessageList messages={messages} currentUserId={currentUserId} />
-      <MessageInput onSend={onSendMessage} disabled={isSending} />
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Header - fixed at top */}
+      <div className="flex-shrink-0">
+        <ChatHeader
+          conversation={conversation}
+          isOnline={isOnline}
+          onBack={onBack}
+          showBackButton={showBackButton}
+        />
+      </div>
+      
+      {/* Message list - scrollable */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <MessageList messages={messages} currentUserId={currentUserId} />
+      </div>
+      
+      {/* Input - fixed at bottom */}
+      <div className="flex-shrink-0">
+        <MessageInput onSend={onSendMessage} disabled={isSending} />
+      </div>
     </div>
   );
 }

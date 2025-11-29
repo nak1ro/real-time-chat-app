@@ -122,8 +122,9 @@ export function ChatListPanel({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="sticky top-0 z-10 p-3 space-y-3 border-b border-border bg-background">
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Header - fixed at top */}
+      <div className="flex-shrink-0 p-3 space-y-3 border-b border-border bg-background">
         <Tabs
           value={searchMode}
           onValueChange={(value) => setSearchMode(value as 'LOCAL' | 'GLOBAL')}
@@ -156,77 +157,78 @@ export function ChatListPanel({
         <ChatFilter value={filter} onChange={setFilter} />
       </div>
 
-        <div className="flex-1 overflow-y-auto scrollbar-hide">
-          <div className="p-2 space-y-1">
-            {searchMode === 'LOCAL' ? (
-                isLoading ? (
-                  <div className="py-8 text-center text-sm text-muted-foreground">
-                    Loading chats...
-                  </div>
-                ) : error ? (
-                  <div className="py-8 text-center text-sm text-destructive">
-                    Failed to load chats:{' '}
-                    {error instanceof Error ? error.message : 'Unknown error'}
-                  </div>
-                ) : filteredConversations.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-muted-foreground">
-                    {searchQuery || filter !== 'ALL' ? 'No chats found' : 'No chats yet'}
-                  </div>
-                ) : (
-                        filteredConversations.map(
-                          ({ conversation, lastMessage, unreadCount, isOnline }) => (
-                            <ChatListItem
-                              key={conversation.id}
-                              conversation={conversation}
-                              currentUserId={currentUser?.id}
-                              lastMessage={lastMessage}
-                              unreadCount={unreadCount}
-                              isOnline={isOnline}
-                              isActive={conversation.id === selectedConversationId}
-                              onClick={() => onSelectConversation(conversation.id)}
-                            />
-                          )
-                        )
-                    )
-              ) : // GLOBAL mode
-              isSearching ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">
-                  Searching...
-                </div>
-              ) : globalResults.conversations.length === 0 &&
-                globalResults.users.length === 0 ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">
-                  {searchQuery
-                    ? 'No matching results found'
-                    : 'Type to search globally'}
-                </div>
-              ) : (
-                    <>
-                      {globalResults.conversations.map((conversation) => (
-                        <ChatListItem
-                          key={conversation.id}
-                          conversation={conversation}
-                          currentUserId={currentUser?.id}
-                          lastMessage={null}
-                          unreadCount={0}
-                          isOnline={false}
-                          isActive={conversation.id === selectedConversationId}
-                          onClick={() => handleGlobalConversationClick(conversation.id)}
-                        />
-                      ))}
+      {/* Scrollable list area */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="p-2 space-y-1">
+          {searchMode === 'LOCAL' ? (
+            isLoading ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                Loading chats...
+              </div>
+            ) : error ? (
+              <div className="py-8 text-center text-sm text-destructive">
+                Failed to load chats:{' '}
+                {error instanceof Error ? error.message : 'Unknown error'}
+              </div>
+            ) : filteredConversations.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                {searchQuery || filter !== 'ALL' ? 'No chats found' : 'No chats yet'}
+              </div>
+            ) : (
+              filteredConversations.map(
+                ({ conversation, lastMessage, unreadCount, isOnline }) => (
+                  <ChatListItem
+                    key={conversation.id}
+                    conversation={conversation}
+                    currentUserId={currentUser?.id}
+                    lastMessage={lastMessage}
+                    unreadCount={unreadCount}
+                    isOnline={isOnline}
+                    isActive={conversation.id === selectedConversationId}
+                    onClick={() => onSelectConversation(conversation.id)}
+                  />
+                )
+              )
+            )
+          ) : // GLOBAL mode
+          isSearching ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              Searching...
+            </div>
+          ) : globalResults.conversations.length === 0 &&
+            globalResults.users.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              {searchQuery
+                ? 'No matching results found'
+                : 'Type to search globally'}
+            </div>
+          ) : (
+            <>
+              {globalResults.conversations.map((conversation) => (
+                <ChatListItem
+                  key={conversation.id}
+                  conversation={conversation}
+                  currentUserId={currentUser?.id}
+                  lastMessage={null}
+                  unreadCount={0}
+                  isOnline={false}
+                  isActive={conversation.id === selectedConversationId}
+                  onClick={() => handleGlobalConversationClick(conversation.id)}
+                />
+              ))}
 
-                      {globalResults.users.map((user) => (
-                        <UserListItem
-                          key={user.id}
-                          user={user}
-                          isActive={false}
-                          onClick={() => handleUserResultClick(user.id)}
-                        />
-                      ))}
-                    </>
-                  )}
-          </div>
+              {globalResults.users.map((user) => (
+                <UserListItem
+                  key={user.id}
+                  user={user}
+                  isActive={false}
+                  onClick={() => handleUserResultClick(user.id)}
+                />
+              ))}
+            </>
+          )}
         </div>
       </div>
+    </div>
   );
 }

@@ -69,7 +69,10 @@ export {
   useMessageReadStats,
   useUnreadCount,
   useMessageActions,
+  useMessageSocketListeners,
 } from './useMessages';
+
+export type { UseMessageSocketListenersOptions } from './useMessages';
 
 // Mention hooks
 export {

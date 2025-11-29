@@ -25,17 +25,19 @@ export function SocketProvider({ children }: SocketProviderProps) {
   // Connect to socket
   const connect = useCallback(() => {
     if (!token) {
-      console.warn('Cannot connect socket: no auth token');
+      console.warn('[SocketProvider] Cannot connect socket: no auth token');
       return;
     }
 
+    console.log('[SocketProvider] Initiating socket connection...');
     setStatus('connecting');
 
     const newSocket = createSocket(token);
+    console.log('[SocketProvider] Socket created, connecting to:', socketConfig.url);
 
     // Connection handlers
     newSocket.on(SOCKET_EVENTS.CONNECT, () => {
-      console.log('Socket connected');
+      console.log('[SocketProvider] Socket connected successfully, socket.id:', newSocket.id);
       setStatus('connected');
       setSocket(newSocket);
 
@@ -49,7 +51,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
     });
 
     newSocket.on(SOCKET_EVENTS.DISCONNECT, (reason) => {
-      console.log('Socket disconnected:', reason);
+      console.log('[SocketProvider] Socket disconnected, reason:', reason);
       setStatus('disconnected');
 
       // Stop heartbeat
@@ -60,7 +62,8 @@ export function SocketProvider({ children }: SocketProviderProps) {
     });
 
     newSocket.on(SOCKET_EVENTS.CONNECT_ERROR, (error) => {
-      console.error('Socket connection error:', error.message);
+      console.error('[SocketProvider] Socket connection error:', error.message);
+      console.error('[SocketProvider] Error details:', error);
       setStatus('error');
     });
 
@@ -84,21 +87,29 @@ export function SocketProvider({ children }: SocketProviderProps) {
   // Join a conversation room
   const joinConversation = useCallback(async (conversationId: string): Promise<boolean> => {
     const currentSocket = getSocket();
+    console.log('[SocketProvider] joinConversation called:', {
+      conversationId,
+      hasSocket: !!currentSocket,
+      isConnected: currentSocket?.connected,
+    });
+
     if (!currentSocket?.connected) {
-      console.warn('Cannot join conversation: socket not connected');
+      console.warn('[SocketProvider] Cannot join conversation: socket not connected');
       return false;
     }
 
     return new Promise((resolve) => {
+      console.log('[SocketProvider] Emitting conversation:join event...');
       currentSocket.emit(
         SOCKET_EVENTS.CONVERSATION_JOIN,
         conversationId,
         (response: SocketResponse<{ conversationId: string }>) => {
+          console.log('[SocketProvider] conversation:join response:', response);
           if (response.success) {
-            console.log('Joined conversation:', conversationId);
+            console.log('[SocketProvider] Successfully joined conversation:', conversationId);
             resolve(true);
           } else {
-            console.error('Failed to join conversation:', response.error);
+            console.error('[SocketProvider] Failed to join conversation:', response.error);
             resolve(false);
           }
         }
@@ -110,15 +121,17 @@ export function SocketProvider({ children }: SocketProviderProps) {
   const leaveConversation = useCallback(async (conversationId: string): Promise<void> => {
     const currentSocket = getSocket();
     if (!currentSocket?.connected) {
+      console.log('[SocketProvider] Cannot leave conversation: socket not connected');
       return;
     }
 
     return new Promise((resolve) => {
+      console.log('[SocketProvider] Emitting conversation:leave event:', conversationId);
       currentSocket.emit(
         SOCKET_EVENTS.CONVERSATION_LEAVE,
         conversationId,
         () => {
-          console.log('Left conversation:', conversationId);
+          console.log('[SocketProvider] Left conversation:', conversationId);
           resolve();
         }
       );
