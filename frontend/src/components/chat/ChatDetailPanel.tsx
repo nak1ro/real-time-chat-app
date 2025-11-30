@@ -19,6 +19,7 @@ interface ChatDetailPanelProps {
   isSending?: boolean;
   onUploadAttachment?: (file: File) => Promise<UploadedAttachment | null>;
   isUploading?: boolean;
+  onOpenDetails?: () => void;
 }
 
 export function ChatDetailPanel({
@@ -34,6 +35,7 @@ export function ChatDetailPanel({
   isSending = false,
   onUploadAttachment,
   isUploading = false,
+  onOpenDetails,
 }: ChatDetailPanelProps) {
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
@@ -74,6 +76,7 @@ export function ChatDetailPanel({
           isOnline={isOnline}
           onBack={onBack}
           showBackButton={showBackButton}
+          onOpenDetails={onOpenDetails}
         />
       </div>
 

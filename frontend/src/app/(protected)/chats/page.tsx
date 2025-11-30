@@ -7,6 +7,7 @@ import {
   EmptyChatState,
   ChannelPreview,
   ChatHeader,
+  ConversationModal,
 } from '@/components/chat';
 import { cn } from '@/lib/utils';
 import {
@@ -181,6 +182,9 @@ export default function ChatsPage() {
   const [previewConversation, setPreviewConversation] = useState<Conversation | null>(null);
   const [isJoining, setIsJoining] = useState(false);
 
+  // Conversation details modal state
+  const [showConversationModal, setShowConversationModal] = useState(false);
+
   // Handle conversation selection
   const handleSelectConversation = useCallback((conversationId: string) => {
     console.log('[ChatsPage] Selecting conversation:', conversationId);
@@ -283,6 +287,14 @@ export default function ChatsPage() {
     deleteMessage.mutate(messageId);
   }, [deleteMessage]);
 
+  // Handle open conversation details modal
+  const handleOpenConversationDetails = useCallback(() => {
+    if (selectedConversation) {
+      console.log('[ChatsPage] Opening conversation details:', selectedConversation.id);
+      setShowConversationModal(true);
+    }
+  }, [selectedConversation]);
+
   return (
     <div className="h-[calc(100vh-3.5rem)] md:h-screen flex flex-col">
       {/* Debug: Socket connection indicator */}
@@ -353,12 +365,64 @@ export default function ChatsPage() {
               isSending={createMessage.isPending}
               onUploadAttachment={handleUploadAttachment}
               isUploading={uploadAttachment.isPending}
+              onOpenDetails={handleOpenConversationDetails}
             />
           ) : (
             <EmptyChatState />
           )}
         </div>
       </div>
+
+      {/* Conversation Details Modal */}
+      {selectedConversation && user && (
+        <ConversationModal
+          open={showConversationModal}
+          onOpenChange={setShowConversationModal}
+          conversation={selectedConversation}
+          currentUserId={user.id}
+          onStartMessaging={() => setShowConversationModal(false)}
+          onDeleteChat={() => {
+            console.log('[ChatsPage] Delete chat requested');
+            // TODO: Implement delete chat
+          }}
+          onBlockUser={() => {
+            console.log('[ChatsPage] Block user requested');
+            // TODO: Implement block user
+          }}
+          onLeaveGroup={() => {
+            console.log('[ChatsPage] Leave group requested');
+            // TODO: Implement leave group
+          }}
+          onLeaveChannel={() => {
+            console.log('[ChatsPage] Leave channel requested');
+            // TODO: Implement leave channel
+          }}
+          onDeleteChannel={() => {
+            console.log('[ChatsPage] Delete channel requested');
+            // TODO: Implement delete channel
+          }}
+          onKickMember={(userId) => {
+            console.log('[ChatsPage] Kick member requested:', userId);
+            // TODO: Implement kick member
+          }}
+          onInviteUsers={(userIds) => {
+            console.log('[ChatsPage] Invite users requested:', userIds);
+            // TODO: Implement invite users
+          }}
+          onRemoveSubscriber={(userId) => {
+            console.log('[ChatsPage] Remove subscriber requested:', userId);
+            // TODO: Implement remove subscriber
+          }}
+          onUpdateSettings={(data) => {
+            console.log('[ChatsPage] Update settings requested:', data);
+            // TODO: Implement update settings
+          }}
+          onUpdateRoles={(updates) => {
+            console.log('[ChatsPage] Update roles requested:', updates);
+            // TODO: Implement update roles
+          }}
+        />
+      )}
     </div>
   );
 }

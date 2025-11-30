@@ -22,6 +22,7 @@ interface ChatHeaderProps {
   isOnline?: boolean;
   onBack?: () => void;
   showBackButton?: boolean;
+  onOpenDetails?: () => void;
 }
 
 function getInitials(name: string | null): string {
@@ -63,6 +64,7 @@ export function ChatHeader({
   isOnline = false,
   onBack,
   showBackButton = false,
+  onOpenDetails,
 }: ChatHeaderProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,20 +84,24 @@ export function ChatHeader({
           </Button>
         )}
 
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+        {/* Clickable avatar and name to open conversation details */}
+        <button
+          className="flex items-center gap-3 flex-1 min-w-0 hover:bg-muted/50 rounded-lg p-1 -ml-1 transition-colors"
+          onClick={onOpenDetails}
+        >
           <Avatar className="h-10 w-10 flex-shrink-0">
             <AvatarImage src={conversation.avatarUrl || undefined} alt={displayName} />
             <AvatarFallback className="bg-primary/10 text-primary text-sm">
               {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
-          <div className="min-w-0">
+          <div className="min-w-0 text-left">
             <h2 className="font-semibold truncate">{displayName}</h2>
             <p className="text-xs text-muted-foreground">
               {getSubtitle(conversation, isOnline)}
             </p>
           </div>
-        </div>
+        </button>
 
         <div className="flex items-center gap-1 flex-shrink-0">
           <Button
