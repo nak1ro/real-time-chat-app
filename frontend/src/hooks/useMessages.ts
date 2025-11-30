@@ -1,19 +1,18 @@
 'use client';
 
-import {useEffect, useCallback} from 'react';
-import {useMutation, useQuery, useQueryClient, useInfiniteQuery} from '@tanstack/react-query';
-import {messageApi, attachmentApi, reactionApi, receiptApi} from '@/lib/api';
-import {queryKeys} from '@/lib/react-query/query-keys';
-import {useSocket} from '@/context/SocketContext';
+import { useEffect, useCallback } from 'react';
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { messageApi, attachmentApi, receiptApi } from '@/lib/api';
+import { queryKeys } from '@/lib/react-query/query-keys';
+import { useSocket } from '@/context/SocketContext';
 import {
     SOCKET_EVENTS,
     createMessageListeners,
-    createReactionListener,
     createReceiptListener,
     getSocket,
     isSocketConnected,
 } from '@/lib/socket';
-import {emitWithAck} from '@/lib/socket/emitWithAck';
+import { emitWithAck } from '@/lib/socket/emitWithAck';
 import type {
     Message,
     CreateMessageData,
@@ -21,10 +20,8 @@ import type {
     MessagePaginationOptions,
     BulkReceiptUpdate,
     UploadAttachmentResponse,
-    ToggleReactionResponse,
 } from '@/types';
 import type {
-    ReactionUpdatePayload,
     ReceiptUpdatePayload,
     BulkReceiptUpdate as SocketBulkReceiptUpdate,
 } from '@/lib/socket/events';
@@ -41,7 +38,7 @@ interface MessagesQueryData {
 export function useMessages(conversationId: string | undefined, options?: MessagePaginationOptions) {
     return useQuery({
         queryKey: queryKeys.messages.list(conversationId!),
-        queryFn: () => messageApi.list(conversationId!, {sortOrder: 'asc', ...options}),
+        queryFn: () => messageApi.list(conversationId!, { sortOrder: 'asc', ...options }),
         enabled: !!conversationId,
         staleTime: 30 * 1000,
     });
@@ -51,7 +48,7 @@ export function useMessages(conversationId: string | undefined, options?: Messag
 export function useInfiniteMessages(conversationId: string | undefined, options?: Omit<MessagePaginationOptions, 'cursor'>) {
     return useInfiniteQuery({
         queryKey: [...queryKeys.messages.list(conversationId!), 'infinite'],
-        queryFn: ({pageParam}) => messageApi.list(conversationId!, {sortOrder: 'asc', ...options, cursor: pageParam}),
+        queryFn: ({ pageParam }) => messageApi.list(conversationId!, { sortOrder: 'asc', ...options, cursor: pageParam }),
         initialPageParam: undefined as string | undefined,
         getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
         enabled: !!conversationId,
@@ -69,15 +66,7 @@ export function useMessageAttachments(messageId: string | undefined) {
     });
 }
 
-// Hook to get reactions for a message
-export function useMessageReactions(messageId: string | undefined) {
-    return useQuery({
-        queryKey: queryKeys.messages.reactions(messageId!),
-        queryFn: () => reactionApi.getForMessage(messageId!),
-        enabled: !!messageId,
-        staleTime: 30 * 1000,
-    });
-}
+
 
 // Hook to get read statistics for a message
 export function useMessageReadStats(messageId: string | undefined) {
@@ -128,9 +117,7 @@ interface DeleteMessageSocketResponse {
     message: Message;
 }
 
-interface ToggleReactionSocketResponse {
-    action: 'added' | 'removed';
-}
+
 
 interface MarkAsReadSocketResponse {
     messagesAffected: number;
@@ -182,8 +169,8 @@ export function useCreateMessage(options?: {
         },
         onSuccess: (response, variables) => {
             // Invalidate queries to refetch fresh data
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.list(variables.conversationId)});
-            queryClient.invalidateQueries({queryKey: queryKeys.conversations.list()});
+            queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(variables.conversationId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations.list() });
             options?.onSuccess?.(response.message, response.mentionedUserIds);
         },
         onError: (error: Error) => {
@@ -201,7 +188,7 @@ export function useEditMessage(options?: {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({id, data}: { id: string; data: EditMessageData }): Promise<Message> => {
+        mutationFn: async ({ id, data }: { id: string; data: EditMessageData }): Promise<Message> => {
             const socket = getConnectedSocket();
 
             console.log('[useEditMessage] Editing message via socket:', id);
@@ -219,7 +206,7 @@ export function useEditMessage(options?: {
             return response.message;
         },
         onSuccess: (message) => {
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.list(message.conversationId)});
+            queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(message.conversationId) });
             options?.onSuccess?.(message);
         },
         onError: (error: Error) => {
@@ -260,7 +247,7 @@ export function useDeleteMessage(options?: {
                 queryKeys.messages.list(message.conversationId),
                 (oldData) => {
                     if (!oldData) return oldData;
-                    
+
                     return {
                         ...oldData,
                         messages: oldData.messages.map((msg) =>
@@ -271,9 +258,9 @@ export function useDeleteMessage(options?: {
                     };
                 }
             );
-            
+
             // Also update conversations list to reflect the change
-            queryClient.invalidateQueries({queryKey: queryKeys.conversations.list()});
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations.list() });
             options?.onSuccess?.(message);
         },
         onError: (error: Error) => {
@@ -283,47 +270,7 @@ export function useDeleteMessage(options?: {
     });
 }
 
-// Hook to toggle a reaction on a message via WebSocket
-export function useToggleReaction(options?: {
-    onSuccess?: (response: ToggleReactionResponse) => void;
-    onError?: (error: Error) => void;
-}) {
-    const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: async ({messageId, emoji}: {
-            messageId: string;
-            emoji: string
-        }): Promise<ToggleReactionResponse> => {
-            const socket = getConnectedSocket();
-
-            console.log('[useToggleReaction] Toggling reaction via socket:', {messageId, emoji});
-
-            const response = await emitWithAck<
-                { messageId: string; emoji: string },
-                ToggleReactionSocketResponse
-            >(socket, SOCKET_EVENTS.REACTION_TOGGLE, {
-                messageId,
-                emoji,
-            });
-
-            console.log('[useToggleReaction] Reaction toggled:', response.action);
-
-            return {
-                action: response.action,
-                reaction: null,
-            };
-        },
-        onSuccess: (response, {messageId}) => {
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.reactions(messageId)});
-            options?.onSuccess?.(response);
-        },
-        onError: (error: Error) => {
-            console.error('[useToggleReaction] Error:', error.message);
-            options?.onError?.(error);
-        },
-    });
-}
 
 // Hook to mark messages as read via WebSocket
 export function useMarkAsRead(options?: {
@@ -333,13 +280,13 @@ export function useMarkAsRead(options?: {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({conversationId, upToMessageId}: {
+        mutationFn: async ({ conversationId, upToMessageId }: {
             conversationId: string;
             upToMessageId: string
         }): Promise<BulkReceiptUpdate> => {
             const socket = getConnectedSocket();
 
-            console.log('[useMarkAsRead] Marking messages as read via socket:', {conversationId, upToMessageId});
+            console.log('[useMarkAsRead] Marking messages as read via socket:', { conversationId, upToMessageId });
 
             const response = await emitWithAck<
                 { conversationId: string; upToMessageId: string },
@@ -359,9 +306,9 @@ export function useMarkAsRead(options?: {
                 timestamp: new Date(),
             };
         },
-        onSuccess: (result, {conversationId}) => {
-            queryClient.invalidateQueries({queryKey: queryKeys.conversations.detail(conversationId)});
-            queryClient.invalidateQueries({queryKey: queryKeys.notifications.unreadCount()});
+        onSuccess: (result, { conversationId }) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations.detail(conversationId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.notifications.unreadCount() });
             options?.onSuccess?.(result);
         },
         onError: (error: Error) => {
@@ -376,21 +323,19 @@ export interface UseMessageSocketListenersOptions {
     onNewMessage?: (message: Message) => void;
     onMessageUpdated?: (message: Message) => void;
     onMessageDeleted?: (message: Message) => void;
-    onReactionUpdated?: (data: ReactionUpdatePayload) => void;
     onReceiptUpdated?: (data: ReceiptUpdatePayload | SocketBulkReceiptUpdate) => void;
 }
 
 // Hook to listen for real-time message updates via WebSocket
 export function useMessageSocketListeners({
-                                              conversationId,
-                                              onNewMessage,
-                                              onMessageUpdated,
-                                              onMessageDeleted,
-                                              onReactionUpdated,
-                                              onReceiptUpdated,
-                                          }: UseMessageSocketListenersOptions) {
+    conversationId,
+    onNewMessage,
+    onMessageUpdated,
+    onMessageDeleted,
+    onReceiptUpdated,
+}: UseMessageSocketListenersOptions) {
     const queryClient = useQueryClient();
-    const {socket, isConnected} = useSocket();
+    const { socket, isConnected } = useSocket();
 
     // Handle new message
     const handleNewMessage = useCallback((message: Message) => {
@@ -398,8 +343,8 @@ export function useMessageSocketListeners({
 
         // Only process messages for the current conversation
         if (conversationId && message.conversationId === conversationId) {
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.list(conversationId)});
-            queryClient.invalidateQueries({queryKey: queryKeys.conversations.list()});
+            queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(conversationId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations.list() });
             onNewMessage?.(message);
         }
     }, [conversationId, queryClient, onNewMessage]);
@@ -409,7 +354,7 @@ export function useMessageSocketListeners({
         console.log('[useMessageSocketListeners] Message updated:', message.id);
 
         if (conversationId && message.conversationId === conversationId) {
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.list(conversationId)});
+            queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(conversationId) });
             onMessageUpdated?.(message);
         }
     }, [conversationId, queryClient, onMessageUpdated]);
@@ -425,7 +370,7 @@ export function useMessageSocketListeners({
                 queryKeys.messages.list(conversationId),
                 (oldData) => {
                     if (!oldData) return oldData;
-                    
+
                     return {
                         ...oldData,
                         messages: oldData.messages.map((msg) =>
@@ -440,23 +385,17 @@ export function useMessageSocketListeners({
         }
     }, [conversationId, queryClient, onMessageDeleted]);
 
-    // Handle reaction updated
-    const handleReactionUpdated = useCallback((data: ReactionUpdatePayload) => {
-        console.log('[useMessageSocketListeners] Reaction updated:', data);
 
-        queryClient.invalidateQueries({queryKey: queryKeys.messages.reactions(data.messageId)});
-        onReactionUpdated?.(data);
-    }, [queryClient, onReactionUpdated]);
 
     // Handle receipt updated
     const handleReceiptUpdated = useCallback((data: ReceiptUpdatePayload | SocketBulkReceiptUpdate) => {
         console.log('[useMessageSocketListeners] Receipt updated:', data);
 
         if ('messageId' in data) {
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.receipts(data.messageId)});
+            queryClient.invalidateQueries({ queryKey: queryKeys.messages.receipts(data.messageId) });
         }
         if (conversationId) {
-            queryClient.invalidateQueries({queryKey: [...queryKeys.conversations.detail(conversationId), 'unread']});
+            queryClient.invalidateQueries({ queryKey: [...queryKeys.conversations.detail(conversationId), 'unread'] });
         }
         onReceiptUpdated?.(data);
     }, [conversationId, queryClient, onReceiptUpdated]);
@@ -482,8 +421,7 @@ export function useMessageSocketListeners({
             onDeleted: handleMessageDeleted,
         });
 
-        // Register reaction listener
-        const cleanupReactionListener = createReactionListener(socket, handleReactionUpdated);
+
 
         // Register receipt listener
         const cleanupReceiptListener = createReceiptListener(socket, handleReceiptUpdated);
@@ -492,7 +430,7 @@ export function useMessageSocketListeners({
         return () => {
             console.log('[useMessageSocketListeners] Cleaning up listeners for conversation:', conversationId);
             cleanupMessageListeners();
-            cleanupReactionListener();
+
             cleanupReceiptListener();
         };
     }, [
@@ -502,7 +440,7 @@ export function useMessageSocketListeners({
         handleNewMessage,
         handleMessageUpdated,
         handleMessageDeleted,
-        handleReactionUpdated,
+
         handleReceiptUpdated,
     ]);
 }
@@ -513,7 +451,7 @@ export function useMessageActions() {
     const editMessage = useEditMessage();
     const deleteMessage = useDeleteMessage();
     const uploadAttachment = useUploadAttachment();
-    const toggleReaction = useToggleReaction();
+
     const markAsRead = useMarkAsRead();
 
     return {
@@ -529,9 +467,7 @@ export function useMessageActions() {
         uploadAttachment: uploadAttachment.mutate,
         uploadAttachmentAsync: uploadAttachment.mutateAsync,
         isUploading: uploadAttachment.isPending,
-        toggleReaction: toggleReaction.mutate,
-        toggleReactionAsync: toggleReaction.mutateAsync,
-        isTogglingReaction: toggleReaction.isPending,
+
         markAsRead: markAsRead.mutate,
         markAsReadAsync: markAsRead.mutateAsync,
         isMarkingAsRead: markAsRead.isPending,

@@ -52,6 +52,10 @@ export const SOCKET_EVENTS = {
   NOTIFICATION_MARK_READ: 'notification:markRead',
   NOTIFICATION_MARK_ALL_READ: 'notification:markAllRead',
   NOTIFICATION_COUNT_UPDATED: 'notification:countUpdated',
+
+  // Moderation
+  MODERATION_ACTION: 'moderation:action',
+  MODERATION_UPDATED: 'moderation:updated',
 } as const;
 
 // Presence data structure
@@ -94,6 +98,18 @@ export interface NotificationCountUpdate {
   count: number;
 }
 
+// Moderation update payload (matches backend socket.moderation.ts emit)
+export interface ModerationUpdatePayload {
+  action: 'MUTE' | 'UNMUTE' | 'BAN' | 'UNBAN' | 'KICK' | 'DELETE_MESSAGE' | 'MAKE_ADMIN' | 'REMOVE_ADMIN' | 'PIN_MESSAGE';
+  conversationId: string;
+  targetUserId?: string;
+  messageId?: string;
+  actorId: string;
+  actorName: string;
+  reason?: string;
+  expiresAt?: Date | null;
+}
+
 // Socket response types
 export interface SocketSuccessResponse<T = unknown> {
   success: true;
@@ -118,6 +134,7 @@ export interface ServerToClientEvents {
   [SOCKET_EVENTS.NOTIFICATION_NEW]: (notification: Notification) => void;
   [SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED]: (data: NotificationCountUpdate) => void;
   [SOCKET_EVENTS.MENTION_NEW]: (data: { messageId: string; conversationId: string }) => void;
+  [SOCKET_EVENTS.MODERATION_UPDATED]: (data: ModerationUpdatePayload) => void;
 }
 
 // Client to server events (what we emit)
@@ -163,6 +180,17 @@ export interface ClientToServerEvents {
   [SOCKET_EVENTS.REACTION_TOGGLE]: (
     data: { messageId: string; emoji: string },
     callback?: (response: SocketResponse<{ action: 'added' | 'removed' }>) => void
+  ) => void;
+  [SOCKET_EVENTS.MODERATION_ACTION]: (
+    data: {
+      conversationId: string;
+      action: 'MUTE' | 'UNMUTE' | 'BAN' | 'UNBAN' | 'KICK' | 'DELETE_MESSAGE' | 'MAKE_ADMIN' | 'REMOVE_ADMIN' | 'PIN_MESSAGE';
+      targetUserId?: string;
+      messageId?: string;
+      reason?: string;
+      expiresAt?: string;
+    },
+    callback?: (response: SocketResponse<{ message: string }>) => void
   ) => void;
 }
 

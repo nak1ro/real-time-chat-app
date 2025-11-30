@@ -26,6 +26,7 @@ import {
     handleMarkNotificationRead,
     handleMarkAllNotificationsRead,
 } from './socket.notifications';
+import { handleModerationAction } from './socket.moderation';
 import { SOCKET_EVENTS, createSuccessResponse, invokeCallback } from '../core/socket.utils';
 
 // Register all event handlers for a socket connection
@@ -49,6 +50,8 @@ export const handleConnection = async (io: Server, socket: AuthenticatedSocket):
     registerReactionHandlers(io, socket);
 
     registerNotificationHandlers(io, socket);
+
+    registerModerationHandlers(io, socket);
 
     registerDisconnectionHandlers(io, socket, userName, userId);
 };
@@ -138,6 +141,13 @@ const registerNotificationHandlers = (io: Server, socket: AuthenticatedSocket): 
 
     socket.on(SOCKET_EVENTS.NOTIFICATION_MARK_ALL_READ, (callback) =>
         handleMarkAllNotificationsRead(io, socket, callback)
+    );
+};
+
+// Register moderation-related event handlers
+const registerModerationHandlers = (io: Server, socket: AuthenticatedSocket): void => {
+    socket.on(SOCKET_EVENTS.MODERATION_ACTION, (data, callback) =>
+        handleModerationAction(io, socket, data, callback)
     );
 };
 

@@ -80,3 +80,10 @@ export function createReceiptListener(
   return onSocketEvent(socket, SOCKET_EVENTS.RECEIPT_UPDATE, handler);
 }
 
+// Create a moderation listener
+export function createModerationListener(
+  socket: TypedSocket,
+  handler: ServerToClientEvents[typeof SOCKET_EVENTS.MODERATION_UPDATED]
+): () => void {
+  return onSocketEvent(socket, SOCKET_EVENTS.MODERATION_UPDATED, handler);
+}

@@ -1,9 +1,9 @@
 'use client';
 
-import {useEffect, useRef, useState, useCallback} from 'react';
-import {Copy, Reply, Edit, Trash2} from 'lucide-react';
-import {cn} from '@/lib/utils';
-import type {Message} from '@/types';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Copy, Reply, Edit, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { Message } from '@/types';
 
 export interface MessageContextMenuProps {
     message: Message;
@@ -30,20 +30,24 @@ const MENU_WIDTH = 160;
 const MENU_ITEM_HEIGHT = 40;
 const VIEWPORT_PADDING = 12;
 
+import { ReactionPicker } from './ReactionPicker';
+import { useToggleReaction } from '@/hooks';
+
 export function MessageContextMenu({
-                                       message,
-                                       currentUserId,
-                                       position,
-                                       isOwnMessage: isOwnMessageProp,
-                                       onClose,
-                                       onReply,
-                                       onCopy,
-                                       onEdit,
-                                       onDelete,
-                                   }: MessageContextMenuProps) {
+    message,
+    currentUserId,
+    position,
+    isOwnMessage: isOwnMessageProp,
+    onClose,
+    onReply,
+    onCopy,
+    onEdit,
+    onDelete,
+}: MessageContextMenuProps) {
     const menuRef = useRef<HTMLDivElement>(null);
     const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
     const [isVisible, setIsVisible] = useState(false);
+    const { mutate: toggleReaction } = useToggleReaction();
 
     const isOwnMessage = isOwnMessageProp ?? message.userId === currentUserId;
     const canCopy = !message.isDeleted;
@@ -137,13 +141,24 @@ export function MessageContextMenu({
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                onClose();
+                // Check if click is on a reaction picker button (which might be outside menuRef if rendered separately)
+                // But we will render it inside a wrapper or handle it.
+                // Actually, if we render ReactionPicker as a sibling, we need to check it too.
+                // For now, let's assume if we click outside menuRef, we close.
+                // We'll wrap both in a container or check target.
+                const target = event.target as Element;
+                if (!target.closest('[role="dialog"]')) {
+                    onClose();
+                }
             }
         };
 
         const handleTouchOutside = (event: TouchEvent) => {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                onClose();
+                const target = event.target as Element;
+                if (!target.closest('[role="dialog"]')) {
+                    onClose();
+                }
             }
         };
 
@@ -192,6 +207,11 @@ export function MessageContextMenu({
         onClose();
     };
 
+    const handleReaction = (emoji: string) => {
+        toggleReaction({ messageId: message.id, emoji });
+        onClose();
+    };
+
     // Don't render until position is calculated
     if (!menuPosition) {
         return null;
@@ -206,89 +226,107 @@ export function MessageContextMenu({
                 onTouchStart={onClose}
             />
 
-            {/* Context Menu */}
+            {/* Container for positioning both picker and menu */}
             <div
-                ref={menuRef}
-                role="menu"
-                aria-label="Message actions"
-                className={cn(
-                    'fixed z-[9999] min-w-[160px] py-2 rounded-xl shadow-lg',
-                    'bg-popover border border-border',
-                    'transition-all duration-150 ease-out',
-                    isVisible
-                        ? 'opacity-100 scale-100'
-                        : 'opacity-0 scale-95',
-                    // Add subtle origin transform based on placement
-                    menuPosition.placement.vertical === 'top' && 'origin-bottom',
-                    menuPosition.placement.vertical === 'bottom' && 'origin-top'
-                )}
+                className="fixed z-[9999]"
                 style={{
                     left: `${menuPosition.x}px`,
                     top: `${menuPosition.y}px`,
-                    width: `${MENU_WIDTH}px`,
                 }}
+                role="dialog"
             >
-                {/* Reply */}
-                <button
-                    role="menuitem"
-                    onClick={() => handleAction(() => onReply(message))}
+                {/* Reaction Picker - Positioned above the menu */}
+                <div
                     className={cn(
-                        'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
-                        'hover:bg-accent focus:bg-accent focus:outline-none',
-                        'text-foreground transition-colors'
+                        "absolute bottom-full left-0 mb-2 transition-all duration-150 ease-out origin-bottom-left",
+                        isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
                     )}
                 >
-                    <Reply className="h-4 w-4 text-muted-foreground"/>
-                    <span>Reply</span>
-                </button>
+                    <ReactionPicker onReactionSelect={handleReaction} />
+                </div>
 
-                {/* Copy - only for non-deleted messages */}
-                {canCopy && (
+                {/* Context Menu */}
+                <div
+                    ref={menuRef}
+                    role="menu"
+                    aria-label="Message actions"
+                    className={cn(
+                        'min-w-[160px] py-2 rounded-xl shadow-lg',
+                        'bg-popover border border-border',
+                        'transition-all duration-150 ease-out',
+                        isVisible
+                            ? 'opacity-100 scale-100'
+                            : 'opacity-0 scale-95',
+                        // Add subtle origin transform based on placement
+                        menuPosition.placement.vertical === 'top' && 'origin-bottom',
+                        menuPosition.placement.vertical === 'bottom' && 'origin-top'
+                    )}
+                    style={{
+                        width: `${MENU_WIDTH}px`,
+                    }}
+                >
+                    {/* Reply */}
                     <button
                         role="menuitem"
-                        onClick={() => handleAction(() => onCopy(message.text))}
+                        onClick={() => handleAction(() => onReply(message))}
                         className={cn(
                             'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
                             'hover:bg-accent focus:bg-accent focus:outline-none',
                             'text-foreground transition-colors'
                         )}
                     >
-                        <Copy className="h-4 w-4 text-muted-foreground"/>
-                        <span>Copy</span>
+                        <Reply className="h-4 w-4 text-muted-foreground" />
+                        <span>Reply</span>
                     </button>
-                )}
 
-                {/* Edit - only for own messages */}
-                {canEdit && (
-                    <button
-                        role="menuitem"
-                        onClick={() => handleAction(() => onEdit(message))}
-                        className={cn(
-                            'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
-                            'hover:bg-accent focus:bg-accent focus:outline-none',
-                            'text-foreground transition-colors'
-                        )}
-                    >
-                        <Edit className="h-4 w-4 text-muted-foreground"/>
-                        <span>Edit</span>
-                    </button>
-                )}
+                    {/* Copy - only for non-deleted messages */}
+                    {canCopy && (
+                        <button
+                            role="menuitem"
+                            onClick={() => handleAction(() => onCopy(message.text))}
+                            className={cn(
+                                'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
+                                'hover:bg-accent focus:bg-accent focus:outline-none',
+                                'text-foreground transition-colors'
+                            )}
+                        >
+                            <Copy className="h-4 w-4 text-muted-foreground" />
+                            <span>Copy</span>
+                        </button>
+                    )}
 
-                {/* Delete - only for own messages */}
-                {canDelete && (
-                    <button
-                        role="menuitem"
-                        onClick={() => handleAction(() => onDelete(message.id))}
-                        className={cn(
-                            'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
-                            'hover:bg-destructive/10 focus:bg-destructive/10 focus:outline-none',
-                            'text-destructive transition-colors'
-                        )}
-                    >
-                        <Trash2 className="h-4 w-4"/>
-                        <span>Delete</span>
-                    </button>
-                )}
+                    {/* Edit - only for own messages */}
+                    {canEdit && (
+                        <button
+                            role="menuitem"
+                            onClick={() => handleAction(() => onEdit(message))}
+                            className={cn(
+                                'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
+                                'hover:bg-accent focus:bg-accent focus:outline-none',
+                                'text-foreground transition-colors'
+                            )}
+                        >
+                            <Edit className="h-4 w-4 text-muted-foreground" />
+                            <span>Edit</span>
+                        </button>
+                    )}
+
+                    {/* Delete - only for own messages */}
+                    {canDelete && (
+                        <button
+                            role="menuitem"
+                            onClick={() => handleAction(() => onDelete(message.id))}
+                            className={cn(
+                                'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
+                                'hover:bg-destructive/10 focus:bg-destructive/10 focus:outline-none',
+                                'text-destructive transition-colors'
+                            )}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                            <span>Delete</span>
+                        </button>
+                    )}
+                </div>
             </div>
         </>
     );

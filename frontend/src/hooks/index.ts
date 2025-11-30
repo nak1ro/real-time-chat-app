@@ -63,14 +63,20 @@ export {
   useDeleteMessage,
   useUploadAttachment,
   useMessageAttachments,
-  useToggleReaction,
-  useMessageReactions,
   useMarkAsRead,
   useMessageReadStats,
   useUnreadCount,
   useMessageActions,
   useMessageSocketListeners,
 } from './useMessages';
+
+// Reaction hooks
+export {
+  useMessageReactions,
+  useToggleReaction,
+  useReactionSocketListeners,
+  useReactionActions,
+} from './useReactions';
 
 export type { UseMessageSocketListenersOptions } from './useMessages';
 
@@ -100,6 +106,7 @@ export {
   useBanUser,
   useDeleteMessageModeration,
   useModerationActions,
+  useModerationSocketListeners,
 } from './useModeration';
 
 // Socket hooks

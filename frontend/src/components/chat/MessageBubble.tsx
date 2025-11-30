@@ -5,10 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { Check, CheckCheck, Trash2 } from 'lucide-react';
 import type { Message } from '@/types';
+import { MessageReactions } from './MessageReactions';
 
 interface MessageBubbleProps {
   message: Message;
   isOwn: boolean;
+  currentUserId: string;
   showAvatar?: boolean;
   onContextMenu?: (message: Message, position: { x: number; y: number }) => void;
 }
@@ -34,19 +36,19 @@ function truncateText(text: string, maxLength: number = 80): string {
 }
 
 // Reply preview component
-function ReplyPreview({ 
-  replyTo, 
-  isOwn 
-}: { 
-  replyTo: NonNullable<Message['replyTo']>; 
+function ReplyPreview({
+  replyTo,
+  isOwn
+}: {
+  replyTo: NonNullable<Message['replyTo']>;
   isOwn: boolean;
 }) {
   // Check if the reply-to message is deleted using isDeleted field or empty text as fallback
   const isReplyDeleted = ('isDeleted' in replyTo && replyTo.isDeleted) || !replyTo.text || replyTo.text === '';
   const senderName = replyTo.user?.name || 'Unknown';
-  
-  const displayText = isReplyDeleted 
-    ? 'This message was deleted' 
+
+  const displayText = isReplyDeleted
+    ? 'This message was deleted'
     : truncateText(replyTo.text);
 
   return (
@@ -63,7 +65,7 @@ function ReplyPreview({
           isOwn ? 'bg-primary-foreground/50' : 'bg-primary'
         )}
       />
-      
+
       {/* Reply content */}
       <div className="flex flex-col gap-0.5 px-2.5 py-2 min-w-0">
         {/* Sender name */}
@@ -75,7 +77,7 @@ function ReplyPreview({
         >
           {senderName}
         </span>
-        
+
         {/* Reply text */}
         <span
           className={cn(
@@ -95,13 +97,13 @@ function ReplyPreview({
 function DeletedMessageContent({ isOwn }: { isOwn: boolean }) {
   return (
     <div className="flex items-center gap-1.5">
-      <Trash2 
+      <Trash2
         className={cn(
           'h-3.5 w-3.5 flex-shrink-0',
           isOwn ? 'text-primary-foreground/50' : 'text-muted-foreground/70'
-        )} 
+        )}
       />
-      <span 
+      <span
         className={cn(
           'italic',
           isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground'
@@ -113,7 +115,7 @@ function DeletedMessageContent({ isOwn }: { isOwn: boolean }) {
   );
 }
 
-export function MessageBubble({ message, isOwn, showAvatar = true, onContextMenu }: MessageBubbleProps) {
+export function MessageBubble({ message, isOwn, currentUserId, showAvatar = true, onContextMenu }: MessageBubbleProps) {
   const senderName = message.user?.name || 'Unknown';
   const senderAvatar = message.user?.avatarUrl;
   const isRead = (message._count?.receipts ?? 0) > 0;
@@ -212,6 +214,15 @@ export function MessageBubble({ message, isOwn, showAvatar = true, onContextMenu
             )}
           </div>
         </div>
+
+        {/* Reactions */}
+        {!message.isDeleted && (
+          <MessageReactions
+            messageId={message.id}
+            currentUserId={currentUserId}
+            className={isOwn ? 'justify-end' : 'justify-start'}
+          />
+        )}
 
         <div className="flex items-center gap-1 px-1">
           <span className="text-[10px] text-muted-foreground">

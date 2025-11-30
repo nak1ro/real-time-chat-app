@@ -74,6 +74,7 @@ export function MessageList({
             key={message.id}
             message={message}
             isOwn={message.userId === currentUserId}
+            currentUserId={currentUserId}
             showAvatar={shouldShowAvatar(index)}
             onContextMenu={handleContextMenu}
           />
