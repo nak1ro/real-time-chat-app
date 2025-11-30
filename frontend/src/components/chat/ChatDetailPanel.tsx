@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
-import type { Conversation, Message } from '@/types';
+import type { Conversation, Message, AttachmentData, UploadedAttachment } from '@/types';
 
 interface ChatDetailPanelProps {
   conversation: Conversation;
@@ -13,10 +13,12 @@ interface ChatDetailPanelProps {
   isOnline?: boolean;
   onBack?: () => void;
   showBackButton?: boolean;
-  onSendMessage: (text: string, replyToId?: string) => void;
+  onSendMessage: (text: string, replyToId?: string, attachments?: AttachmentData[]) => void;
   onEditMessage?: (messageId: string, text: string) => void;
   onDeleteMessage?: (messageId: string) => void;
   isSending?: boolean;
+  onUploadAttachment?: (file: File) => Promise<UploadedAttachment | null>;
+  isUploading?: boolean;
 }
 
 export function ChatDetailPanel({
@@ -30,6 +32,8 @@ export function ChatDetailPanel({
   onEditMessage,
   onDeleteMessage,
   isSending = false,
+  onUploadAttachment,
+  isUploading = false,
 }: ChatDetailPanelProps) {
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
@@ -94,6 +98,8 @@ export function ChatDetailPanel({
           editingMessage={editingMessage}
           onCancelEdit={handleCancelEdit}
           onEditSave={handleEditSave}
+          onUploadAttachment={onUploadAttachment}
+          isUploading={isUploading}
         />
       </div>
     </div>

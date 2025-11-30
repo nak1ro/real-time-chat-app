@@ -9,3 +9,5 @@ export { MessageContextMenu } from './MessageContextMenu';
 export { ChatFilter, type ConversationFilter } from './ChatFilter';
 export { EmptyChatState } from './EmptyChatState';
 export { CreateChannelModal } from './CreateChannelModal';
+export { AttachmentPreview } from './AttachmentPreview';
+export { MessageAttachments } from './MessageAttachments';

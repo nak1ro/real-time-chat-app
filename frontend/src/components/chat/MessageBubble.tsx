@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Check, CheckCheck, Trash2 } from 'lucide-react';
 import type { Message } from '@/types';
 import { MessageReactions } from './MessageReactions';
+import { MessageAttachments } from './MessageAttachments';
 
 interface MessageBubbleProps {
   message: Message;
@@ -208,9 +209,17 @@ export function MessageBubble({ message, isOwn, currentUserId, showAvatar = true
             {message.isDeleted ? (
               <DeletedMessageContent isOwn={isOwn} />
             ) : (
-              <p className="whitespace-pre-wrap break-words">
-                {message.text}
-              </p>
+              <>
+                {message.text && (
+                  <p className="whitespace-pre-wrap break-words">
+                    {message.text}
+                  </p>
+                )}
+                {/* Attachments */}
+                {message.attachments && message.attachments.length > 0 && (
+                  <MessageAttachments attachments={message.attachments} />
+                )}
+              </>
             )}
           </div>
         </div>

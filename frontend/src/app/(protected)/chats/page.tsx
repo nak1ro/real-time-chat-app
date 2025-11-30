@@ -14,10 +14,11 @@ import {
   useCreateMessage,
   useEditMessage,
   useDeleteMessage,
+  useUploadAttachment,
   useMessageSocketListeners,
   useSocket,
 } from '@/hooks';
-import type { Conversation, Message } from '@/types';
+import type { Conversation, Message, AttachmentData, UploadedAttachment } from '@/types';
 import { Wifi, WifiOff, Loader2 } from 'lucide-react';
 
 // Socket connection status indicator component
@@ -92,6 +93,16 @@ export default function ChatsPage() {
     },
     onError: (error) => {
       console.error('[ChatsPage] Failed to delete message:', error.message);
+    },
+  });
+
+  // Upload attachment mutation
+  const uploadAttachment = useUploadAttachment({
+    onSuccess: (response) => {
+      console.log('[ChatsPage] Attachment uploaded successfully:', response.attachment.fileName);
+    },
+    onError: (error) => {
+      console.error('[ChatsPage] Failed to upload attachment:', error.message);
     },
   });
 
@@ -176,17 +187,36 @@ export default function ChatsPage() {
   }, []);
 
   // Handle send message
-  const handleSendMessage = useCallback((text: string, replyToId?: string) => {
-    if (!selectedConversationId || !text.trim()) return;
+  const handleSendMessage = useCallback((text: string, replyToId?: string, attachments?: AttachmentData[]) => {
+    if (!selectedConversationId) return;
+    
+    // Allow sending if there's text OR attachments
+    const hasContent = text.trim() || (attachments && attachments.length > 0);
+    if (!hasContent) return;
 
-    console.log('[ChatsPage] Sending message to conversation:', selectedConversationId);
+    console.log('[ChatsPage] Sending message to conversation:', selectedConversationId, {
+      textLength: text.trim().length,
+      attachmentsCount: attachments?.length ?? 0,
+    });
 
     createMessage.mutate({
       conversationId: selectedConversationId,
       text: text.trim(),
       replyToId,
+      attachments,
     });
   }, [selectedConversationId, createMessage]);
+
+  // Handle upload attachment
+  const handleUploadAttachment = useCallback(async (file: File): Promise<UploadedAttachment | null> => {
+    try {
+      const response = await uploadAttachment.mutateAsync(file);
+      return response.attachment;
+    } catch (error) {
+      console.error('[ChatsPage] Failed to upload attachment:', error);
+      return null;
+    }
+  }, [uploadAttachment]);
 
   // Handle edit message
   const handleEditMessage = useCallback((messageId: string, text: string) => {
@@ -250,6 +280,8 @@ export default function ChatsPage() {
               onEditMessage={handleEditMessage}
               onDeleteMessage={handleDeleteMessage}
               isSending={createMessage.isPending}
+              onUploadAttachment={handleUploadAttachment}
+              isUploading={uploadAttachment.isPending}
             />
           ) : (
             <EmptyChatState />

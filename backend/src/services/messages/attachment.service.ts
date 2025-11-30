@@ -1,10 +1,13 @@
-import { AttachmentType } from '@prisma/client';
+import { AttachmentType, Prisma } from '@prisma/client';
 import { prisma } from '../../db/prisma';
 import { BadRequestError } from '../../middleware';
 import { uploadToS3 } from '../shared/s3.service';
 import sharp from 'sharp';
 import ffmpeg from 'fluent-ffmpeg';
 import { promisify } from 'util';
+
+// Type for Prisma transaction client
+type PrismaTransactionClient = Prisma.TransactionClient;
 
 // Constants
 
@@ -196,15 +199,20 @@ export const uploadAttachment = async (
 };
 
 // Attach files to a message
+// Accepts an optional transaction client for use within transactions
 export const attachFilesToMessage = async (
     messageId: string,
-    attachments: AttachmentData[]
+    attachments: AttachmentData[],
+    tx?: PrismaTransactionClient
 ) => {
     if (!attachments || attachments.length === 0) {
         return;
     }
 
-    return await prisma.attachment.createMany({
+    // Use the transaction client if provided, otherwise use the global prisma client
+    const client = tx ?? prisma;
+
+    return await client.attachment.createMany({
         data: attachments.map((att) => ({
             messageId,
             url: att.url,

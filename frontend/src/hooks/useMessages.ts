@@ -20,6 +20,7 @@ import type {
     MessagePaginationOptions,
     BulkReceiptUpdate,
     UploadAttachmentResponse,
+    AttachmentData,
 } from '@/types';
 import type {
     ReceiptUpdatePayload,
@@ -194,15 +195,17 @@ export function useCreateMessage(options?: {
             console.log('[useCreateMessage] Sending message via socket:', {
                 conversationId: data.conversationId,
                 textLength: data.text.length,
+                attachmentsCount: data.attachments?.length ?? 0,
             });
 
             const response = await emitWithAck<
-                { conversationId: string; text: string; replyToId?: string },
+                { conversationId: string; text: string; replyToId?: string; attachments?: AttachmentData[] },
                 SendMessageSocketResponse
             >(socket, SOCKET_EVENTS.MESSAGE_SEND, {
                 conversationId: data.conversationId,
                 text: data.text,
                 replyToId: data.replyToId,
+                attachments: data.attachments,
             });
 
             console.log('[useCreateMessage] Message sent successfully:', response.message.id);

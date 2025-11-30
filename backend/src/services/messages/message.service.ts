@@ -123,12 +123,11 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
                 conversationId,
                 replyToId,
             },
-            include: MESSAGE_INCLUDE_WITH_RELATIONS,
         });
 
-        // Attach files if provided
+        // Attach files if provided (pass transaction client)
         if (attachments && attachments.length > 0) {
-            await attachFilesToMessage(message.id, attachments as any);
+            await attachFilesToMessage(message.id, attachments as AttachmentData[], tx);
         }
 
         // Process mentions
@@ -145,7 +144,13 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
             },
         });
 
-        return message;
+        // Refetch message with all relations (including attachments that were just created)
+        const messageWithRelations = await tx.message.findUniqueOrThrow({
+            where: { id: message.id },
+            include: MESSAGE_INCLUDE_WITH_RELATIONS,
+        });
+
+        return messageWithRelations;
     });
 
     // Create SENT receipts for all other conversation members

@@ -14,11 +14,24 @@ import { notifyMentionedUsers } from './socket.mentions';
 import { createNotificationsForMembers } from '../../services/messages/notification.service';
 import { notifyUser } from './socket.notifications';
 
+// Attachment data type for socket messages
+interface AttachmentData {
+    url: string;
+    thumbnailUrl?: string;
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    type: string;
+    width?: number;
+    height?: number;
+    durationMs?: number;
+}
+
 // Handle message:send event
 export const handleMessageSend = async (
     io: Server,
     socket: AuthenticatedSocket,
-    data: { conversationId: string; text: string; replyToId?: string },
+    data: { conversationId: string; text: string; replyToId?: string; attachments?: AttachmentData[] },
     callback?: (response: SocketResponse<{ message: MessageWithRelations }>) => void
 ): Promise<void> => {
     const { userId } = socket.data;
@@ -29,6 +42,7 @@ export const handleMessageSend = async (
             conversationId: data.conversationId,
             text: data.text,
             replyToId: data.replyToId,
+            attachments: data.attachments,
         };
 
         const message = await createMessage(messageData);
