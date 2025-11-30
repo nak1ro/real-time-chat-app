@@ -53,6 +53,8 @@ export {
   useGenerateSlug,
   useConversationActions,
   useConversationRole,
+  useConversationAttachments,
+  useDeleteConversation,
 } from './useConversations';
 
 // Message hooks

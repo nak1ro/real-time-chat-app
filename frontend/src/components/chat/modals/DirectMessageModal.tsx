@@ -12,7 +12,7 @@ import {
   Button,
   Separator,
 } from '@/components/ui';
-import { X, MessageCircle, Trash2, Ban } from 'lucide-react';
+import { X, MessageCircle, Trash2, Ban, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, ConversationMember } from '@/types/conversation.types';
 import type { Attachment } from '@/types/message.types';
@@ -30,6 +30,9 @@ interface DirectMessageModalProps {
   images?: Attachment[];
   files?: Attachment[];
   isLoading?: boolean;
+  isError?: boolean;
+  isDeleting?: boolean;
+  onRetryAttachments?: () => void;
   onStartMessaging?: () => void;
   onDeleteChat?: () => void;
   onBlockUser?: () => void;
@@ -71,6 +74,9 @@ export function DirectMessageModal({
   images = [],
   files = [],
   isLoading = false,
+  isError = false,
+  isDeleting = false,
+  onRetryAttachments,
   onStartMessaging,
   onDeleteChat,
   onBlockUser,
@@ -145,7 +151,9 @@ export function DirectMessageModal({
               images={images}
               files={files}
               isLoading={isLoading}
+              isError={isError}
               maxVisible={6}
+              onRetry={onRetryAttachments}
             />
           </div>
 
@@ -157,15 +165,26 @@ export function DirectMessageModal({
               variant="outline"
               className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
               onClick={() => setShowDeleteConfirm(true)}
+              disabled={isDeleting}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Chat
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Chat
+                </>
+              )}
             </Button>
             
             <Button
               variant="outline"
               className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
               onClick={() => setShowBlockConfirm(true)}
+              disabled={isDeleting}
             >
               <Ban className="h-4 w-4 mr-2" />
               Block User

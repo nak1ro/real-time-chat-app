@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import {
   Textarea,
   Label,
 } from '@/components/ui';
-import { Settings, Camera, Upload, Users, Megaphone } from 'lucide-react';
+import { Settings, Camera, Upload, Users, Megaphone, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation } from '@/types/conversation.types';
 import { ConversationType } from '@/types/enums';
@@ -25,6 +25,7 @@ interface ConversationSettingsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   conversation: Conversation;
+  isSaving?: boolean;
   onSave?: (data: { name?: string; description?: string; avatarUrl?: string }) => void;
 }
 
@@ -42,6 +43,7 @@ export function ConversationSettingsModal({
   open,
   onOpenChange,
   conversation,
+  isSaving = false,
   onSave,
 }: ConversationSettingsModalProps) {
   const [name, setName] = useState(conversation.name || '');
@@ -51,6 +53,13 @@ export function ConversationSettingsModal({
 
   const isChannel = conversation.type === ConversationType.CHANNEL;
   const typeLabel = isChannel ? 'Channel' : 'Group';
+
+  // Reset form when conversation changes
+  useEffect(() => {
+    setName(conversation.name || '');
+    setDescription(conversation.description || '');
+    setAvatarPreview(conversation.avatarUrl);
+  }, [conversation]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,7 +78,7 @@ export function ConversationSettingsModal({
       description: description.trim() || undefined,
       avatarUrl: avatarPreview || undefined,
     });
-    onOpenChange(false);
+    // Don't close here - parent will close after successful save
   };
 
   const hasChanges = 
@@ -164,11 +173,18 @@ export function ConversationSettingsModal({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!hasChanges}>
-            Save Changes
+          <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

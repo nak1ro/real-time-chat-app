@@ -1,4 +1,4 @@
-import {apiClient} from './api-client';
+import { apiClient } from './api-client';
 import type {
     Conversation,
     CreateDirectConversationData,
@@ -14,7 +14,7 @@ import type {
     SlugResponse,
     LeaveConversationResponse,
 } from '@/types';
-import type {User} from '@/types/user.types';
+import type { User } from '@/types/user.types';
 
 export const conversationApi = {
     // Create a direct (1-on-1) conversation
@@ -34,7 +34,7 @@ export const conversationApi = {
     // List all conversations for current user
     list: (filters?: ConversationFilters): Promise<Conversation[]> => {
         return apiClient
-            .get<ConversationsListResponse>('/api/conversations', {params: filters as any})
+            .get<ConversationsListResponse>('/api/conversations', { params: filters as any })
             .then((res) => res.conversations);
     },
 
@@ -81,7 +81,7 @@ export const conversationApi = {
     // List all public channels
     listPublic: (filters?: { name?: string }): Promise<Conversation[]> => {
         return apiClient
-            .get<PublicChannelsResponse>('/api/conversations/public', {params: filters as any})
+            .get<PublicChannelsResponse>('/api/conversations/public', { params: filters as any })
             .then((res) => res.channels);
     },
 
@@ -107,8 +107,26 @@ export const conversationApi = {
         return apiClient.get<{ conversations: Conversation[]; users: User[] }>(
             '/api/conversations/search',
             {
-                params: {q: query, type},
+                params: { q: query, type },
             }
         );
+    },
+
+    // Get attachments for a conversation
+    getAttachments: (
+        id: string,
+        params?: { type?: string; cursor?: string; limit?: number }
+    ): Promise<{ attachments: any[]; nextCursor: string | null; hasMore: boolean }> => {
+        return apiClient
+            .get<{ attachments: any[]; nextCursor: string | null; hasMore: boolean }>(
+                `/api/conversations/${id}/attachments`,
+                { params }
+            )
+            .then((res) => res);
+    },
+
+    // Delete a conversation
+    delete: (id: string): Promise<void> => {
+        return apiClient.delete(`/api/conversations/${id}`);
     },
 };

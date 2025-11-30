@@ -574,6 +574,65 @@ All conversation endpoints require authentication.
 
 ---
 
+### DELETE /api/conversations/:id
+**Description**: Delete a conversation (Direct: any member, Group/Channel: OWNER only)
+
+**Authentication**: Required
+
+**Path Parameters**:
+- `id`: string - Conversation ID
+
+**Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Conversation deleted successfully"
+  }
+}
+```
+
+---
+
+### GET /api/conversations/:id/attachments
+**Description**: Get attachments for a conversation
+**Authentication**: Required
+**Path Parameters**:
+- `id`: string - Conversation ID
+**Query Parameters**:
+- `type`: string (optional) - Filter by attachment type (IMAGE, VIDEO, AUDIO, DOCUMENT, OTHER)
+- `cursor`: string (optional) - Cursor for pagination
+- `limit`: number (optional) - Number of items to return (default: 20, max: 50)
+**Response**:
+```json
+{
+  "status": "success",
+  "data": {
+    "attachments": [
+      {
+        "id": "string",
+        "messageId": "string",
+        "url": "string",
+        "fileName": "string | null",
+        "mimeType": "string | null",
+        "sizeBytes": "number | null",
+        "type": "string",
+        "createdAt": "Date",
+        "message": {
+          "id": "string",
+          "createdAt": "Date",
+          "userId": "string"
+        }
+      }
+    ],
+    "nextCursor": "string | null",
+    "hasMore": "boolean"
+  }
+}
+```
+
+---
+
 ### PATCH /api/conversations/:id
 **Description**: Update conversation details
 

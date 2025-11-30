@@ -18,7 +18,9 @@ router.post('/direct', conversationController.createDirectConversation);
 router.post('/', conversationController.createGroupOrChannel);
 router.get('/', conversationController.listUserConversations);
 router.get('/:id', conversationController.getConversationById);
+router.get('/:id/attachments', conversationController.getAttachments);
 router.patch('/:id', conversationController.updateConversation);
+router.delete('/:id', conversationController.deleteConversation);
 
 // Member management
 router.post('/:id/members', conversationController.addMembers);

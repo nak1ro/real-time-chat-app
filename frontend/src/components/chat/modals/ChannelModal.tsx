@@ -22,7 +22,8 @@ import {
   Shield,
   Trash2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Loader2
 } from 'lucide-react';
 import type { Conversation } from '@/types/conversation.types';
 import type { Attachment } from '@/types/message.types';
@@ -42,12 +43,17 @@ interface ChannelModalProps {
   images?: Attachment[];
   files?: Attachment[];
   isLoading?: boolean;
+  isError?: boolean;
+  isLeaving?: boolean;
+  isDeleting?: boolean;
+  isSavingSettings?: boolean;
   // Role-based permissions
   isElevated?: boolean;
   isOwner?: boolean;
   isRoleLoading?: boolean;
   currentUserRole?: MemberRole | null;
   getUserStatus?: (userId: string) => UserWithStatus | undefined;
+  onRetryAttachments?: () => void;
   onLeaveChannel?: () => void;
   onDeleteChannel?: () => void;
   onRemoveSubscriber?: (userId: string) => void;
@@ -73,11 +79,16 @@ export function ChannelModal({
   images = [],
   files = [],
   isLoading = false,
+  isError = false,
+  isLeaving = false,
+  isDeleting = false,
+  isSavingSettings = false,
   isElevated = false,
   isOwner = false,
   isRoleLoading = false,
   currentUserRole,
   getUserStatus,
+  onRetryAttachments,
   onLeaveChannel,
   onDeleteChannel,
   onRemoveSubscriber,
@@ -167,7 +178,9 @@ export function ChannelModal({
               images={images}
               files={files}
               isLoading={isLoading}
+              isError={isError}
               maxVisible={6}
+              onRetry={onRetryAttachments}
             />
 
             <Separator />
@@ -241,18 +254,38 @@ export function ChannelModal({
                 variant="outline"
                 className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
                 onClick={() => setShowDeleteConfirm(true)}
+                disabled={isDeleting}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Channel
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Channel
+                  </>
+                )}
               </Button>
             ) : (
               <Button
                 variant="outline"
                 className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
                 onClick={() => setShowLeaveConfirm(true)}
+                disabled={isLeaving}
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Leave Channel
+                {isLeaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Leaving...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Leave Channel
+                  </>
+                )}
               </Button>
             )}
           </div>
@@ -306,6 +339,7 @@ export function ChannelModal({
         open={showSettingsModal}
         onOpenChange={setShowSettingsModal}
         conversation={conversation}
+        isSaving={isSavingSettings}
         onSave={onUpdateSettings}
       />
 

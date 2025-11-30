@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger, Button, ScrollArea, Skeleton } from '@/components/ui';
-import { ImageIcon, FileText, Download, ExternalLink } from 'lucide-react';
+import { ImageIcon, FileText, Download, ExternalLink, RefreshCw, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Attachment } from '@/types/message.types';
 import { AttachmentType } from '@/types/enums';
@@ -11,9 +11,11 @@ interface SharedAttachmentsProps {
   images: Attachment[];
   files: Attachment[];
   isLoading?: boolean;
+  isError?: boolean;
   maxVisible?: number;
   onViewAllImages?: () => void;
   onViewAllFiles?: () => void;
+  onRetry?: () => void;
 }
 
 function formatFileSize(bytes: number): string {
@@ -210,10 +212,32 @@ export function SharedAttachments({
   images,
   files,
   isLoading = false,
+  isError = false,
   maxVisible = 6,
   onViewAllImages,
   onViewAllFiles,
+  onRetry,
 }: SharedAttachmentsProps) {
+  // Error state
+  if (isError) {
+    return (
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-foreground">Shared Media & Files</h3>
+        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+          <AlertCircle className="h-10 w-10 mb-3 text-destructive/70" />
+          <p className="text-sm font-medium text-foreground mb-1">Failed to load files</p>
+          <p className="text-xs text-muted-foreground mb-3">Something went wrong while loading attachments</p>
+          {onRetry && (
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-foreground">Shared Media & Files</h3>
@@ -221,10 +245,10 @@ export function SharedAttachments({
       <Tabs defaultValue="images" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="images" className="text-xs">
-            Images ({images.length})
+            Images {!isLoading && `(${images.length})`}
           </TabsTrigger>
           <TabsTrigger value="files" className="text-xs">
-            Files ({files.length})
+            Files {!isLoading && `(${files.length})`}
           </TabsTrigger>
         </TabsList>
         

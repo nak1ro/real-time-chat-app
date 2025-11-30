@@ -17,6 +17,7 @@ interface ConversationModalProps {
   files?: Attachment[];
   availableUsers?: UserWithStatus[];
   isLoading?: boolean;
+  isError?: boolean;
   getUserStatus?: (userId: string) => UserWithStatus | undefined;
   
   // Role-based permissions (from useConversationRole hook)
@@ -26,6 +27,14 @@ interface ConversationModalProps {
   isElevated?: boolean;
   isMember?: boolean;
   isRoleLoading?: boolean;
+  
+  // Loading states for actions
+  isDeleting?: boolean;
+  isLeaving?: boolean;
+  isSavingSettings?: boolean;
+  
+  // Retry callback
+  onRetryAttachments?: () => void;
   
   // DM-specific callbacks
   onStartMessaging?: () => void;
@@ -56,6 +65,7 @@ export function ConversationModal({
   files = [],
   availableUsers = [],
   isLoading = false,
+  isError = false,
   getUserStatus,
   // Role-based permissions
   role,
@@ -64,6 +74,12 @@ export function ConversationModal({
   isElevated = false,
   isMember = true,
   isRoleLoading = false,
+  // Loading states
+  isDeleting = false,
+  isLeaving = false,
+  isSavingSettings = false,
+  // Retry
+  onRetryAttachments,
   // Callbacks
   onStartMessaging,
   onDeleteChat,
@@ -108,6 +124,9 @@ export function ConversationModal({
           images={images}
           files={files}
           isLoading={isLoading}
+          isError={isError}
+          isDeleting={isDeleting}
+          onRetryAttachments={onRetryAttachments}
           onStartMessaging={onStartMessaging}
           onDeleteChat={onDeleteChat}
           onBlockUser={onBlockUser}
@@ -125,11 +144,15 @@ export function ConversationModal({
           files={files}
           availableUsers={availableUsers}
           isLoading={isLoading}
+          isError={isError}
+          isLeaving={isLeaving}
+          isSavingSettings={isSavingSettings}
           isElevated={isElevated}
           isOwner={isOwner}
           isRoleLoading={isRoleLoading}
           currentUserRole={role}
           getUserStatus={getUserStatus}
+          onRetryAttachments={onRetryAttachments}
           onLeaveGroup={onLeaveGroup}
           onKickMember={onKickMember}
           onInviteUsers={onInviteUsers}
@@ -148,11 +171,16 @@ export function ConversationModal({
           images={images}
           files={files}
           isLoading={isLoading}
+          isError={isError}
+          isLeaving={isLeaving}
+          isDeleting={isDeleting}
+          isSavingSettings={isSavingSettings}
           isElevated={isElevated}
           isOwner={isOwner}
           isRoleLoading={isRoleLoading}
           currentUserRole={role}
           getUserStatus={getUserStatus}
+          onRetryAttachments={onRetryAttachments}
           onLeaveChannel={onLeaveChannel}
           onDeleteChannel={onDeleteChannel}
           onRemoveSubscriber={onRemoveSubscriber}

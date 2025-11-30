@@ -263,3 +263,44 @@ export function useConversationActions() {
 
 // Hook to get user role in conversation
 export * from './useConversationRole';
+
+// Hook to get conversation attachments
+import { useInfiniteQuery } from '@tanstack/react-query';
+
+export function useConversationAttachments(
+  conversationId: string,
+  type?: string
+) {
+  return useInfiniteQuery({
+    queryKey: ['conversations', conversationId, 'attachments', { type }],
+    queryFn: ({ pageParam }) =>
+      conversationApi.getAttachments(conversationId, {
+        type,
+        cursor: pageParam as string | undefined,
+        limit: 20,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    enabled: !!conversationId,
+  });
+}
+
+// Hook to delete a conversation
+export function useDeleteConversation(options?: {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => conversationApi.delete(id),
+    onSuccess: (_, id) => {
+      queryClient.removeQueries({ queryKey: queryKeys.conversations.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversations.list() });
+      options?.onSuccess?.();
+    },
+    onError: (error: Error) => {
+      options?.onError?.(error);
+    },
+  });
+}

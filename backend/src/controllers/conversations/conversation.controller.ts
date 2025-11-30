@@ -207,3 +207,38 @@ export const search = asyncHandler(async (req: Request, res: Response) => {
         data: results,
     });
 });
+
+// Get conversation attachments
+export const getAttachments = asyncHandler(async (req: Request, res: Response) => {
+    const currentUserId = (req as any).user?.id;
+    const { id } = req.params;
+    const { type, cursor, limit } = req.query;
+
+    const results = await conversationService.getConversationAttachments(
+        id,
+        currentUserId,
+        type as string,
+        {
+            cursor: cursor as string,
+            limit: limit ? parseInt(limit as string) : undefined,
+        }
+    );
+
+    res.status(200).json({
+        status: 'success',
+        data: results,
+    });
+});
+
+// Delete conversation
+export const deleteConversation = asyncHandler(async (req: Request, res: Response) => {
+    const currentUserId = (req as any).user?.id;
+    const { id } = req.params;
+
+    await conversationService.deleteConversation(id, currentUserId);
+
+    res.status(200).json({
+        status: 'success',
+        data: { message: 'Conversation deleted successfully' },
+    });
+});

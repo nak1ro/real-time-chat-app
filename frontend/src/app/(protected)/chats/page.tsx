@@ -14,6 +14,10 @@ import {
   useAuth,
   useConversations,
   useConversationRole,
+  useConversationAttachments,
+  useUpdateConversation,
+  useLeaveConversation,
+  useDeleteConversation,
   useMessages,
   useCreateMessage,
   useEditMessage,
@@ -23,8 +27,10 @@ import {
   useSocket,
 } from '@/hooks';
 import { conversationApi } from '@/lib/api';
-import type { Conversation, Message, AttachmentData, UploadedAttachment } from '@/types';
+import type { Conversation, Message, AttachmentData, UploadedAttachment, Attachment } from '@/types';
+import { AttachmentType } from '@/types/enums';
 import { Wifi, WifiOff, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Socket connection status indicator component
 function ConnectionIndicator({ status, isConnected }: { status: string; isConnected: boolean }) {
@@ -59,6 +65,9 @@ export default function ChatsPage() {
   const { socket, status, isConnected, joinConversation, leaveConversation } = useSocket();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
+  
+  // Conversation details modal state (defined early for use in hooks)
+  const [showConversationModal, setShowConversationModal] = useState(false);
 
   // Track the previous conversation to leave when switching
   const previousConversationIdRef = useRef<string | null>(null);
@@ -80,6 +89,66 @@ export default function ChatsPage() {
     isMember,
     isLoading: isRoleLoading,
   } = useConversationRole(selectedConversationId || undefined);
+
+  // Fetch attachments for selected conversation (only when modal is open)
+  const {
+    data: attachmentsData,
+    isLoading: isLoadingAttachments,
+    isError: isAttachmentsError,
+    refetch: refetchAttachments,
+  } = useConversationAttachments(
+    showConversationModal ? (selectedConversationId || '') : ''
+  );
+
+  // Flatten attachments from paginated data and categorize
+  const { images, files } = useMemo(() => {
+    const allAttachments: Attachment[] = attachmentsData?.pages?.flatMap(page => page.attachments) || [];
+    const images = allAttachments.filter(a => a.type === AttachmentType.IMAGE);
+    const files = allAttachments.filter(a => a.type !== AttachmentType.IMAGE);
+    return { images, files };
+  }, [attachmentsData]);
+
+  // Update conversation mutation
+  const updateConversation = useUpdateConversation({
+    onSuccess: (conversation) => {
+      console.log('[ChatsPage] Conversation updated:', conversation.id);
+      toast.success('Settings updated successfully');
+    },
+    onError: (error) => {
+      console.error('[ChatsPage] Failed to update conversation:', error.message);
+      toast.error('Failed to update settings');
+    },
+  });
+
+  // Leave conversation mutation
+  const leaveConversationMutation = useLeaveConversation({
+    onSuccess: () => {
+      console.log('[ChatsPage] Left conversation successfully');
+      toast.success('Left conversation successfully');
+      setShowConversationModal(false);
+      setSelectedConversationId(null);
+      setMobileView('list');
+    },
+    onError: (error) => {
+      console.error('[ChatsPage] Failed to leave conversation:', error.message);
+      toast.error('Failed to leave conversation');
+    },
+  });
+
+  // Delete conversation mutation
+  const deleteConversation = useDeleteConversation({
+    onSuccess: () => {
+      console.log('[ChatsPage] Deleted conversation successfully');
+      toast.success('Chat deleted successfully');
+      setShowConversationModal(false);
+      setSelectedConversationId(null);
+      setMobileView('list');
+    },
+    onError: (error) => {
+      console.error('[ChatsPage] Failed to delete conversation:', error.message);
+      toast.error('Failed to delete chat');
+    },
+  });
 
   // Create message mutation
   const createMessage = useCreateMessage({
@@ -192,9 +261,6 @@ export default function ChatsPage() {
   // Channel preview state
   const [previewConversation, setPreviewConversation] = useState<Conversation | null>(null);
   const [isJoining, setIsJoining] = useState(false);
-
-  // Conversation details modal state
-  const [showConversationModal, setShowConversationModal] = useState(false);
 
   // Handle conversation selection
   const handleSelectConversation = useCallback((conversationId: string) => {
@@ -391,6 +457,12 @@ export default function ChatsPage() {
           onOpenChange={setShowConversationModal}
           conversation={selectedConversation}
           currentUserId={user.id}
+          // Attachments
+          images={images}
+          files={files}
+          isLoading={isLoadingAttachments}
+          isError={isAttachmentsError}
+          onRetryAttachments={() => refetchAttachments()}
           // Role-based permissions from useConversationRole hook
           role={currentUserRole}
           isOwner={isOwner}
@@ -398,46 +470,63 @@ export default function ChatsPage() {
           isElevated={isElevated}
           isMember={isMember}
           isRoleLoading={isRoleLoading}
+          // Loading states
+          isDeleting={deleteConversation.isPending}
+          isLeaving={leaveConversationMutation.isPending}
+          isSavingSettings={updateConversation.isPending}
+          // Callbacks
           onStartMessaging={() => setShowConversationModal(false)}
           onDeleteChat={() => {
-            console.log('[ChatsPage] Delete chat requested');
-            // TODO: Implement delete chat
+            console.log('[ChatsPage] Deleting DM conversation:', selectedConversation.id);
+            deleteConversation.mutate(selectedConversation.id);
           }}
           onBlockUser={() => {
             console.log('[ChatsPage] Block user requested');
+            toast.info('Block user functionality coming soon');
             // TODO: Implement block user
           }}
           onLeaveGroup={() => {
-            console.log('[ChatsPage] Leave group requested');
-            // TODO: Implement leave group
+            console.log('[ChatsPage] Leaving group:', selectedConversation.id);
+            leaveConversationMutation.mutate(selectedConversation.id);
           }}
           onLeaveChannel={() => {
-            console.log('[ChatsPage] Leave channel requested');
-            // TODO: Implement leave channel
+            console.log('[ChatsPage] Leaving channel:', selectedConversation.id);
+            leaveConversationMutation.mutate(selectedConversation.id);
           }}
           onDeleteChannel={() => {
-            console.log('[ChatsPage] Delete channel requested');
-            // TODO: Implement delete channel
+            console.log('[ChatsPage] Deleting channel:', selectedConversation.id);
+            deleteConversation.mutate(selectedConversation.id);
           }}
           onKickMember={(userId) => {
             console.log('[ChatsPage] Kick member requested:', userId);
-            // TODO: Implement kick member
+            toast.info('Kick member functionality coming soon');
+            // TODO: Implement kick member via useRemoveMember hook
           }}
           onInviteUsers={(userIds) => {
             console.log('[ChatsPage] Invite users requested:', userIds);
-            // TODO: Implement invite users
+            toast.info('Invite users functionality coming soon');
+            // TODO: Implement invite users via useAddMembers hook
           }}
           onRemoveSubscriber={(userId) => {
             console.log('[ChatsPage] Remove subscriber requested:', userId);
-            // TODO: Implement remove subscriber
+            toast.info('Remove subscriber functionality coming soon');
+            // TODO: Implement remove subscriber via useRemoveMember hook
           }}
           onUpdateSettings={(data) => {
-            console.log('[ChatsPage] Update settings requested:', data);
-            // TODO: Implement update settings
+            console.log('[ChatsPage] Updating settings:', data);
+            updateConversation.mutate({
+              id: selectedConversation.id,
+              data: {
+                name: data.name,
+                description: data.description,
+                avatarUrl: data.avatarUrl,
+              },
+            });
           }}
           onUpdateRoles={(updates) => {
             console.log('[ChatsPage] Update roles requested:', updates);
-            // TODO: Implement update roles
+            toast.info('Update roles functionality coming soon');
+            // TODO: Implement update roles via useUpdateMemberRole hook
           }}
         />
       )}

@@ -20,7 +20,8 @@ import {
   Settings, 
   UserPlus, 
   UserMinus, 
-  Shield 
+  Shield,
+  Loader2
 } from 'lucide-react';
 import type { Conversation } from '@/types/conversation.types';
 import type { Attachment } from '@/types/message.types';
@@ -43,12 +44,16 @@ interface GroupModalProps {
   files?: Attachment[];
   availableUsers?: UserWithStatus[];
   isLoading?: boolean;
+  isError?: boolean;
+  isLeaving?: boolean;
+  isSavingSettings?: boolean;
   // Role-based permissions
   isElevated?: boolean;
   isOwner?: boolean;
   isRoleLoading?: boolean;
   currentUserRole?: MemberRole | null;
   getUserStatus?: (userId: string) => UserWithStatus | undefined;
+  onRetryAttachments?: () => void;
   onLeaveGroup?: () => void;
   onKickMember?: (userId: string) => void;
   onInviteUsers?: (userIds: string[]) => void;
@@ -75,11 +80,15 @@ export function GroupModal({
   files = [],
   availableUsers = [],
   isLoading = false,
+  isError = false,
+  isLeaving = false,
+  isSavingSettings = false,
   isElevated = false,
   isOwner = false,
   isRoleLoading = false,
   currentUserRole,
   getUserStatus,
+  onRetryAttachments,
   onLeaveGroup,
   onKickMember,
   onInviteUsers,
@@ -146,7 +155,9 @@ export function GroupModal({
               images={images}
               files={files}
               isLoading={isLoading}
+              isError={isError}
               maxVisible={6}
+              onRetry={onRetryAttachments}
             />
 
             <Separator />
@@ -245,9 +256,19 @@ export function GroupModal({
               variant="outline"
               className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
               onClick={() => setShowLeaveConfirm(true)}
+              disabled={isLeaving}
             >
-              <LogOut className="h-4 w-4 mr-2" />
-              Leave Group
+              {isLeaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Leaving...
+                </>
+              ) : (
+                <>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Leave Group
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>
@@ -294,6 +315,7 @@ export function GroupModal({
         open={showSettingsModal}
         onOpenChange={setShowSettingsModal}
         conversation={conversation}
+        isSaving={isSavingSettings}
         onSave={onUpdateSettings}
       />
 

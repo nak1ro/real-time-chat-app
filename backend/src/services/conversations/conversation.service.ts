@@ -726,12 +726,12 @@ export const searchConversations = async (
     query: string,
     currentUserId: string,
     type?: string
-): Promise<{ conversations: Conversation[]; users: User[] }> => {
-    if (!query || query.trim().length === 0) {
+) => {
+    const searchQuery = query.trim();
+    if (!searchQuery) {
         return { conversations: [], users: [] };
     }
 
-    const searchQuery = query.trim();
     const conversationWhere: Prisma.ConversationWhereInput = {
         OR: [
             { name: { contains: searchQuery, mode: 'insensitive' } },
@@ -812,4 +812,91 @@ export const searchConversations = async (
     }
 
     return { conversations, users };
+};
+
+// Get attachments for a conversation with pagination
+export const getConversationAttachments = async (
+    conversationId: string,
+    userId: string,
+    type?: string,
+    pagination?: { cursor?: string; limit?: number }
+) => {
+    // Verify membership
+    const conversation = await findConversationWithBasicMembers(conversationId);
+    verifyUserIsMember(conversation, userId);
+
+    const limit = Math.min(pagination?.limit || 20, 50);
+    const cursor = pagination?.cursor;
+
+    const where: Prisma.AttachmentWhereInput = {
+        message: {
+            conversationId,
+            deletedAt: null, // Don't show attachments from deleted messages
+        },
+    };
+
+    if (type) {
+        where.type = type as any;
+    }
+
+    const attachments = await prisma.attachment.findMany({
+        where,
+        take: limit + 1,
+        skip: cursor ? 1 : 0,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: {
+            createdAt: 'desc',
+        },
+        include: {
+            message: {
+                select: {
+                    id: true,
+                    createdAt: true,
+                    userId: true,
+                },
+            },
+        },
+    });
+
+    const hasMore = attachments.length > limit;
+    const returnAttachments = hasMore ? attachments.slice(0, limit) : attachments;
+    const nextCursor =
+        hasMore && returnAttachments.length > 0
+            ? returnAttachments[returnAttachments.length - 1].id
+            : null;
+
+    return {
+        attachments: returnAttachments,
+        nextCursor,
+        hasMore,
+    };
+};
+
+// Delete a conversation (Direct: any member, Group/Channel: OWNER only)
+export const deleteConversation = async (
+    conversationId: string,
+    actorId: string
+): Promise<void> => {
+    const conversation = await findConversationWithBasicMembers(conversationId);
+
+    // Check if user is a member
+    const membership = findUserMembership(conversation, actorId);
+    if (!membership) {
+        throw new NotFoundError('You are not a member of this conversation');
+    }
+
+    // Logic based on conversation type
+    if (conversation.type === PrismaConversationType.DIRECT) {
+        // For Direct conversations, any member can delete it (as per user request)
+        // This deletes it for BOTH sides
+    } else {
+        // For Group/Channel, only OWNER can delete
+        if (membership.role !== MemberRole.OWNER) {
+            throw new AuthorizationError('Only OWNER can delete this conversation');
+        }
+    }
+
+    await prisma.conversation.delete({
+        where: { id: conversationId },
+    });
 };
