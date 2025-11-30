@@ -35,14 +35,22 @@ export const getConversationMessages = asyncHandler(async (req: Request, res: Re
     const pagination: PaginationOptions = {
         limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
         cursor: req.query.cursor as string,
-        sortOrder: (req.query.sortOrder as 'asc' | 'desc') || 'desc',
+        sortOrder: (req.query.sortOrder as 'asc' | 'desc') || 'asc',
     };
+
+    console.log('[getConversationMessages] Params:', {
+        conversationId,
+        pagination,
+        queryParams: req.query
+    });
 
     const result = await messageService.getConversationMessages(
         conversationId,
         userId,
         pagination
     );
+
+    console.log('[getConversationMessages] Returning messages:', result.messages.length);
 
     res.status(200).json({
         status: 'success',

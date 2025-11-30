@@ -66,8 +66,8 @@ export const RECEIPT_INCLUDE_WITH_USER = {
 
 // Message constants
 
-export const DEFAULT_PAGE_LIMIT = 50;
-export const MAX_PAGE_LIMIT = 100;
+export const DEFAULT_PAGE_LIMIT = 200;
+export const MAX_PAGE_LIMIT = 300;
 export const DELETED_MESSAGE_PLACEHOLDER = '[Message deleted]';
 
 // Receipt helpers

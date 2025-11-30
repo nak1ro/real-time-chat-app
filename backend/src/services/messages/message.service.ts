@@ -59,19 +59,12 @@ const validateMessageText = (text: string): void => {
 // Build pagination where clause
 // Note: We include soft-deleted messages so they can be displayed as "deleted" in the UI
 const buildPaginationWhereClause = (
-    conversationId: string,
-    cursor?: string
+    conversationId: string
 ): Prisma.MessageWhereInput => {
-    const where: Prisma.MessageWhereInput = {
+    return {
         conversationId,
         // Removed deletedAt: null filter to include soft-deleted messages
     };
-
-    if (cursor) {
-        where.id = { lt: cursor };
-    }
-
-    return where;
 };
 
 // Transform a message to include isDeleted boolean for frontend compatibility
@@ -113,7 +106,7 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
     // Verify user can send messages
     const canSend = await canSendMessage(userId, conversationId);
     if (!canSend) {
-        throw new AuthorizationError('You cannot send messages in this conversation');
+        throw new AuthorizationError('You can only send messages in this conversation');
     }
 
     if (replyToId) {
@@ -183,11 +176,13 @@ export const getConversationMessages = async (
     const sortOrder = pagination?.sortOrder || 'desc';
     const cursor = pagination?.cursor;
 
-    const where = buildPaginationWhereClause(conversationId, cursor);
+    const where = buildPaginationWhereClause(conversationId);
 
     const messages = await prisma.message.findMany({
         where,
         take: limit + 1,
+        skip: cursor ? 1 : 0,
+        cursor: cursor ? { id: cursor } : undefined,
         orderBy: [{ createdAt: sortOrder }, { id: sortOrder }],
         include: MESSAGE_INCLUDE_WITH_RELATIONS,
     });
