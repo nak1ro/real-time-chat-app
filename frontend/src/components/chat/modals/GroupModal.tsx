@@ -42,7 +42,6 @@ interface GroupModalProps {
   currentUserId: string;
   images?: Attachment[];
   files?: Attachment[];
-  availableUsers?: UserWithStatus[];
   isLoading?: boolean;
   isError?: boolean;
   isLeaving?: boolean;
@@ -78,7 +77,6 @@ export function GroupModal({
   currentUserId,
   images = [],
   files = [],
-  availableUsers = [],
   isLoading = false,
   isError = false,
   isLeaving = false,
@@ -305,8 +303,7 @@ export function GroupModal({
         onOpenChange={setShowInviteModal}
         conversationName={groupName}
         conversationSlug={conversation.slug}
-        existingMemberIds={conversation.members.map(m => m.userId)}
-        availableUsers={availableUsers}
+        existingMemberIds={conversation.members?.map(m => m.userId) || []}
         onInviteUsers={onInviteUsers}
       />
 

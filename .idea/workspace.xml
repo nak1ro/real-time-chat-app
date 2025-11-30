@@ -5,12 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/controllers/conversations/conversation.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/controllers/conversations/conversation.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/routes/conversation.routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/routes/conversation.routes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/services/conversations/conversation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/conversations/conversation.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/API_ENDPOINTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/API_ENDPOINTS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/hooks/useConversations.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/hooks/useConversations.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/conversation.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/conversation.api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

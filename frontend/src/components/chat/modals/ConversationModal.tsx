@@ -15,7 +15,6 @@ interface ConversationModalProps {
   currentUserId: string;
   images?: Attachment[];
   files?: Attachment[];
-  availableUsers?: UserWithStatus[];
   isLoading?: boolean;
   isError?: boolean;
   getUserStatus?: (userId: string) => UserWithStatus | undefined;
@@ -63,7 +62,6 @@ export function ConversationModal({
   currentUserId,
   images = [],
   files = [],
-  availableUsers = [],
   isLoading = false,
   isError = false,
   getUserStatus,
@@ -142,7 +140,6 @@ export function ConversationModal({
           currentUserId={currentUserId}
           images={images}
           files={files}
-          availableUsers={availableUsers}
           isLoading={isLoading}
           isError={isError}
           isLeaving={isLeaving}

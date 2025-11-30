@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -13,12 +13,13 @@ import {
   Button,
   ScrollArea,
   Input,
+  Skeleton,
 } from '@/components/ui';
-import { Search, UserPlus, Check, Link, Copy } from 'lucide-react';
+import { Search, UserPlus, Check, Copy, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ConversationMember } from '@/types/conversation.types';
 import type { UserWithStatus } from '@/types/user.types';
-import { Status } from '@/types/enums';
+import type { User } from '@/types/user.types';
+import { useUserSearch } from '@/hooks';
 
 interface InviteMembersModalProps {
   open: boolean;
@@ -26,7 +27,6 @@ interface InviteMembersModalProps {
   conversationName: string;
   conversationSlug?: string | null;
   existingMemberIds: string[];
-  availableUsers: UserWithStatus[];
   onInviteUsers?: (userIds: string[]) => void;
   onCopyInviteLink?: () => void;
 }
@@ -46,22 +46,44 @@ export function InviteMembersModal({
   conversationName,
   conversationSlug,
   existingMemberIds,
-  availableUsers,
   onInviteUsers,
   onCopyInviteLink,
 }: InviteMembersModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [linkCopied, setLinkCopied] = useState(false);
 
-  // Filter out existing members
-  const invitableUsers = availableUsers.filter(u => !existingMemberIds.includes(u.id));
-  
-  const filteredUsers = searchQuery
-    ? invitableUsers.filter(u => 
-        u.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : invitableUsers;
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!open) {
+      setSearchQuery('');
+      setDebouncedQuery('');
+      setSelectedUserIds(new Set());
+    }
+  }, [open]);
+
+  // Search users from backend
+  const { 
+    data: searchResults = [], 
+    isLoading: isSearching,
+    isFetching,
+  } = useUserSearch(debouncedQuery, { 
+    enabled: debouncedQuery.length >= 2 
+  });
+
+  // Filter out existing members from search results
+  const invitableUsers = useMemo(() => {
+    return searchResults.filter((user: User) => !existingMemberIds.includes(user.id));
+  }, [searchResults, existingMemberIds]);
 
   const toggleUser = (userId: string) => {
     const newSelected = new Set(selectedUserIds);
@@ -86,6 +108,11 @@ export function InviteMembersModal({
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 2000);
   };
+
+  const showLoading = isSearching || isFetching;
+  const showEmptyState = !showLoading && debouncedQuery.length >= 2 && invitableUsers.length === 0;
+  const showPrompt = debouncedQuery.length < 2 && !showLoading;
+  const showResults = !showLoading && debouncedQuery.length >= 2 && invitableUsers.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -136,23 +163,52 @@ export function InviteMembersModal({
             placeholder="Search users to invite..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 pr-9"
           />
+          {showLoading && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+          )}
         </div>
 
         <ScrollArea className="flex-1 -mx-6 px-6">
-          {filteredUsers.length === 0 ? (
+          {/* Loading State */}
+          {showLoading && (
+            <div className="space-y-2 py-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 p-2">
+                  <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  <Skeleton className="h-5 w-5 rounded-full flex-shrink-0" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Prompt to type more */}
+          {showPrompt && (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Search className="h-10 w-10 mb-2 opacity-50" />
+              <p className="text-sm">Type at least 2 characters to search</p>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {showEmptyState && (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <UserPlus className="h-10 w-10 mb-2 opacity-50" />
-              <p className="text-sm">
-                {searchQuery ? 'No users found' : 'No users available to invite'}
-              </p>
+              <p className="text-sm font-medium text-foreground mb-1">No users found</p>
+              <p className="text-xs">Try a different search term</p>
             </div>
-          ) : (
+          )}
+
+          {/* Results */}
+          {showResults && (
             <div className="space-y-1 py-2">
-              {filteredUsers.map((user) => {
+              {invitableUsers.map((user: User) => {
                 const isSelected = selectedUserIds.has(user.id);
-                const isOnline = user.status === Status.ONLINE;
                 
                 return (
                   <button
@@ -170,19 +226,15 @@ export function InviteMembersModal({
                           {getInitials(user.name)}
                         </AvatarFallback>
                       </Avatar>
-                      {isOnline && (
-                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-background" />
-                      )}
                     </div>
                     
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{user.name}</p>
-                      <p className={cn(
-                        'text-xs',
-                        isOnline ? 'text-emerald-600' : 'text-muted-foreground'
-                      )}>
-                        {isOnline ? 'Online' : 'Offline'}
-                      </p>
+                      {user.email && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                      )}
                     </div>
                     
                     <div className={cn(
