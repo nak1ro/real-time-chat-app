@@ -19,6 +19,14 @@ interface ConversationModalProps {
   isLoading?: boolean;
   getUserStatus?: (userId: string) => UserWithStatus | undefined;
   
+  // Role-based permissions (from useConversationRole hook)
+  role?: MemberRole | null;
+  isOwner?: boolean;
+  isAdmin?: boolean;
+  isElevated?: boolean;
+  isMember?: boolean;
+  isRoleLoading?: boolean;
+  
   // DM-specific callbacks
   onStartMessaging?: () => void;
   onDeleteChat?: () => void;
@@ -49,6 +57,14 @@ export function ConversationModal({
   availableUsers = [],
   isLoading = false,
   getUserStatus,
+  // Role-based permissions
+  role,
+  isOwner = false,
+  isAdmin = false,
+  isElevated = false,
+  isMember = true,
+  isRoleLoading = false,
+  // Callbacks
   onStartMessaging,
   onDeleteChat,
   onBlockUser,
@@ -109,6 +125,10 @@ export function ConversationModal({
           files={files}
           availableUsers={availableUsers}
           isLoading={isLoading}
+          isElevated={isElevated}
+          isOwner={isOwner}
+          isRoleLoading={isRoleLoading}
+          currentUserRole={role}
           getUserStatus={getUserStatus}
           onLeaveGroup={onLeaveGroup}
           onKickMember={onKickMember}
@@ -128,6 +148,10 @@ export function ConversationModal({
           images={images}
           files={files}
           isLoading={isLoading}
+          isElevated={isElevated}
+          isOwner={isOwner}
+          isRoleLoading={isRoleLoading}
+          currentUserRole={role}
           getUserStatus={getUserStatus}
           onLeaveChannel={onLeaveChannel}
           onDeleteChannel={onDeleteChannel}

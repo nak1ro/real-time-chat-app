@@ -261,3 +261,5 @@ export function useConversationActions() {
   };
 }
 
+// Hook to get user role in conversation
+export * from './useConversationRole';

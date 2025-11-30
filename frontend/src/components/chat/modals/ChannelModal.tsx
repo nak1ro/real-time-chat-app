@@ -11,6 +11,7 @@ import {
   AvatarImage,
   Button,
   Separator,
+  Skeleton,
 } from '@/components/ui';
 import { 
   X, 
@@ -41,6 +42,11 @@ interface ChannelModalProps {
   images?: Attachment[];
   files?: Attachment[];
   isLoading?: boolean;
+  // Role-based permissions
+  isElevated?: boolean;
+  isOwner?: boolean;
+  isRoleLoading?: boolean;
+  currentUserRole?: MemberRole | null;
   getUserStatus?: (userId: string) => UserWithStatus | undefined;
   onLeaveChannel?: () => void;
   onDeleteChannel?: () => void;
@@ -67,6 +73,10 @@ export function ChannelModal({
   images = [],
   files = [],
   isLoading = false,
+  isElevated = false,
+  isOwner = false,
+  isRoleLoading = false,
+  currentUserRole,
   getUserStatus,
   onLeaveChannel,
   onDeleteChannel,
@@ -81,16 +91,13 @@ export function ChannelModal({
   const [showRolesModal, setShowRolesModal] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
-  const currentMember = conversation.members.find(m => m.userId === currentUserId);
-  const currentUserRole = currentMember?.role || MemberRole.MEMBER;
-  const isAdmin = currentUserRole === MemberRole.ADMIN;
-  const isOwner = conversation.createdById === currentUserId;
-  const canModerate = isAdmin || isOwner;
-
   const channelName = conversation.name || 'Unnamed Channel';
-  const subscriberCount = conversation._count?.members || conversation.members.length;
+  const subscriberCount = conversation._count?.members || conversation.members?.length || 0;
   const description = conversation.description || '';
   const shouldTruncateDescription = description.length > 150;
+  
+  // Use passed-in role or fallback to computing from members
+  const effectiveRole = currentUserRole ?? conversation.members?.find(m => m.userId === currentUserId)?.role ?? MemberRole.MEMBER;
 
   return (
     <>
@@ -181,7 +188,18 @@ export function ChannelModal({
             </div>
 
             {/* Channel Settings (Admin/Owner only) */}
-            {canModerate && (
+            {isRoleLoading ? (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <Skeleton className="h-5 w-40" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </div>
+              </>
+            ) : isElevated && (
               <>
                 <Separator />
                 <div className="space-y-3">
@@ -273,10 +291,10 @@ export function ChannelModal({
       <SubscribersModal
         open={showSubscribersModal}
         onOpenChange={setShowSubscribersModal}
-        members={conversation.members}
+        members={conversation.members || []}
         totalCount={subscriberCount}
         currentUserId={currentUserId}
-        currentUserRole={currentUserRole}
+        isElevated={isElevated}
         createdById={conversation.createdById}
         channelName={channelName}
         getUserStatus={getUserStatus}
@@ -295,9 +313,9 @@ export function ChannelModal({
       <ManageRolesModal
         open={showRolesModal}
         onOpenChange={setShowRolesModal}
-        members={conversation.members}
+        members={conversation.members || []}
         currentUserId={currentUserId}
-        currentUserRole={currentUserRole}
+        currentUserRole={effectiveRole}
         createdById={conversation.createdById}
         conversationName={channelName}
         getUserStatus={getUserStatus}

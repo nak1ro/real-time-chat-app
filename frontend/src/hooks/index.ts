@@ -52,6 +52,7 @@ export {
   useJoinChannel,
   useGenerateSlug,
   useConversationActions,
+  useConversationRole,
 } from './useConversations';
 
 // Message hooks

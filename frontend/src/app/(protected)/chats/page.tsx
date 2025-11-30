@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import {
   useAuth,
   useConversations,
+  useConversationRole,
   useMessages,
   useCreateMessage,
   useEditMessage,
@@ -69,6 +70,16 @@ export default function ChatsPage() {
   const { data: messagesData, isLoading: isLoadingMessages } = useMessages(
     selectedConversationId || undefined
   );
+
+  // Get current user's role in the selected conversation
+  const {
+    role: currentUserRole,
+    isOwner,
+    isAdmin,
+    isElevated,
+    isMember,
+    isLoading: isRoleLoading,
+  } = useConversationRole(selectedConversationId || undefined);
 
   // Create message mutation
   const createMessage = useCreateMessage({
@@ -380,6 +391,13 @@ export default function ChatsPage() {
           onOpenChange={setShowConversationModal}
           conversation={selectedConversation}
           currentUserId={user.id}
+          // Role-based permissions from useConversationRole hook
+          role={currentUserRole}
+          isOwner={isOwner}
+          isAdmin={isAdmin}
+          isElevated={isElevated}
+          isMember={isMember}
+          isRoleLoading={isRoleLoading}
           onStartMessaging={() => setShowConversationModal(false)}
           onDeleteChat={() => {
             console.log('[ChatsPage] Delete chat requested');

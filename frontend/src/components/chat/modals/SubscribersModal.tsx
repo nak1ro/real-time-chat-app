@@ -28,7 +28,8 @@ interface SubscribersModalProps {
   members: ConversationMember[];
   totalCount: number;
   currentUserId: string;
-  currentUserRole: MemberRole;
+  /** Whether current user has elevated privileges (Admin OR Owner) */
+  isElevated?: boolean;
   createdById?: string | null;
   channelName: string;
   getUserStatus?: (userId: string) => UserWithStatus | undefined;
@@ -90,7 +91,7 @@ export function SubscribersModal({
   members,
   totalCount,
   currentUserId,
-  currentUserRole,
+  isElevated = false,
   createdById,
   channelName,
   getUserStatus,
@@ -98,8 +99,6 @@ export function SubscribersModal({
 }: SubscribersModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [memberToRemove, setMemberToRemove] = useState<ConversationMember | null>(null);
-
-  const canModerate = currentUserRole === MemberRole.ADMIN || currentUserId === createdById;
   
   const filteredMembers = searchQuery
     ? members.filter(m => 
@@ -155,9 +154,9 @@ export function SubscribersModal({
                 {filteredMembers.map((member) => {
                   const userStatus = getUserStatus?.(member.userId);
                   const isOnline = userStatus?.status === Status.ONLINE;
-                  const isOwner = member.userId === createdById;
+                  const isMemberOwner = member.userId === createdById;
                   const isSelf = member.userId === currentUserId;
-                  const canRemove = canModerate && !isSelf && !isOwner;
+                  const canRemove = isElevated && !isSelf && !isMemberOwner;
                   
                   return (
                     <div
@@ -179,7 +178,7 @@ export function SubscribersModal({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-sm truncate">{member.user.name}</p>
-                          <RoleBadge role={member.role} isOwner={isOwner} />
+                          <RoleBadge role={member.role} isOwner={isMemberOwner} />
                         </div>
                         <p className={cn(
                           'text-xs',
