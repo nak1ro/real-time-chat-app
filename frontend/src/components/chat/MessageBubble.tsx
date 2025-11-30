@@ -13,7 +13,9 @@ interface MessageBubbleProps {
   isOwn: boolean;
   currentUserId: string;
   showAvatar?: boolean;
+  isHighlighted?: boolean;
   onContextMenu?: (message: Message, position: { x: number; y: number }) => void;
+  onReplyClick?: (messageId: string) => void;
 }
 
 function formatTime(date: Date | string): string {
@@ -39,10 +41,12 @@ function truncateText(text: string, maxLength: number = 80): string {
 // Reply preview component
 function ReplyPreview({
   replyTo,
-  isOwn
+  isOwn,
+  onClick
 }: {
   replyTo: NonNullable<Message['replyTo']>;
   isOwn: boolean;
+  onClick?: () => void;
 }) {
   // Check if the reply-to message is deleted using isDeleted field or empty text as fallback
   const isReplyDeleted = ('isDeleted' in replyTo && replyTo.isDeleted) || !replyTo.text || replyTo.text === '';
@@ -55,9 +59,21 @@ function ReplyPreview({
   return (
     <div
       className={cn(
-        'flex rounded-t-xl overflow-hidden mb-0.5',
-        isOwn ? 'bg-primary/20' : 'bg-muted-foreground/10'
+        'flex rounded-t-xl overflow-hidden mb-0.5 cursor-pointer transition-colors',
+        isOwn ? 'bg-primary/20 hover:bg-primary/30' : 'bg-muted-foreground/10 hover:bg-muted-foreground/20'
       )}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
     >
       {/* Accent bar */}
       <div
@@ -116,7 +132,15 @@ function DeletedMessageContent({ isOwn }: { isOwn: boolean }) {
   );
 }
 
-export function MessageBubble({ message, isOwn, currentUserId, showAvatar = true, onContextMenu }: MessageBubbleProps) {
+export function MessageBubble({ 
+  message, 
+  isOwn, 
+  currentUserId, 
+  showAvatar = true, 
+  isHighlighted = false,
+  onContextMenu,
+  onReplyClick 
+}: MessageBubbleProps) {
   const senderName = message.user?.name || 'Unknown';
   const senderAvatar = message.user?.avatarUrl;
   const isRead = (message._count?.receipts ?? 0) > 0;
@@ -163,8 +187,9 @@ export function MessageBubble({ message, isOwn, currentUserId, showAvatar = true
   return (
     <div
       className={cn(
-        'flex gap-2 max-w-[85%] sm:max-w-[75%]',
-        isOwn ? 'ml-auto flex-row-reverse' : 'mr-auto'
+        'flex gap-2 max-w-[85%] sm:max-w-[75%] rounded-2xl transition-all duration-300',
+        isOwn ? 'ml-auto flex-row-reverse' : 'mr-auto',
+        isHighlighted && 'bg-accent/50 ring-2 ring-accent animate-highlight-fade'
       )}
     >
       {!isOwn && showAvatar && (
@@ -201,7 +226,11 @@ export function MessageBubble({ message, isOwn, currentUserId, showAvatar = true
         >
           {/* Reply preview */}
           {hasReply && message.replyTo && (
-            <ReplyPreview replyTo={message.replyTo} isOwn={isOwn} />
+            <ReplyPreview 
+              replyTo={message.replyTo} 
+              isOwn={isOwn} 
+              onClick={() => onReplyClick?.(message.replyTo!.id)}
+            />
           )}
 
           {/* Message content */}

@@ -21,6 +21,7 @@ interface ConversationWithMeta {
 interface ChatListPanelProps {
   selectedConversationId: string | null;
   onSelectConversation: (conversationId: string) => void;
+  onPreviewConversation?: (conversation: Conversation) => void;
 }
 
 function getDisplayName(conversation: Conversation, currentUserId?: string): string {
@@ -38,6 +39,7 @@ function getDisplayName(conversation: Conversation, currentUserId?: string): str
 export function ChatListPanel({
   selectedConversationId,
   onSelectConversation,
+  onPreviewConversation,
 }: ChatListPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<ConversationFilter>('ALL');
@@ -66,16 +68,16 @@ export function ChatListPanel({
       setIsSearching(true);
       const timer = setTimeout(() => {
         conversationApi
-            .search(searchQuery, filter === 'ALL' ? undefined : filter)
-            .then((results) => {
-              setGlobalResults(results);
-            })
-            .catch((err) => {
-              console.error('Search failed', err);
-            })
-            .finally(() => {
-              setIsSearching(false);
-            });
+          .search(searchQuery, filter === 'ALL' ? undefined : filter)
+          .then((results) => {
+            setGlobalResults(results);
+          })
+          .catch((err) => {
+            console.error('Search failed', err);
+          })
+          .finally(() => {
+            setIsSearching(false);
+          });
       }, 500);
 
       return () => clearTimeout(timer);
@@ -107,8 +109,17 @@ export function ChatListPanel({
     });
   }, [conversationsWithMeta, filter, searchQuery, searchMode, currentUser?.id]);
 
-  const handleGlobalConversationClick = (conversationId: string) => {
-    onSelectConversation(conversationId);
+  const handleGlobalConversationClick = (conversation: Conversation) => {
+    // If it's a channel and user is not a member, preview it
+    if (conversation.type === 'CHANNEL') {
+      const isMember = conversation.members?.some(m => m.userId === currentUser?.id);
+      if (!isMember && onPreviewConversation) {
+        onPreviewConversation(conversation);
+        return;
+      }
+    }
+
+    onSelectConversation(conversation.id);
   };
 
   const handleUserResultClick = async (userId: string) => {
@@ -191,42 +202,42 @@ export function ChatListPanel({
               )
             )
           ) : // GLOBAL mode
-          isSearching ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              Searching...
-            </div>
-          ) : globalResults.conversations.length === 0 &&
-            globalResults.users.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              {searchQuery
-                ? 'No matching results found'
-                : 'Type to search globally'}
-            </div>
-          ) : (
-            <>
-              {globalResults.conversations.map((conversation) => (
-                <ChatListItem
-                  key={conversation.id}
-                  conversation={conversation}
-                  currentUserId={currentUser?.id}
-                  lastMessage={null}
-                  unreadCount={0}
-                  isOnline={false}
-                  isActive={conversation.id === selectedConversationId}
-                  onClick={() => handleGlobalConversationClick(conversation.id)}
-                />
-              ))}
+            isSearching ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                Searching...
+              </div>
+            ) : globalResults.conversations.length === 0 &&
+              globalResults.users.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                {searchQuery
+                  ? 'No matching results found'
+                  : 'Type to search globally'}
+              </div>
+            ) : (
+              <>
+                {globalResults.conversations.map((conversation) => (
+                  <ChatListItem
+                    key={conversation.id}
+                    conversation={conversation}
+                    currentUserId={currentUser?.id}
+                    lastMessage={null}
+                    unreadCount={0}
+                    isOnline={false}
+                    isActive={conversation.id === selectedConversationId}
+                    onClick={() => handleGlobalConversationClick(conversation)}
+                  />
+                ))}
 
-              {globalResults.users.map((user) => (
-                <UserListItem
-                  key={user.id}
-                  user={user}
-                  isActive={false}
-                  onClick={() => handleUserResultClick(user.id)}
-                />
-              ))}
-            </>
-          )}
+                {globalResults.users.map((user) => (
+                  <UserListItem
+                    key={user.id}
+                    user={user}
+                    isActive={false}
+                    onClick={() => handleUserResultClick(user.id)}
+                  />
+                ))}
+              </>
+            )}
         </div>
       </div>
     </div>

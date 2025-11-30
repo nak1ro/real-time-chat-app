@@ -26,6 +26,9 @@ export interface Conversation {
   updatedAt?: Date;
   createdById?: string | null;
   members: ConversationMember[];
+  _count?: {
+    members: number;
+  };
 }
 
 // Request DTO for creating direct conversation

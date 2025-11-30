@@ -11,3 +11,4 @@ export { EmptyChatState } from './EmptyChatState';
 export { CreateChannelModal } from './CreateChannelModal';
 export { AttachmentPreview } from './AttachmentPreview';
 export { MessageAttachments } from './MessageAttachments';
+export { ChannelPreview } from './ChannelPreview';

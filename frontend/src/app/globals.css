@@ -130,3 +130,19 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+/* Reply navigation highlight animation */
+@keyframes highlight-fade {
+  0% {
+    background-color: hsl(var(--accent) / 0.5);
+    box-shadow: 0 0 0 2px hsl(var(--accent));
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 2px transparent;
+  }
+}
+
+.animate-highlight-fade {
+  animation: highlight-fade 1.5s ease-out forwards;
+}

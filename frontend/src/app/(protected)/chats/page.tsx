@@ -5,6 +5,8 @@ import {
   ChatListPanel,
   ChatDetailPanel,
   EmptyChatState,
+  ChannelPreview,
+  ChatHeader,
 } from '@/components/chat';
 import { cn } from '@/lib/utils';
 import {
@@ -18,6 +20,7 @@ import {
   useMessageSocketListeners,
   useSocket,
 } from '@/hooks';
+import { conversationApi } from '@/lib/api';
 import type { Conversation, Message, AttachmentData, UploadedAttachment } from '@/types';
 import { Wifi, WifiOff, Loader2 } from 'lucide-react';
 
@@ -174,22 +177,65 @@ export default function ChatsPage() {
     }, []),
   });
 
+  // Channel preview state
+  const [previewConversation, setPreviewConversation] = useState<Conversation | null>(null);
+  const [isJoining, setIsJoining] = useState(false);
+
   // Handle conversation selection
   const handleSelectConversation = useCallback((conversationId: string) => {
     console.log('[ChatsPage] Selecting conversation:', conversationId);
     setSelectedConversationId(conversationId);
+    setPreviewConversation(null); // Clear preview when selecting a chat
     setMobileView('detail');
+  }, []);
+
+  // Handle preview request from global search
+  const handlePreviewConversation = useCallback((conversation: Conversation) => {
+    console.log('[ChatsPage] Previewing conversation:', conversation.id);
+    setPreviewConversation(conversation);
+    setSelectedConversationId(null); // Clear selection when previewing
+    setMobileView('detail');
+  }, []);
+
+  // Handle join channel
+  const handleJoinChannel = useCallback(async () => {
+    if (!previewConversation || !previewConversation.slug) return;
+
+    setIsJoining(true);
+    try {
+      console.log('[ChatsPage] Joining channel:', previewConversation.slug);
+      const joined = await conversationApi.joinBySlug(previewConversation.slug);
+
+      // Refresh conversations list
+      // Note: In a real app we might want to optimistically update or invalidate queries
+      // But for now we'll rely on the navigation to trigger updates or socket events
+
+      // Select the joined conversation
+      handleSelectConversation(joined.id);
+    } catch (error) {
+      console.error('[ChatsPage] Failed to join channel:', error);
+      // TODO: Show error toast
+    } finally {
+      setIsJoining(false);
+    }
+  }, [previewConversation, handleSelectConversation]);
+
+  // Handle cancel preview
+  const handleCancelPreview = useCallback(() => {
+    setPreviewConversation(null);
+    setMobileView('list');
   }, []);
 
   // Handle back navigation (mobile)
   const handleBack = useCallback(() => {
     setMobileView('list');
+    setPreviewConversation(null);
   }, []);
 
   // Handle send message
   const handleSendMessage = useCallback((text: string, replyToId?: string, attachments?: AttachmentData[]) => {
     if (!selectedConversationId) return;
-    
+
     // Allow sending if there's text OR attachments
     const hasContent = text.trim() || (attachments && attachments.length > 0);
     if (!hasContent) return;
@@ -242,7 +288,11 @@ export default function ChatsPage() {
       {/* Debug: Socket connection indicator */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30">
         <span className="text-xs text-muted-foreground">
-          {selectedConversation ? `Chat: ${selectedConversation.name || 'Direct Message'}` : 'Select a chat'}
+          {previewConversation
+            ? `Preview: ${previewConversation.name}`
+            : selectedConversation
+              ? `Chat: ${selectedConversation.name || 'Direct Message'}`
+              : 'Select a chat'}
         </span>
         <ConnectionIndicator status={status} isConnected={isConnected} />
       </div>
@@ -258,17 +308,38 @@ export default function ChatsPage() {
           <ChatListPanel
             selectedConversationId={selectedConversationId}
             onSelectConversation={handleSelectConversation}
+            onPreviewConversation={handlePreviewConversation}
           />
         </div>
 
-        {/* Chat Detail Panel */}
+        {/* Chat Detail Panel or Preview */}
         <div
           className={cn(
             'flex-1 bg-background min-w-0 overflow-hidden',
             mobileView === 'list' ? 'hidden md:flex md:flex-col' : 'flex flex-col'
           )}
         >
-          {selectedConversation && user ? (
+          {previewConversation ? (
+            <div className="h-full flex flex-col">
+              {/* Header for mobile back button */}
+              <div className="md:hidden flex-shrink-0">
+                <ChatHeader
+                  conversation={previewConversation}
+                  isOnline={false}
+                  onBack={handleBack}
+                  showBackButton={true}
+                />
+              </div>
+              <div className="flex-1">
+                <ChannelPreview
+                  channel={previewConversation}
+                  onJoin={handleJoinChannel}
+                  onCancel={handleCancelPreview}
+                  isJoining={isJoining}
+                />
+              </div>
+            </div>
+          ) : selectedConversation && user ? (
             <ChatDetailPanel
               key={selectedConversation.id}
               conversation={selectedConversation}
@@ -291,3 +362,4 @@ export default function ChatsPage() {
     </div>
   );
 }
+

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui';
 import { MessageBubble } from './MessageBubble';
 import { MessageContextMenu } from './MessageContextMenu';
@@ -28,11 +28,43 @@ export function MessageList({
   onDelete,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Handle reply click - scroll to and highlight the original message
+  const handleReplyClick = useCallback((messageId: string) => {
+    const messageElement = messageRefs.current.get(messageId);
+    
+    if (messageElement) {
+      // Scroll to the message
+      messageElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      
+      // Highlight the message
+      setHighlightedMessageId(messageId);
+      
+      // Clear highlight after animation completes
+      setTimeout(() => {
+        setHighlightedMessageId(null);
+      }, 1500);
+    }
+  }, []);
+
+  // Register message ref
+  const setMessageRef = useCallback((messageId: string, element: HTMLDivElement | null) => {
+    if (element) {
+      messageRefs.current.set(messageId, element);
+    } else {
+      messageRefs.current.delete(messageId);
+    }
+  }, []);
 
   const handleContextMenu = (message: Message, position: { x: number; y: number }) => {
     const isOwnMessage = message.userId === currentUserId;
@@ -70,14 +102,20 @@ export function MessageList({
     <ScrollArea className="h-full">
       <div className="px-4 py-4 space-y-3">
         {messages.map((message, index) => (
-          <MessageBubble
+          <div
             key={message.id}
-            message={message}
-            isOwn={message.userId === currentUserId}
-            currentUserId={currentUserId}
-            showAvatar={shouldShowAvatar(index)}
-            onContextMenu={handleContextMenu}
-          />
+            ref={(el) => setMessageRef(message.id, el)}
+          >
+            <MessageBubble
+              message={message}
+              isOwn={message.userId === currentUserId}
+              currentUserId={currentUserId}
+              showAvatar={shouldShowAvatar(index)}
+              isHighlighted={highlightedMessageId === message.id}
+              onContextMenu={handleContextMenu}
+              onReplyClick={handleReplyClick}
+            />
+          </div>
         ))}
         <div ref={bottomRef} />
       </div>

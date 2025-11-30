@@ -51,7 +51,8 @@ function getOtherMember(
   conversation: Conversation,
   currentUserId?: string
 ): ConversationMember | undefined {
-  if (conversation.type !== 'DIRECT' || conversation.members.length === 0) {
+  // Guard against missing members array
+  if (conversation.type !== 'DIRECT' || !conversation.members || conversation.members.length === 0) {
     return undefined;
   }
 
