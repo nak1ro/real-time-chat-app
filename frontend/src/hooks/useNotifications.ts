@@ -1,8 +1,11 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery, InfiniteData } from '@tanstack/react-query';
 import { notificationApi } from '@/lib/api';
 import { queryKeys } from '@/lib/react-query/query-keys';
+import { useSocket } from '@/hooks/useSocket';
+import { createNotificationListeners } from '@/lib/socket/listeners';
 import type {
   Notification,
   NotificationQueryParams,
@@ -120,3 +123,62 @@ export function useNotificationActions() {
   };
 }
 
+// Hook for real-time notification updates via Socket.IO
+export function useNotificationSocket() {
+  const queryClient = useQueryClient();
+  const { socket, isConnected } = useSocket();
+
+  useEffect(() => {
+    if (!socket || !isConnected) {
+      return;
+    }
+
+    // Handler for new notifications
+    const handleNewNotification = (notification: Notification) => {
+      // Update infinite query cache by prepending to first page
+      queryClient.setQueriesData(
+        { queryKey: [...queryKeys.notifications.list(), 'infinite'] },
+        (old: InfiniteData<PaginatedNotifications> | undefined) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            pages: old.pages.map((page, index) =>
+              index === 0
+                ? {
+                  ...page,
+                  notifications: [notification, ...page.notifications]
+                }
+                : page
+            ),
+          };
+        }
+      );
+
+      // Invalidate regular list query
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.list(),
+        exact: false,
+      });
+
+      // Increment unread count
+      queryClient.setQueryData(
+        queryKeys.notifications.unreadCount(),
+        (old: number | undefined) => (old ?? 0) + 1
+      );
+    };
+
+    // Handler for count updates
+    const handleCountUpdate = ({ count }: { count: number }) => {
+      queryClient.setQueryData(queryKeys.notifications.unreadCount(), count);
+    };
+
+    // Register listeners using the helper
+    const cleanup = createNotificationListeners(socket, {
+      onNew: handleNewNotification,
+      onCountUpdated: handleCountUpdate,
+    });
+
+    return cleanup;
+  }, [socket, isConnected, queryClient]);
+}
