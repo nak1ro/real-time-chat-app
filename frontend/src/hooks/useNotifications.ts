@@ -1,13 +1,13 @@
 'use client';
 
-import {useEffect} from 'react';
-import {useMutation, useQuery, useQueryClient, useInfiniteQuery, InfiniteData} from '@tanstack/react-query';
-import {useRouter, usePathname} from 'next/navigation';
-import {toast} from 'sonner';
-import {notificationApi} from '@/lib/api';
-import {queryKeys} from '@/lib/react-query/query-keys';
-import {useSocket} from '@/hooks/useSocket';
-import {createNotificationListeners} from '@/lib/socket/listeners';
+import { useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery, InfiniteData } from '@tanstack/react-query';
+import { useRouter, usePathname } from 'next/navigation';
+import { toast } from 'sonner';
+import { notificationApi } from '@/lib/api';
+import { queryKeys } from '@/lib/react-query/query-keys';
+import { useSocket } from '@/hooks/useSocket';
+import { createNotificationListeners } from '@/lib/socket/listeners';
 import type {
     Notification,
     NotificationQueryParams,
@@ -15,7 +15,7 @@ import type {
     MarkAllReadResponse,
     MarkConversationReadResponse,
 } from '@/types';
-import {NotificationType} from '@/types/enums';
+import { NotificationType } from '@/types/enums';
 
 // Hook to get notifications (paginated)
 export function useNotifications(params?: NotificationQueryParams) {
@@ -30,7 +30,7 @@ export function useNotifications(params?: NotificationQueryParams) {
 export function useInfiniteNotifications(params?: Omit<NotificationQueryParams, 'cursor'>) {
     return useInfiniteQuery({
         queryKey: [...queryKeys.notifications.list(), 'infinite', params],
-        queryFn: ({pageParam}) => notificationApi.list({...params, cursor: pageParam}),
+        queryFn: ({ pageParam }) => notificationApi.list({ ...params, cursor: pageParam }),
         initialPageParam: undefined as string | undefined,
         getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
         staleTime: 30 * 1000,
@@ -57,8 +57,8 @@ export function useMarkNotificationAsRead(options?: {
     return useMutation({
         mutationFn: (id: string) => notificationApi.markAsRead(id),
         onSuccess: (notification) => {
-            queryClient.invalidateQueries({queryKey: queryKeys.notifications.list()});
-            queryClient.invalidateQueries({queryKey: queryKeys.notifications.unreadCount()});
+            queryClient.invalidateQueries({ queryKey: queryKeys.notifications.list() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.notifications.unreadCount() });
             options?.onSuccess?.(notification);
         },
         onError: (error: Error) => {
@@ -77,7 +77,7 @@ export function useMarkAllNotificationsAsRead(options?: {
     return useMutation({
         mutationFn: () => notificationApi.markAllAsRead(),
         onSuccess: (response) => {
-            queryClient.invalidateQueries({queryKey: queryKeys.notifications.list()});
+            queryClient.invalidateQueries({ queryKey: queryKeys.notifications.list() });
             queryClient.setQueryData(queryKeys.notifications.unreadCount(), 0);
             options?.onSuccess?.(response);
         },
@@ -97,8 +97,8 @@ export function useMarkConversationNotificationsAsRead(options?: {
     return useMutation({
         mutationFn: (conversationId: string) => notificationApi.markConversationAsRead(conversationId),
         onSuccess: (response) => {
-            queryClient.invalidateQueries({queryKey: queryKeys.notifications.list()});
-            queryClient.invalidateQueries({queryKey: queryKeys.notifications.unreadCount()});
+            queryClient.invalidateQueries({ queryKey: queryKeys.notifications.list() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.notifications.unreadCount() });
             options?.onSuccess?.(response);
         },
         onError: (error: Error) => {
@@ -129,13 +129,13 @@ export function useNotificationActions() {
 // Hook for real-time notification updates via Socket.IO
 export function useNotificationSocket() {
     const queryClient = useQueryClient();
-    const {socket, isConnected} = useSocket();
+    const { socket, isConnected } = useSocket();
     const router = useRouter();
     const pathname = usePathname();
 
     useEffect(() => {
         if (!socket || !isConnected) {
-            console.log('[NOTIFICATION] Socket not ready:', {socket: !!socket, isConnected});
+            console.log('[NOTIFICATION] Socket not ready:', { socket: !!socket, isConnected });
             return;
         }
 
@@ -147,7 +147,7 @@ export function useNotificationSocket() {
 
             // Update infinite query cache by prepending to first page
             queryClient.setQueriesData(
-                {queryKey: [...queryKeys.notifications.list(), 'infinite']},
+                { queryKey: [...queryKeys.notifications.list(), 'infinite'] },
                 (old: InfiniteData<PaginatedNotifications> | undefined) => {
                     if (!old) return old;
 
@@ -177,9 +177,12 @@ export function useNotificationSocket() {
                 (old: number | undefined) => (old ?? 0) + 1
             );
 
-            // Show toast for NEW_MESSAGE notifications
-            if (notification.type === NotificationType.NEW_MESSAGE && notification.conversationId) {
-                console.log('[NOTIFICATION] Processing NEW_MESSAGE notification for conversation:', notification.conversationId);
+            // Show toast for NEW_MESSAGE and REACTION notifications
+            if (
+                (notification.type === NotificationType.NEW_MESSAGE || notification.type === NotificationType.REACTION) &&
+                notification.conversationId
+            ) {
+                console.log(`[NOTIFICATION] Processing ${notification.type} notification for conversation:`, notification.conversationId);
 
                 // Check if user is currently viewing this conversation
                 const isViewingConversation = pathname?.includes(`/chats`) &&
@@ -191,11 +194,11 @@ export function useNotificationSocket() {
                 if (!isViewingConversation) {
                     console.log('[NOTIFICATION] Showing toast notification');
                     toast(notification.title, {
-                        description: notification.body || 'Click to view message',
+                        description: notification.body || 'Click to view',
                         action: {
                             label: 'Open Chat',
                             onClick: () => {
-                                router.push(`/chats?conversation=${notification.conversationId}`);
+                                router.push(`/chats/${notification.conversationId}`);
                             },
                         },
                         duration: 5000,
@@ -207,7 +210,7 @@ export function useNotificationSocket() {
         };
 
         // Handler for count updates
-        const handleCountUpdate = ({count}: { count: number }) => {
+        const handleCountUpdate = ({ count }: { count: number }) => {
             queryClient.setQueryData(queryKeys.notifications.unreadCount(), count);
         };
 
