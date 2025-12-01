@@ -1,65 +1,90 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell } from 'lucide-react';
+import { Bell, Loader2 } from 'lucide-react';
 import {
   NotificationItem,
   NotificationSkeleton,
   NotificationEmpty,
   NotificationControls,
-  mockNotifications,
-  MESSAGE_NOTIFICATION_TYPES,
 } from '@/components/notifications';
-import type { NotificationItem as NotificationItemType } from '@/types/notification.types';
+import {
+  useInfiniteNotifications,
+  useMarkAllNotificationsAsRead,
+  useMarkNotificationAsRead,
+} from '@/hooks/useNotifications';
+import { MESSAGE_NOTIFICATION_TYPES } from '@/types/notification.types';
+import type { Notification } from '@/types';
+import { Button } from '@/components/ui';
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const [notifications, setNotifications] = useState<NotificationItemType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [messagesOnly, setMessagesOnly] = useState(false);
 
-  // Simulate loading notifications
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setNotifications(mockNotifications);
-      setIsLoading(false);
-    }, 800);
+  // Fetch notifications with infinite scroll
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteNotifications();
 
-    return () => clearTimeout(timer);
-  }, []);
+  // Mark notification as read mutation
+  const { mutate: markAsRead } = useMarkNotificationAsRead();
 
-  // Filter notifications based on toggle
-  const filteredNotifications = useMemo(() => {
-    if (!messagesOnly) {
-      return notifications;
-    }
-    return notifications.filter((n) =>
-      MESSAGE_NOTIFICATION_TYPES.includes(n.type)
-    );
-  }, [notifications, messagesOnly]);
+  // Mark all as read mutation
+  const { mutate: markAllAsRead } = useMarkAllNotificationsAsRead();
 
-  // Handle notification click - remove and navigate
+  // Flatten paginated notifications
+  const allNotifications = useMemo(() => {
+    if (!data) return [];
+    return data.pages.flatMap((page) => page.notifications);
+  }, [data]);
+
+  // Handle notification click - mark as read and navigate
   const handleNotificationClick = useCallback(
-    (notification: NotificationItemType) => {
-      // Remove notification from list
-      setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
+    (notification: Notification) => {
+      // Mark as read if not already read
+      if (!notification.isRead) {
+        markAsRead(notification.id);
+      }
 
       // Navigate to appropriate location
       if (notification.conversationId) {
         const url = notification.messageId
-          ? `/chats?id=${notification.conversationId}&message=${notification.messageId}`
-          : `/chats?id=${notification.conversationId}`;
+          ? `/chats?conversation=${notification.conversationId}&message=${notification.messageId}`
+          : `/chats?conversation=${notification.conversationId}`;
         router.push(url);
       }
     },
-    [router]
+    [router, markAsRead]
   );
 
   // Clear all notifications
   const handleClearAll = useCallback(() => {
-    setNotifications([]);
-  }, []);
+    markAllAsRead();
+  }, [markAllAsRead]);
+
+  // Convert backend Notification to NotificationItemType for display
+  const notificationItems = useMemo(() => {
+    return allNotifications.map((notification) => ({
+      id: notification.id,
+      type: notification.type,
+      title: notification.title,
+      preview: notification.body,
+      timestamp: new Date(notification.createdAt),
+      conversationId: notification.conversationId ?? undefined,
+      messageId: notification.messageId ?? undefined,
+      actor: {
+        id: notification.actor?.id ?? notification.actorId ?? 'unknown',
+        name: notification.actor?.name ?? 'Unknown User',
+        avatarUrl: notification.actor?.avatarUrl ?? null,
+      },
+    }));
+  }, [allNotifications]);
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -74,10 +99,11 @@ export default function NotificationsPage() {
 
         {/* Controls */}
         <NotificationControls
-          messagesOnly={messagesOnly}
-          onMessagesOnlyChange={setMessagesOnly}
+          messagesOnly={false}
+          onMessagesOnlyChange={() => {
+          }} // TODO: Implement filtering
           onClearAll={handleClearAll}
-          hasNotifications={notifications.length > 0}
+          hasNotifications={allNotifications.length > 0}
         />
       </header>
 
@@ -85,18 +111,53 @@ export default function NotificationsPage() {
       <main className="flex-1 overflow-y-auto scrollbar-hide">
         {isLoading ? (
           <NotificationSkeleton count={5} />
-        ) : filteredNotifications.length === 0 ? (
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+            <p className="text-destructive mb-2">Failed to load notifications</p>
+            <p className="text-sm text-muted-foreground">
+              {error instanceof Error ? error.message : 'Unknown error'}
+            </p>
+          </div>
+        ) : notificationItems.length === 0 ? (
           <NotificationEmpty />
         ) : (
-          <div className="divide-y divide-border">
-            {filteredNotifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                onClick={handleNotificationClick}
-              />
-            ))}
-          </div>
+          <>
+            <div className="divide-y divide-border">
+              {notificationItems.map((notification) => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                  onClick={() => {
+                    // Find original notification to pass
+                    const original = allNotifications.find(n => n.id === notification.id);
+                    if (original) {
+                      handleNotificationClick(original);
+                    }
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Load More Button */}
+            {hasNextPage && (
+              <div className="flex justify-center p-4">
+                <Button
+                  variant="outline"
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    'Load More'
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

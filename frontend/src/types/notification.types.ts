@@ -13,6 +13,21 @@ export interface Notification {
   actorId: string | null; // Backend uses 'actorId' not 'relatedUserId'
   createdAt: Date;
   readAt: Date | null;
+
+  // Optional relations (included when fetched from backend)
+  actor?: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  } | null;
+  conversation?: {
+    id: string;
+    name: string;
+  } | null;
+  message?: {
+    id: string;
+    text: string;
+  } | null;
 }
 
 // Query parameters for listing notifications
