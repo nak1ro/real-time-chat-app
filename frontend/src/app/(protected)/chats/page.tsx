@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import {
   ChatListPanel,
   ChatDetailPanel,
@@ -62,10 +63,17 @@ function ConnectionIndicator({ status, isConnected }: { status: string; isConnec
 
 export default function ChatsPage() {
   const { user } = useAuth();
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
   const { socket, status, isConnected, joinConversation, leaveConversation } = useSocket();
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+
+  // Get conversationId from route params (/chats/[conversationId]) or query params (?conversation=...)
+  const urlConversationId = (params?.conversationId as string) || searchParams?.get('conversation');
+
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(urlConversationId || null);
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
-  
+
   // Conversation details modal state (defined early for use in hooks)
   const [showConversationModal, setShowConversationModal] = useState(false);
 
@@ -207,6 +215,15 @@ export default function ChatsPage() {
     console.log('[ChatsPage] Socket status changed:', { status, isConnected, hasSocket: !!socket });
   }, [status, isConnected, socket]);
 
+  // Sync URL parameter with state
+  useEffect(() => {
+    if (urlConversationId && urlConversationId !== selectedConversationId) {
+      console.log('[ChatsPage] URL conversation changed, updating state:', urlConversationId);
+      setSelectedConversationId(urlConversationId);
+      setMobileView('detail'); // Show detail view when navigating via URL
+    }
+  }, [urlConversationId, selectedConversationId]);
+
   // Join/leave conversation rooms when selection changes
   useEffect(() => {
     const handleConversationChange = async () => {
@@ -265,10 +282,10 @@ export default function ChatsPage() {
   // Handle conversation selection
   const handleSelectConversation = useCallback((conversationId: string) => {
     console.log('[ChatsPage] Selecting conversation:', conversationId);
-    setSelectedConversationId(conversationId);
+    // Navigate to the conversation URL (enables deep-linking and browser history)
+    router.push(`/chats/${conversationId}`);
     setPreviewConversation(null); // Clear preview when selecting a chat
-    setMobileView('detail');
-  }, []);
+  }, [router]);
 
   // Handle preview request from global search
   const handlePreviewConversation = useCallback((conversation: Conversation) => {
@@ -309,9 +326,9 @@ export default function ChatsPage() {
 
   // Handle back navigation (mobile)
   const handleBack = useCallback(() => {
-    setMobileView('list');
+    router.push('/chats'); // Navigate back to chat list
     setPreviewConversation(null);
-  }, []);
+  }, [router]);
 
   // Handle send message
   const handleSendMessage = useCallback((text: string, replyToId?: string, attachments?: AttachmentData[]) => {

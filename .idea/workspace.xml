@@ -4,18 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/prisma/migrations/20251201002646_add_notification_model/migration.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/controllers/messages/message.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/controllers/messages/message.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.handlers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.handlers.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.messages.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.messages.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.notifications.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.notifications.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/hooks/useNotifications.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/hooks/useNotifications.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/socket/listeners.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/socket/listeners.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/types/notification.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/types/notification.types.ts" afterDir="false" />
-    </list>
+    <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -75,7 +64,7 @@
       <workItem from="1764512673674" duration="2825000" />
       <workItem from="1764516474401" duration="7452000" />
       <workItem from="1764548560602" duration="1645000" />
-      <workItem from="1764599094389" duration="3691000" />
+      <workItem from="1764599094389" duration="4153000" />
     </task>
     <servers />
   </component>
