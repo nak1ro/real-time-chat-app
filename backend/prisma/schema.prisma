@@ -8,14 +8,14 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  avatarUrl String?
+  id           String   @id @default(uuid())
+  name         String
+  avatarUrl    String?
   passwordHash String?
-  status     Status?
-  lastSeenAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status       Status?
+  lastSeenAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   messages      Message[]
   conversations ConversationMember[]
@@ -29,9 +29,12 @@ model User {
 
   createdConversations Conversation[] @relation("ConversationCreatedBy")
 
-  channelBans ChannelBan[]
-  notifications        Notification[]
+  channelBans           ChannelBan[]
+  notifications         Notification[]
   triggeredNotifications Notification[] @relation("NotificationActor")
+
+  sentInvitations     ConversationInvitation[] @relation("SentInvitations")
+  receivedInvitations ConversationInvitation[] @relation("ReceivedInvitations")
 }
 
 enum Status {
@@ -40,8 +43,8 @@ enum Status {
 }
 
 model Conversation {
-  id   String @id @default(uuid())
-  name String
+  id          String @id @default(uuid())
+  name        String
   type        ConversationType
   description String?
   slug        String?  @unique
@@ -61,6 +64,7 @@ model Conversation {
   typingStates      TypingState[]
   channelBans       ChannelBan[]
   notifications     Notification[]
+  invitations       ConversationInvitation[]
 
   @@index([type])
   @@index([isPublic])
@@ -73,10 +77,10 @@ enum ConversationType {
 }
 
 model ConversationMember {
-  id        String     @id @default(uuid())
-  joinedAt  DateTime   @default(now())
-  role      MemberRole
-  userId    String
+  id             String     @id @default(uuid())
+  joinedAt       DateTime   @default(now())
+  role           MemberRole
+  userId         String
   conversationId String
 
   lastReadMessageId String?
@@ -114,10 +118,10 @@ model Message {
   replyTo Message?  @relation("MessageReplies", fields: [replyToId], references: [id])
   replies Message[] @relation("MessageReplies")
 
-  reactions   MessageReaction[]
-  mentions    MessageMention[]
-  attachments Attachment[]
-  receipts    MessageReceipt[]
+  reactions         MessageReaction[]
+  mentions          MessageMention[]
+  attachments       Attachment[]
+  receipts          MessageReceipt[]
   moderationActions ModerationAction[]
   notifications     Notification[]
 
@@ -157,21 +161,21 @@ model MessageMention {
 }
 
 model Attachment {
-  id         String         @id @default(uuid())
-  messageId  String
-  url        String
-  fileName   String?
-  mimeType   String?
-  sizeBytes  Int?
-  type       AttachmentType
-  width      Int?
-  height     Int?
-  durationMs Int?
+  id           String         @id @default(uuid())
+  messageId    String
+  url          String
+  fileName     String?
+  mimeType     String?
+  sizeBytes    Int?
+  type         AttachmentType
+  width        Int?
+  height       Int?
+  durationMs   Int?
   thumbnailUrl String?
 
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@index([messageId])
 }
@@ -228,13 +232,13 @@ model ModerationAction {
   expiresAt  DateTime?
   createdAt  DateTime              @default(now())
 
-  actorId      String
-  targetUserId String?
+  actorId        String
+  targetUserId   String?
   conversationId String?
-  messageId     String?
+  messageId      String?
 
-  actor        User         @relation("ModerationActor", fields: [actorId], references: [id], onDelete: Cascade)
-  targetUser   User?        @relation("ModerationTarget", fields: [targetUserId], references: [id])
+  actor        User          @relation("ModerationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  targetUser   User?         @relation("ModerationTarget", fields: [targetUserId], references: [id])
   conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   message      Message?      @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
@@ -277,22 +281,25 @@ model Notification {
   title     String
   body      String
   isRead    Boolean  @default(false)
-  
+
   conversationId String?
   messageId      String?
   actorId        String?
-  
+  invitationId   String? @unique
+
   createdAt DateTime @default(now())
   readAt    DateTime?
-  
+
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   message      Message?      @relation(fields: [messageId], references: [id], onDelete: Cascade)
   actor        User?         @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
-  
+  invitation   ConversationInvitation? @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
   @@index([userId, isRead])
   @@index([conversationId])
   @@index([createdAt])
+  @@index([invitationId])
 }
 
 enum NotificationType {
@@ -302,4 +309,31 @@ enum NotificationType {
   REPLY
   CONVERSATION_INVITE
   ROLE_CHANGE
+}
+
+model ConversationInvitation {
+  id             String   @id @default(uuid())
+  conversationId String
+  senderId       String
+  recipientId    String
+  status         InvitationStatus @default(PENDING)
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User        @relation("SentInvitations", fields: [senderId], references: [id])
+  recipient    User        @relation("ReceivedInvitations", fields: [recipientId], references: [id])
+
+  notification Notification?
+
+  @@index([conversationId])
+  @@index([recipientId])
+  @@unique([conversationId, recipientId])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
 }
