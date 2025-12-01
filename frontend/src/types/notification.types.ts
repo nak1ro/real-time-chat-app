@@ -1,17 +1,18 @@
 import { NotificationType } from './enums';
 
-// Full notification object from API
+// Full notification object from API (matches backend Prisma schema)
 export interface Notification {
   id: string;
   userId: string;
   type: NotificationType;
   title: string;
-  content: string;
+  body: string; // Backend uses 'body' not 'content'
   isRead: boolean;
-  relatedMessageId: string | null;
-  relatedConversationId: string | null;
-  relatedUserId: string | null;
+  messageId: string | null; // Backend uses 'messageId' not 'relatedMessageId'
+  conversationId: string | null; // Backend uses 'conversationId' not 'relatedConversationId'
+  actorId: string | null; // Backend uses 'actorId' not 'relatedUserId'
   createdAt: Date;
+  readAt: Date | null;
 }
 
 // Query parameters for listing notifications

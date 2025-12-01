@@ -97,6 +97,12 @@ export const handleMarkAllNotificationsRead = async (
 
 // Helper: Notify a user of a new notification
 export const notifyUser = (io: Server, userId: string, notification: any): void => {
-    // Emit to user's personal room
+    console.log(
+        '[SOCKET][NOTIFICATIONS] Emitting NOTIFICATION_NEW to user:',
+        userId,
+        'notificationId:',
+        notification.id
+    );
+
     io.to(userId).emit(SOCKET_EVENTS.NOTIFICATION_NEW, notification);
 };

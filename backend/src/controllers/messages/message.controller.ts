@@ -2,10 +2,12 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../../middleware';
 import * as messageService from '../../services/messages/message.service';
 import { CreateMessageData, PaginationOptions } from '../../domain';
+import { createNotificationsForMembers } from '../../services/messages/notification.service';
 
 // Create new message
 export const createMessage = asyncHandler(async (req: Request, res: Response) => {
     const userId = (req as any).user?.id;
+    const userName = (req as any).user?.name;
     const { conversationId, text, replyToId, attachments } = req.body;
 
     const data: CreateMessageData = {
@@ -17,6 +19,31 @@ export const createMessage = asyncHandler(async (req: Request, res: Response) =>
     };
 
     const result = await messageService.createMessage(data);
+
+    // Create and broadcast NEW_MESSAGE notifications
+    try {
+        const io = req.app.get('io');
+        if (io) {
+            const notifications = await createNotificationsForMembers(
+                conversationId,
+                userId,
+                'NEW_MESSAGE',
+                {
+                    messageId: result.id,
+                    actorName: userName || 'Unknown User',
+                    messageText: result.text.substring(0, 100),
+                }
+            );
+
+            // Notify each recipient via socket
+            notifications.forEach((notification) => {
+                io.to(notification.userId).emit('notification:new', notification);
+            });
+        }
+    } catch (notifError) {
+        console.error('Failed to create message notifications via HTTP:', notifError);
+        // Don't fail the request if notifications fail
+    }
 
     res.status(201).json({
         status: 'success',

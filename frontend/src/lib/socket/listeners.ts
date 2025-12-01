@@ -1,5 +1,6 @@
 // Socket event listener helpers
 import type { TypedSocket } from './socket-client';
+import type { Notification } from '@/types';
 import { SOCKET_EVENTS, type ServerToClientEvents } from './events';
 
 type EventName = keyof ServerToClientEvents;
@@ -54,14 +55,33 @@ export function createPresenceListener(
 }
 
 // Create a notification listener
-export function createNotificationListeners(socket: TypedSocket, handlers: {
-  onNew?: ServerToClientEvents[typeof SOCKET_EVENTS.NOTIFICATION_NEW];
-  onCountUpdated?: ServerToClientEvents[typeof SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED];
-}): () => void {
-  return registerSocketListeners(socket, {
-    [SOCKET_EVENTS.NOTIFICATION_NEW]: handlers.onNew,
-    [SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED]: handlers.onCountUpdated,
-  });
+export function createNotificationListeners(
+    socket: TypedSocket,
+    handlers: {
+      onNew?: (notification: Notification) => void;
+      onCountUpdated?: (payload: { count: number }) => void;
+    }
+): () => void {
+  if (handlers.onNew) {
+    console.log('[NOTIFICATION] Subscribing to', SOCKET_EVENTS.NOTIFICATION_NEW);
+    socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, handlers.onNew);
+  }
+
+  if (handlers.onCountUpdated) {
+    console.log('[NOTIFICATION] Subscribing to', SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED);
+    socket.on(SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED, handlers.onCountUpdated);
+  }
+
+  return () => {
+    if (handlers.onNew) {
+      console.log('[NOTIFICATION] Unsubscribing from', SOCKET_EVENTS.NOTIFICATION_NEW);
+      socket.off(SOCKET_EVENTS.NOTIFICATION_NEW, handlers.onNew);
+    }
+    if (handlers.onCountUpdated) {
+      console.log('[NOTIFICATION] Unsubscribing from', SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED);
+      socket.off(SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED, handlers.onCountUpdated);
+    }
+  };
 }
 
 // Create a reaction listener

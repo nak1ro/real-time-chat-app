@@ -35,6 +35,8 @@ export const handleConnection = async (io: Server, socket: AuthenticatedSocket):
 
     console.log(`User connected: ${userName} (${userId}) - Socket: ${socket.id}`);
 
+    socket.join(userId);
+
     await joinUserConversations(socket);
 
     await handleUserOnline(io, socket);

@@ -5,13 +5,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/(protected)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/(protected)/layout.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/prisma/migrations/20251201002646_add_notification_model/migration.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/messages/message.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/controllers/messages/message.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.handlers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.handlers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.messages.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.messages.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.notifications.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.notifications.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/hooks/useNotifications.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/hooks/useNotifications.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/lib/socket/listeners.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/socket/listeners.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/types/notification.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/types/notification.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FormatOnSaveOptions">
+    <option name="myRunOnSave" value="false" />
+    <option name="myAllFileTypesSelected" value="true" />
+    <option name="mySelectedFileTypes">
+      <set />
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -38,6 +53,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\max68\\RiderProjects\\real-time-chat-app\\backend\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -58,6 +74,8 @@
       <updated>1764512672487</updated>
       <workItem from="1764512673674" duration="2825000" />
       <workItem from="1764516474401" duration="7452000" />
+      <workItem from="1764548560602" duration="1645000" />
+      <workItem from="1764599094389" duration="3691000" />
     </task>
     <servers />
   </component>
