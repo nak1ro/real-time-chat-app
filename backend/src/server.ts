@@ -6,6 +6,7 @@ import { prisma } from './db/prisma';
 import routes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/errorMiddleware';
 import { initializeSocketIO } from './sockets';
+import { setSocketServer } from './controllers/conversations/invitation.controller';
 
 const app = express();
 const httpServer = createServer(app);
@@ -15,6 +16,9 @@ const io = initializeSocketIO(httpServer);
 
 // Make io accessible to routes if needed
 app.set('io', io);
+
+// Inject socket server into invitation controller
+setSocketServer(io);
 
 // Middleware
 app.use(

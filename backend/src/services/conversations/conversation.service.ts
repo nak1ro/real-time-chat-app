@@ -55,7 +55,7 @@ const findConversationWithMembers = async (
 };
 
 // Get conversation by ID with basic member info or throw
-const findConversationWithBasicMembers = async (
+export const findConversationWithBasicMembers = async (
     conversationId: string
 ): Promise<ConversationWithBasicMembers> => {
     const conversation = await prisma.conversation.findUnique({
@@ -129,7 +129,7 @@ const verifyMemberHasRole = (
 };
 
 // Ensure user is a member with one of the allowed roles or throw
-const verifyUserMembershipAndRole = (
+export const verifyUserMembershipAndRole = (
     conversation: ConversationWithBasicMembers,
     userId: string,
     allowedRoles: MemberRole[]

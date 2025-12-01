@@ -1,7 +1,7 @@
-import {NotificationType} from '@prisma/client';
-import {prisma} from '../../db/prisma';
-import {NotFoundError, AuthorizationError} from '../../middleware';
-import {DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT} from '../shared/service-constants';
+import { NotificationType } from '@prisma/client';
+import { prisma } from '../../db/prisma';
+import { NotFoundError, AuthorizationError } from '../../middleware';
+import { DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT } from '../shared/service-constants';
 
 // Type definitions
 export interface CreateNotificationData {
@@ -12,6 +12,7 @@ export interface CreateNotificationData {
     conversationId?: string;
     messageId?: string;
     actorId?: string;
+    invitationId?: string;
 }
 
 export interface NotificationQueryOptions {
@@ -124,6 +125,7 @@ export const createNotification = async (
                 conversationId: data.conversationId,
                 messageId: data.messageId,
                 actorId: data.actorId,
+                invitationId: data.invitationId,
             },
             include: {
                 actor: {
@@ -199,14 +201,14 @@ export const createNotificationsForMembers = async (
     const members = await prisma.conversationMember.findMany({
         where: {
             conversationId,
-            userId: {not: actorId},
+            userId: { not: actorId },
         },
-        select: {userId: true},
+        select: { userId: true },
     });
 
     console.log('[NOTIFICATIONS] Members to notify:', members);
 
-    const {title, body} = buildNotificationContent(type, context.actorName, {
+    const { title, body } = buildNotificationContent(type, context.actorName, {
         conversationName: context.conversationName,
         messageText: context.messageText,
     });
@@ -215,7 +217,7 @@ export const createNotificationsForMembers = async (
         members.map((member) => {
             console.log(
                 '[NOTIFICATIONS] Creating individual member notification:',
-                {userId: member.userId}
+                { userId: member.userId }
             );
 
             return createNotification({
@@ -232,7 +234,7 @@ export const createNotificationsForMembers = async (
 
     console.log(
         '[NOTIFICATIONS] Finished creating notifications:',
-        notifications.map((n) => ({id: n.id, userId: n.userId}))
+        notifications.map((n) => ({ id: n.id, userId: n.userId }))
     );
 
     return notifications;
@@ -255,13 +257,13 @@ export const getUserNotifications = async (
     }
 
     if (options.cursor) {
-        where.createdAt = {lt: new Date(options.cursor)};
+        where.createdAt = { lt: new Date(options.cursor) };
     }
 
     const notifications = await prisma.notification.findMany({
         where,
         take: limit + 1,
-        orderBy: {createdAt: 'desc'},
+        orderBy: { createdAt: 'desc' },
         include: {
             actor: {
                 select: {
@@ -312,7 +314,7 @@ export const markAsRead = async (
     userId: string
 ): Promise<any> => {
     const notification = await prisma.notification.findUnique({
-        where: {id: notificationId},
+        where: { id: notificationId },
     });
 
     if (!notification) {
@@ -328,7 +330,7 @@ export const markAsRead = async (
     }
 
     return await prisma.notification.update({
-        where: {id: notificationId},
+        where: { id: notificationId },
         data: {
             isRead: true,
             readAt: new Date(),

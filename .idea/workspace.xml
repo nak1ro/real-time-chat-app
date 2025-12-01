@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="" />
+    <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/backend/prisma/schema.prisma" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/invitations/invitation.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/conversation.routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/routes/conversation.routes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/routes/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/server.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/server.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/conversations/conversation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/conversations/conversation.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/invitations/invitation.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -47,6 +57,11 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\max68\RiderProjects\real-time-chat-app\backend\src\controllers\conversations" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

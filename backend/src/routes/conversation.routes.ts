@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as conversationController from '../controllers/conversations/conversation.controller';
 import * as moderationController from '../controllers/conversations/moderation.controller';
+import * as invitationController from '../controllers/conversations/invitation.controller';
 import { authenticate } from '../middleware';
 
 const router = Router();
@@ -27,6 +28,9 @@ router.post('/:id/members', conversationController.addMembers);
 router.delete('/:id/members/:memberId', conversationController.removeMember);
 router.post('/:id/leave', conversationController.leaveConversation);
 router.patch('/:id/members/:memberId/role', conversationController.updateMemberRole);
+
+// Invitations
+router.post('/:id/invitations', invitationController.inviteMembersToConversation);
 
 // Moderation
 router.post('/:id/moderation', moderationController.applyModerationAction);
