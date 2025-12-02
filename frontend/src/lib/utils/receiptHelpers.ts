@@ -1,26 +1,6 @@
 import { Message, MessageReceipt } from '@/types';
 import { MessageDeliveryStatus } from '@/types/enums';
 
-// Check if message should be marked as delivered
-export function shouldMarkAsDelivered(
-    message: Message,
-    currentUserId: string
-): boolean {
-    // Don't mark own messages
-    if (message.userId === currentUserId) return false;
-
-    // Check if already delivered or read
-    const myReceipt = message.receipts?.find((r) => r.userId === currentUserId);
-    if (
-        myReceipt?.status === MessageDeliveryStatus.DELIVERED ||
-        myReceipt?.status === MessageDeliveryStatus.READ
-    ) {
-        return false;
-    }
-
-    return true;
-}
-
 // Check if message should be marked as read
 export function shouldMarkAsRead(
     message: Message,
@@ -44,7 +24,7 @@ export function shouldMarkAsRead(
 export function getMessageStatus(
     message: Message,
     currentUserId: string
-): 'sent' | 'delivered' | 'read' | null {
+): 'sent' | 'read' | null {
     // Only show status for messages sent by current user
     if (message.userId !== currentUserId) {
         return null;
@@ -52,14 +32,9 @@ export function getMessageStatus(
 
     const receipts = message.receipts || [];
 
-    // Check for read status first (highest priority)
+    // Check for read status
     if (receipts.some((r) => r.status === MessageDeliveryStatus.READ)) {
         return 'read';
-    }
-
-    // Then check delivered
-    if (receipts.some((r) => r.status === MessageDeliveryStatus.DELIVERED)) {
-        return 'delivered';
     }
 
     // Default to sent
@@ -68,17 +43,10 @@ export function getMessageStatus(
 
 // Get group message receipt stats
 export function getGroupMessageStats(message: Message): {
-    deliveredCount: number;
     readCount: number;
     totalRecipients: number;
 } {
     const receipts = message.receipts || [];
-
-    const deliveredCount = receipts.filter(
-        (r) =>
-            r.status === MessageDeliveryStatus.DELIVERED ||
-            r.status === MessageDeliveryStatus.READ
-    ).length;
 
     const readCount = receipts.filter(
         (r) => r.status === MessageDeliveryStatus.READ
@@ -87,7 +55,7 @@ export function getGroupMessageStats(message: Message): {
     // Total recipients is total number of receipts
     const totalRecipients = receipts.length;
 
-    return { deliveredCount, readCount, totalRecipients };
+    return { readCount, totalRecipients };
 }
 
 // Update message receipts in cache with new receipt data
@@ -109,8 +77,6 @@ export function updateMessageReceipt(
                 ? {
                     ...r,
                     status,
-                    deliveredAt:
-                        status === MessageDeliveryStatus.DELIVERED ? timestamp : r.deliveredAt,
                     seenAt: status === MessageDeliveryStatus.READ ? timestamp : r.seenAt,
                     updatedAt: timestamp,
                 }
@@ -125,7 +91,6 @@ export function updateMessageReceipt(
                 messageId: message.id,
                 userId,
                 status,
-                deliveredAt: status === MessageDeliveryStatus.DELIVERED ? timestamp : null,
                 seenAt: status === MessageDeliveryStatus.READ ? timestamp : null,
                 createdAt: timestamp,
                 updatedAt: timestamp,
@@ -150,4 +115,22 @@ export function updateBulkMessageReceipts(
         if (!messageIds.includes(msg.id)) return msg;
         return updateMessageReceipt(msg, userId, MessageDeliveryStatus.READ, timestamp);
     });
+}
+
+// Frontend validation: Check if should emit read receipt
+export function shouldEmitRead(
+    message: Message,
+    currentUserId: string
+): boolean {
+    // Don't emit for own messages
+    if (message.userId === currentUserId) return false;
+
+    const myReceipt = message.receipts?.find((r) => r.userId === currentUserId);
+
+    // Don't emit if already read
+    if (myReceipt?.status === MessageDeliveryStatus.READ) {
+        return false;
+    }
+
+    return true;
 }

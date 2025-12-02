@@ -117,7 +117,7 @@ const getMessageIdsInConversation = async (
 
 // Helper Functions - Receipt Operations
 
-
+// Helper Functions - Receipt Operations
 
 // Upsert a single receipt
 const upsertReceipt = async (
@@ -126,6 +126,8 @@ const upsertReceipt = async (
     status: MessageDeliveryStatus
 ): Promise<void> => {
     const timestamps = buildReceiptTimestamps(status);
+    console.log('[upsertReceipt] Status:', status);
+    console.log('[upsertReceipt] Enum:', MessageDeliveryStatus);
 
     await prisma.messageReceipt.upsert({
         where: {
@@ -179,13 +181,11 @@ const calculateReceiptStats = (
     }>
 ): {
     sentCount: number;
-    deliveredCount: number;
     readCount: number;
     readBy: Array<{ userId: string; userName: string; seenAt: Date | null }>;
 } => {
     const stats = {
         sentCount: 0,
-        deliveredCount: 0,
         readCount: 0,
         readBy: [] as Array<{ userId: string; userName: string; seenAt: Date | null }>,
     };
@@ -194,9 +194,6 @@ const calculateReceiptStats = (
         switch (receipt.status) {
             case MessageDeliveryStatus.SENT:
                 stats.sentCount++;
-                break;
-            case MessageDeliveryStatus.DELIVERED:
-                stats.deliveredCount++;
                 break;
             case MessageDeliveryStatus.READ:
                 stats.readCount++;
@@ -220,7 +217,7 @@ const countAllUnreadMessages = async (
     return prisma.message.count({
         where: {
             conversationId,
-            userId: {not: userId},
+            userId: { not: userId },
             deletedAt: null,
         },
     });
@@ -235,8 +232,8 @@ const countUnreadMessagesAfter = async (
     return prisma.message.count({
         where: {
             conversationId,
-            userId: {not: userId},
-            createdAt: {gt: lastReadAt},
+            userId: { not: userId },
+            createdAt: { gt: lastReadAt },
             deletedAt: null,
         },
     });
@@ -279,27 +276,23 @@ export const createReceiptForRecipients = async (
     messageId: string,
     conversationId: string,
     senderId: string,
-    status: MessageDeliveryStatus = MessageDeliveryStatus.SENT
+    readUserIds: string[] = []
 ): Promise<void> => {
     const recipientIds = await getConversationRecipients(conversationId, senderId);
 
     if (recipientIds.length === 0) return;
 
     await Promise.all(
-        recipientIds.map((recipientId) => upsertReceipt(messageId, recipientId, status))
+        recipientIds.map((recipientId) => {
+            const status = readUserIds.includes(recipientId)
+                ? MessageDeliveryStatus.READ
+                : MessageDeliveryStatus.SENT;
+            return upsertReceipt(messageId, recipientId, status);
+        })
     );
 };
 
-// Mark single message as delivered
-export const markMessageAsDelivered = async (
-    messageId: string,
-    userId: string
-): Promise<void> => {
-    const message = await getMessageOrThrow(messageId);
 
-    await verifyUserIsMember(message.conversationId, userId);
-    await upsertReceipt(messageId, userId, MessageDeliveryStatus.DELIVERED);
-};
 
 // Get comprehensive read statistics for a message
 export const getMessageReadStats = async (messageId: string): Promise<MessageReadStats> => {

@@ -27,6 +27,7 @@ import type {
     ReceiptUpdatePayload,
     BulkReceiptUpdate as SocketBulkReceiptUpdate,
 } from '@/lib/socket/events';
+import {updateMessageReceipt} from "@/lib/utils/receiptHelpers";
 
 // Helper type for the messages query data structure
 interface MessagesQueryData {
@@ -249,18 +250,6 @@ export function useEditMessage(options?: {
 
             console.log('[useEditMessage] Editing message via socket:', id);
 
-            // Optimistically update the UI before server responds
-            const conversationId = queryClient.getQueryData<MessagesQueryData>(
-                queryKeys.messages.list(id)
-            )?.messages.find(m => m.id === id)?.conversationId;
-
-            if (conversationId) {
-                updateMessageInCache(queryClient, conversationId, id, {
-                    text: data.text,
-                    isEdited: true,
-                });
-            }
-
             const response = await emitWithAck<
                 { messageId: string; text: string },
                 EditMessageSocketResponse
@@ -472,45 +461,7 @@ export function useMessageSocketListeners({
                         ...oldData,
                         messages: oldData.messages.map((msg) => {
                             if (msg.id !== data.messageId) return msg;
-
-                            const receipts = msg.receipts || [];
-                            const existingIndex = receipts.findIndex(r => r.userId === data.userId);
-
-                            let updatedReceipts;
-                            if (existingIndex >= 0) {
-                                // Update existing receipt
-                                updatedReceipts = receipts.map((r, idx) =>
-                                    idx === existingIndex
-                                        ? {
-                                            ...r,
-                                            status: data.status,
-                                            deliveredAt: data.status === MessageDeliveryStatus.DELIVERED ? data.timestamp : r.deliveredAt,
-                                            seenAt: data.seenAt,
-                                            updatedAt: data.timestamp,
-                                        }
-                                        : r
-                                );
-                            } else {
-                                // Add new receipt
-                                updatedReceipts = [
-                                    ...receipts,
-                                    {
-                                        id: `temp-${Date.now()}`,
-                                        messageId: data.messageId,
-                                        userId: data.userId,
-                                        status: data.status,
-                                        deliveredAt: data.status === MessageDeliveryStatus.DELIVERED ? data.timestamp : null,
-                                        seenAt: data.seenAt,
-                                        createdAt: data.timestamp,
-                                        updatedAt: data.timestamp,
-                                    },
-                                ];
-                            }
-
-                            return {
-                                ...msg,
-                                receipts: updatedReceipts,
-                            };
+                            return updateMessageReceipt(msg, data.userId, data.status, data.timestamp);
                         }),
                     };
                 }
@@ -521,57 +472,33 @@ export function useMessageSocketListeners({
 
         // Check if it's a bulk update (multiple messages)
         if ('lastReadMessageId' in data && data.lastReadMessageId) {
-            // For bulk updates, update all messages up to lastReadMessageId
+            // For bulk updates, manually update all affected messages in cache
             queryClient.setQueryData<MessagesQueryData>(
                 queryKeys.messages.list(conversationId),
                 (oldData) => {
                     if (!oldData) return oldData;
-
                     // Find the index of the last read message
-                    const lastReadIndex = oldData.messages.findIndex(m => m.id === data.lastReadMessageId);
-                    if (lastReadIndex === -1) return oldData;
-
+                    const lastReadIndex = oldData.messages.findIndex(
+                        (msg) => msg.id === data.lastReadMessageId
+                    );
+                    if (lastReadIndex === -1) {
+                        console.warn('[handleReceiptUpdated] Last read message not found in cache');
+                        return oldData;
+                    }
                     // Update all messages up to and including the last read message
                     return {
                         ...oldData,
-                        messages: oldData.messages.map((msg, idx) => {
-                            if (idx > lastReadIndex) return msg;
-
-                            const receipts = msg.receipts || [];
-                            const existingReceiptIndex = receipts.findIndex(r => r.userId === data.userId);
-
-                            let updatedReceipts;
-                            if (existingReceiptIndex >= 0) {
-                                updatedReceipts = receipts.map((r, rIdx) =>
-                                    rIdx === existingReceiptIndex
-                                        ? {
-                                            ...r,
-                                            status: MessageDeliveryStatus.READ,
-                                            seenAt: data.timestamp,
-                                            updatedAt: data.timestamp,
-                                        }
-                                        : r
+                        messages: oldData.messages.map((msg, index) => {
+                            // Only update messages up to the last read message
+                            if (index <= lastReadIndex) {
+                                return updateMessageReceipt(
+                                    msg,
+                                    data.userId,
+                                    MessageDeliveryStatus.READ,
+                                    data.timestamp
                                 );
-                            } else {
-                                updatedReceipts = [
-                                    ...receipts,
-                                    {
-                                        id: `temp-${Date.now()}-${idx}`,
-                                        messageId: msg.id,
-                                        userId: data.userId,
-                                        status: MessageDeliveryStatus.READ,
-                                        deliveredAt: null,
-                                        seenAt: data.timestamp,
-                                        createdAt: data.timestamp,
-                                        updatedAt: data.timestamp,
-                                    },
-                                ];
                             }
-
-                            return {
-                                ...msg,
-                                receipts: updatedReceipts,
-                            };
+                            return msg;
                         }),
                     };
                 }

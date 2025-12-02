@@ -3,7 +3,6 @@ import { MessageDeliveryStatus } from '@prisma/client';
 import { AuthenticatedSocket, SocketResponse } from '../core/socket.types';
 import {
     markMessagesAsRead,
-    markMessageAsDelivered,
     getMessageReadStats,
 } from '../../services/messages/receipt.service';
 import {
@@ -20,22 +19,6 @@ import {
 } from '../core/socket.utils';
 
 // Helper Functions - Payload Creation
-
-// Create single receipt update payload
-const createReceiptUpdatePayload = (
-    conversationId: string,
-    messageId: string,
-    userId: string,
-    status: MessageDeliveryStatus,
-    seenAt: Date | null
-): ReceiptUpdatePayload => ({
-    conversationId,
-    messageId,
-    userId,
-    status,
-    seenAt,
-    timestamp: new Date(),
-});
 
 // Create bulk receipt update payload
 const createBulkReceiptUpdatePayload = (
@@ -63,7 +46,7 @@ const broadcastToConversation = (
 };
 
 // Broadcast bulk read update
-const broadcastBulkReadUpdate = (
+export const broadcastBulkReadUpdate = (
     io: Server,
     conversationId: string,
     userId: string,
@@ -75,24 +58,6 @@ const broadcastBulkReadUpdate = (
         userId,
         lastMessageId,
         messagesAffected
-    );
-
-    broadcastToConversation(io, conversationId, payload);
-};
-
-// Broadcast single delivery update
-const broadcastDeliveryUpdate = (
-    io: Server,
-    conversationId: string,
-    messageId: string,
-    userId: string
-): void => {
-    const payload = createReceiptUpdatePayload(
-        conversationId,
-        messageId,
-        userId,
-        MessageDeliveryStatus.DELIVERED,
-        null
     );
 
     broadcastToConversation(io, conversationId, payload);
@@ -144,31 +109,6 @@ export const handleMarkAsRead = async (
         invokeCallback(
             callback,
             createErrorResponse(getErrorMessage(error, 'Failed to mark messages as read'))
-        );
-    }
-};
-
-// Handle marking a single message as delivered
-export const handleMarkAsDelivered = async (
-    io: Server,
-    socket: AuthenticatedSocket,
-    data: { messageId: string; conversationId: string },
-    callback?: (response: SocketResponse<{ success: boolean }>) => void
-): Promise<void> => {
-    const { userId } = socket.data;
-    const { messageId, conversationId } = data;
-
-    try {
-        await markMessageAsDelivered(messageId, userId);
-
-        broadcastDeliveryUpdate(io, conversationId, messageId, userId);
-
-        invokeCallback(callback, createSuccessResponse({ success: true }));
-    } catch (error) {
-        console.error(`Failed to mark message ${messageId} as delivered:`, error);
-        invokeCallback(
-            callback,
-            createErrorResponse(getErrorMessage(error, 'Failed to mark message as delivered'))
         );
     }
 };

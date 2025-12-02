@@ -74,17 +74,12 @@ export const DELETED_MESSAGE_PLACEHOLDER = '[Message deleted]';
 
 // Build receipt timestamp data based on status
 export const buildReceiptTimestamps = (status: MessageDeliveryStatus): {
-    deliveredAt?: Date;
     seenAt?: Date;
 } => {
     const now = new Date();
 
     if (status === MessageDeliveryStatus.READ) {
-        return { deliveredAt: now, seenAt: now };
-    }
-
-    if (status === MessageDeliveryStatus.DELIVERED) {
-        return { deliveredAt: now };
+        return { seenAt: now };
     }
 
     return {};

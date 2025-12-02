@@ -4,7 +4,6 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui';
 import { MessageBubble } from './MessageBubble';
 import { MessageContextMenu } from './MessageContextMenu';
-import { useReadReceipts } from '@/hooks/useReadReceipts';
 import type { Message } from '@/types';
 
 interface MessageListProps {
@@ -36,18 +35,6 @@ export function MessageList({
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
 
-  // Setup read receipts with viewport detection
-  const { registerMessageRef } = useReadReceipts({
-    conversationId,
-    currentUserId,
-    messages,
-    scrollContainerRef,
-  });
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
   // Handle reply click - scroll to and highlight the original message
   const handleReplyClick = useCallback((messageId: string) => {
     const messageElement = messageRefs.current.get(messageId);
@@ -69,16 +56,14 @@ export function MessageList({
     }
   }, []);
 
-  // Register message ref for both viewport detection and scroll-to-highlight
+  // Register message ref for scroll-to-highlight
   const setMessageRef = useCallback((messageId: string, element: HTMLDivElement | null) => {
     if (element) {
       messageRefs.current.set(messageId, element);
-      registerMessageRef(messageId, element);
     } else {
       messageRefs.current.delete(messageId);
-      registerMessageRef(messageId, null);
     }
-  }, [registerMessageRef]);
+  }, []);
 
   const handleContextMenu = (message: Message, position: { x: number; y: number }) => {
     const isOwnMessage = message.userId === currentUserId;

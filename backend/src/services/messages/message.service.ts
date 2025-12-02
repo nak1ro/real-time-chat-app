@@ -158,7 +158,7 @@ export const createMessage = async (data: CreateMessageData): Promise<MessageWit
         result.id,
         conversationId,
         userId,
-        MessageDeliveryStatus.SENT
+        []
     );
 
     // Create NEW_MESSAGE notifications for conversation members

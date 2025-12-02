@@ -1,8 +1,8 @@
-import {Server} from 'socket.io';
-import {AuthenticatedSocket, SocketResponse} from '../core/socket.types';
-import {createMessage, editMessage, softDeleteMessage} from '../../services';
-import {CreateMessageData, MessageWithRelations} from '../../domain';
-import {joinConversation} from './socket.rooms';
+import { Server } from 'socket.io';
+import { AuthenticatedSocket, SocketResponse } from '../core/socket.types';
+import { createMessage, editMessage, softDeleteMessage } from '../../services';
+import { CreateMessageData, MessageWithRelations } from '../../domain';
+import { joinConversation } from './socket.rooms';
 import {
     SOCKET_EVENTS,
     createSuccessResponse,
@@ -10,9 +10,9 @@ import {
     invokeCallback,
     getErrorMessage,
 } from '../core/socket.utils';
-import {notifyMentionedUsers} from './socket.mentions';
-import {createNotificationsForMembers} from '../../services';
-import {notifyUser} from './socket.notifications';
+import { notifyMentionedUsers } from './socket.mentions';
+import { createNotificationsForMembers } from '../../services';
+import { notifyUser } from './socket.notifications';
 
 // Attachment data type for socket messages
 interface AttachmentData {
@@ -34,7 +34,7 @@ export const handleMessageSend = async (
     data: { conversationId: string; text: string; replyToId?: string; attachments?: AttachmentData[] },
     callback?: (response: SocketResponse<{ message: MessageWithRelations }>) => void
 ): Promise<void> => {
-    const {userId} = socket.data;
+    const { userId } = socket.data;
 
     try {
         const messageData: CreateMessageData = {
@@ -52,6 +52,31 @@ export const handleMessageSend = async (
 
         // Broadcast to conversation room
         io.to(data.conversationId).emit(SOCKET_EVENTS.MESSAGE_NEW, message);
+
+        // Handle Receipts: Check who is in the room to mark as READ immediately
+        const room = io.sockets.adapter.rooms.get(data.conversationId);
+        const readUserIds: string[] = [];
+
+        if (room) {
+            // Get all sockets in the room
+            const roomSocketIds = Array.from(room);
+
+            // Find user IDs for these sockets
+            // We need to iterate through connected sockets to find matching IDs
+            // This is efficient enough for typical room sizes
+            const connectedSockets = await io.in(data.conversationId).fetchSockets();
+
+            connectedSockets.forEach((s: any) => {
+                if (s.data && s.data.userId && s.data.userId !== userId) {
+                    readUserIds.push(s.data.userId);
+                }
+            });
+        }
+
+        // Create receipts (READ for those in room, SENT for others)
+        // We need to import this dynamically or ensure it's imported
+        const { createReceiptForRecipients } = await import('../../services/messages/receipt.service');
+        await createReceiptForRecipients(message.id, data.conversationId, userId, readUserIds);
 
         // Notify mentioned users
         notifyMentionedUsers(io, message, message.mentionedUserIds);
@@ -79,7 +104,7 @@ export const handleMessageSend = async (
 
         console.log(`Message sent to ${data.conversationId} by user ${userId}`);
 
-        invokeCallback(callback, createSuccessResponse({message}));
+        invokeCallback(callback, createSuccessResponse({ message }));
     } catch (error) {
         console.error('Failed to send message:', error);
         invokeCallback(callback, createErrorResponse(getErrorMessage(error, 'Failed to send message')));
@@ -93,7 +118,7 @@ export const handleMessageEdit = async (
     data: { messageId: string; text: string },
     callback?: (response: SocketResponse<{ message: MessageWithRelations }>) => void
 ): Promise<void> => {
-    const {userId} = socket.data;
+    const { userId } = socket.data;
 
     try {
         const message = await editMessage(data.messageId, userId, data.text);
@@ -103,7 +128,7 @@ export const handleMessageEdit = async (
 
         console.log(`Message ${data.messageId} edited by user ${userId}`);
 
-        invokeCallback(callback, createSuccessResponse({message}));
+        invokeCallback(callback, createSuccessResponse({ message }));
     } catch (error) {
         console.error('Failed to edit message:', error);
         invokeCallback(callback, createErrorResponse(getErrorMessage(error, 'Failed to edit message')));
@@ -117,7 +142,7 @@ export const handleMessageDelete = async (
     data: { messageId: string },
     callback?: (response: SocketResponse<{ message: MessageWithRelations }>) => void
 ): Promise<void> => {
-    const {userId} = socket.data;
+    const { userId } = socket.data;
 
     try {
         const message = await softDeleteMessage(data.messageId, userId);
@@ -127,7 +152,7 @@ export const handleMessageDelete = async (
 
         console.log(`Message ${data.messageId} deleted by user ${userId}`);
 
-        invokeCallback(callback, createSuccessResponse({message}));
+        invokeCallback(callback, createSuccessResponse({ message }));
     } catch (error) {
         console.error('Failed to delete message:', error);
         invokeCallback(callback, createErrorResponse(getErrorMessage(error, 'Failed to delete message')));

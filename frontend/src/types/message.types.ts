@@ -74,7 +74,6 @@ export interface MessageReceipt {
   status: MessageDeliveryStatus;
   createdAt: Date;
   updatedAt: Date;
-  deliveredAt: Date | null;
   seenAt: Date | null;
   user?: UserBasic;
 }

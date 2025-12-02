@@ -4,7 +4,7 @@ import { Check, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MessageStatusIconProps {
-    status: 'sent' | 'delivered' | 'read' | null;
+    status: 'sent' | 'read' | null;
     className?: string;
 }
 
@@ -14,22 +14,20 @@ export function MessageStatusIcon({ status, className }: MessageStatusIconProps)
     switch (status) {
         case 'sent':
             return <Check className={cn('w-4 h-4 text-muted-foreground/60', className)} />;
-        case 'delivered':
-            return <CheckCheck className={cn('w-4 h-4 text-muted-foreground/60', className)} />;
         case 'read':
             return <CheckCheck className={cn('w-4 h-4 text-blue-500', className)} />;
+        default:
+            return null;
     }
 }
 
 interface GroupMessageStatusProps {
-    deliveredCount: number;
     readCount: number;
     totalRecipients: number;
     className?: string;
 }
 
 export function GroupMessageStatus({
-    deliveredCount,
     readCount,
     totalRecipients,
     className,
@@ -42,14 +40,6 @@ export function GroupMessageStatus({
                 <>
                     <CheckCheck className="w-3 h-3 text-blue-500" />
                     <span>Read by {readCount}</span>
-                </>
-            ) : deliveredCount > 0 ? (
-                <>
-                    <CheckCheck className="w-3 h-3" />
-                    <span>
-                        Delivered to {deliveredCount}
-                        {totalRecipients > 1 && ` of ${totalRecipients}`}
-                    </span>
                 </>
             ) : (
                 <>

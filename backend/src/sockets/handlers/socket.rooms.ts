@@ -64,6 +64,30 @@ export const joinConversation = async (
         await socket.join(conversationId);
         console.log(`User ${userName} joined room: ${conversationId}`);
 
+        // Auto-read messages on join
+        try {
+            // We need to import these dynamically or move them to avoid circular deps if possible,
+            // but for now let's assume imports work or we'll fix them.
+            // Actually, let's add the imports at the top.
+            const { markMessagesAsRead } = await import('../../services/messages/receipt.service');
+            const { broadcastBulkReadUpdate } = await import('./socket.receipts');
+
+            // Mark all messages as read for this user
+            const result = await markMessagesAsRead(conversationId, userId);
+
+            if (result.messagesAffected > 0 && result.lastMessageId) {
+                broadcastBulkReadUpdate(
+                    socket.nsp.server, // Access io instance from socket namespace
+                    conversationId,
+                    userId,
+                    result.lastMessageId,
+                    result.messagesAffected
+                );
+            }
+        } catch (error) {
+            console.error(`Failed to auto-read messages on join for user ${userId}:`, error);
+        }
+
         return true;
     } catch (error) {
         console.error(`Failed to join conversation ${conversationId}:`, error);

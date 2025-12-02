@@ -38,7 +38,6 @@ export const SOCKET_EVENTS = {
   // Receipts
   RECEIPT_READ: 'receipt:read',
   RECEIPT_SENT: 'receipt:sent',
-  RECEIPT_DELIVERED: 'receipt:delivered',
   RECEIPT_UPDATE: 'receipt:update',
   RECEIPT_GET_STATS: 'receipt:getStats',
 

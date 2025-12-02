@@ -16,7 +16,6 @@ import {
 } from './socket.presence';
 import {
     handleMarkAsRead,
-    handleMarkAsDelivered,
     handleGetReadStats,
 } from './socket.receipts';
 import { handleToggleReaction } from './socket.reactions';
@@ -109,10 +108,6 @@ const registerPresenceHandlers = (io: Server, socket: AuthenticatedSocket): void
 const registerReceiptHandlers = (io: Server, socket: AuthenticatedSocket): void => {
     socket.on(SOCKET_EVENTS.RECEIPT_READ, (data, callback) => {
         handleMarkAsRead(io, socket, data, callback);
-    });
-
-    socket.on(SOCKET_EVENTS.RECEIPT_DELIVERED, (data, callback) => {
-        handleMarkAsDelivered(io, socket, data, callback);
     });
 
     socket.on(SOCKET_EVENTS.RECEIPT_GET_STATS, (messageId, callback) => {

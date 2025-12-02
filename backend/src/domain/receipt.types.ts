@@ -12,7 +12,6 @@ export interface MessageReadStats {
     messageId: string;
     totalRecipients: number;
     sentCount: number;
-    deliveredCount: number;
     readCount: number;
     readBy: Array<{
         userId: string;
