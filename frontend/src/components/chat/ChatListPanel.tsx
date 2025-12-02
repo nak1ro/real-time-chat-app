@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Input, Tabs, TabsList, TabsTrigger } from '@/components/ui';
 import { Search } from 'lucide-react';
 import { ChatListItem } from './ChatListItem';
@@ -50,6 +50,9 @@ export function ChatListPanel({
   }>({ conversations: [], users: [] });
   const [isSearching, setIsSearching] = useState(false);
 
+  // Track previous selected conversation to detect changes
+  const prevSelectedIdRef = useRef(selectedConversationId);
+
   const { user: currentUser } = useAuth();
   const { data: conversations = [], isLoading, error } = useConversations();
 
@@ -91,6 +94,20 @@ export function ChatListPanel({
     setSearchQuery('');
     setGlobalResults({ conversations: [], users: [] });
   }, [searchMode]);
+
+  // Reset to local mode when a conversation is selected (and it changed)
+  useEffect(() => {
+    if (
+      selectedConversationId &&
+      selectedConversationId !== prevSelectedIdRef.current &&
+      searchMode === 'GLOBAL'
+    ) {
+      setSearchMode('LOCAL');
+      setFilter('ALL'); // Also reset filter to ensure the conversation is visible
+    }
+    // Update ref
+    prevSelectedIdRef.current = selectedConversationId;
+  }, [selectedConversationId, searchMode]);
 
   const filteredConversations = useMemo(() => {
     if (searchMode === 'GLOBAL') return []; // Handled separately

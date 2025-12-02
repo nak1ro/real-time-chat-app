@@ -136,6 +136,7 @@ export default function ChatsPage() {
       setShowConversationModal(false);
       setSelectedConversationId(null);
       setMobileView('list');
+      router.push('/chats');
     },
     onError: (error) => {
       console.error('[ChatsPage] Failed to leave conversation:', error.message);
@@ -151,6 +152,7 @@ export default function ChatsPage() {
       setShowConversationModal(false);
       setSelectedConversationId(null);
       setMobileView('list');
+      router.push('/chats');
     },
     onError: (error) => {
       console.error('[ChatsPage] Failed to delete conversation:', error.message);
