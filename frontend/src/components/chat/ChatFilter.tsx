@@ -9,9 +9,10 @@ export type ConversationFilter = ConversationType | 'ALL';
 interface ChatFilterProps {
   value: ConversationFilter;
   onChange: (value: ConversationFilter) => void;
+  mode?: 'LOCAL' | 'GLOBAL';
 }
 
-export function ChatFilter({ value, onChange }: ChatFilterProps) {
+export function ChatFilter({ value, onChange, mode = 'LOCAL' }: ChatFilterProps) {
   return (
     <ToggleGroup
       type="single"
@@ -19,13 +20,16 @@ export function ChatFilter({ value, onChange }: ChatFilterProps) {
       onValueChange={(v) => v && onChange(v as ConversationFilter)}
       className="w-full bg-muted/50 p-1 rounded-lg"
     >
-      <ToggleGroupItem
-        value="ALL"
-        size="sm"
-        className="flex-1 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm"
-      >
-        All
-      </ToggleGroupItem>
+      {mode === 'LOCAL' && (
+        <ToggleGroupItem
+          value="ALL"
+          size="sm"
+          className="flex-1 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm"
+        >
+          All
+        </ToggleGroupItem>
+      )}
+
       <ToggleGroupItem
         value="DIRECT"
         size="sm"
@@ -34,14 +38,18 @@ export function ChatFilter({ value, onChange }: ChatFilterProps) {
         <MessageCircle className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Direct</span>
       </ToggleGroupItem>
-      <ToggleGroupItem
-        value="GROUP"
-        size="sm"
-        className="flex-1 text-xs gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-      >
-        <Users className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Groups</span>
-      </ToggleGroupItem>
+
+      {mode === 'LOCAL' && (
+        <ToggleGroupItem
+          value="GROUP"
+          size="sm"
+          className="flex-1 text-xs gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+        >
+          <Users className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Groups</span>
+        </ToggleGroupItem>
+      )}
+
       <ToggleGroupItem
         value="CHANNEL"
         size="sm"

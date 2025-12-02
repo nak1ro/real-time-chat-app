@@ -26,6 +26,7 @@ export interface Conversation {
   updatedAt?: Date;
   createdById?: string | null;
   members: ConversationMember[];
+  messages?: any[]; // Last message preview
   _count?: {
     members: number;
   };

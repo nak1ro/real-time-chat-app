@@ -327,7 +327,24 @@ export const listUserConversations = async (
 
     return prisma.conversation.findMany({
         where,
-        include: MEMBER_INCLUDE_WITH_USER,
+        include: {
+            ...MEMBER_INCLUDE_WITH_USER,
+            messages: {
+                take: 1,
+                orderBy: {
+                    createdAt: 'desc',
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatarUrl: true,
+                        },
+                    },
+                },
+            },
+        },
         orderBy: { updatedAt: 'desc' },
     });
 };

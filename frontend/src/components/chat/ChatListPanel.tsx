@@ -56,7 +56,7 @@ export function ChatListPanel({
   const conversationsWithMeta = useMemo<ConversationWithMeta[]>(() => {
     return conversations.map((conversation) => ({
       conversation,
-      lastMessage: null as Message | null,
+      lastMessage: conversation.messages?.[0] || null,
       unreadCount: 0,
       isOnline: false,
     }));
@@ -138,7 +138,16 @@ export function ChatListPanel({
       <div className="flex-shrink-0 p-3 space-y-3 border-b border-border bg-background">
         <Tabs
           value={searchMode}
-          onValueChange={(value) => setSearchMode(value as 'LOCAL' | 'GLOBAL')}
+          onValueChange={(value) => {
+            const newMode = value as 'LOCAL' | 'GLOBAL';
+            setSearchMode(newMode);
+            // Reset filter when switching modes
+            if (newMode === 'GLOBAL') {
+              setFilter('DIRECT'); // Default to DIRECT for global search
+            } else {
+              setFilter('ALL'); // Default to ALL for local search
+            }
+          }}
           className="w-full"
         >
           <TabsList className="w-full grid grid-cols-2">
@@ -165,7 +174,7 @@ export function ChatListPanel({
             className="pl-9"
           />
         </div>
-        <ChatFilter value={filter} onChange={setFilter} />
+        <ChatFilter value={filter} onChange={setFilter} mode={searchMode} />
       </div>
 
       {/* Scrollable list area */}

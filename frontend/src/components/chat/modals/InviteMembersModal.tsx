@@ -231,11 +231,6 @@ export function InviteMembersModal({
 
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium text-sm truncate">{user.name}</p>
-                                            {user.email && (
-                                                <p className="text-xs text-muted-foreground truncate">
-                                                    {user.email}
-                                                </p>
-                                            )}
                                         </div>
 
                                         <div className={cn(
