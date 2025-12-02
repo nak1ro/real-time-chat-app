@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Input, Tabs, TabsList, TabsTrigger } from '@/components/ui';
+import { Input, Tabs, TabsList, TabsTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Search } from 'lucide-react';
 import { ChatListItem } from './ChatListItem';
 import { UserListItem } from './UserListItem';
@@ -43,6 +43,7 @@ export function ChatListPanel({
 }: ChatListPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<ConversationFilter>('ALL');
+  const [sortBy, setSortBy] = useState<'name' | 'lastMessage'>('lastMessage');
   const [searchMode, setSearchMode] = useState<'LOCAL' | 'GLOBAL'>('LOCAL');
   const [globalResults, setGlobalResults] = useState<{
     conversations: Conversation[];
@@ -112,7 +113,7 @@ export function ChatListPanel({
   const filteredConversations = useMemo(() => {
     if (searchMode === 'GLOBAL') return []; // Handled separately
 
-    return conversationsWithMeta.filter(({ conversation, lastMessage }) => {
+    const filtered = conversationsWithMeta.filter(({ conversation, lastMessage }) => {
       if (filter !== 'ALL' && conversation.type !== filter) {
         return false;
       }
@@ -124,7 +125,21 @@ export function ChatListPanel({
       }
       return true;
     });
-  }, [conversationsWithMeta, filter, searchQuery, searchMode, currentUser?.id]);
+
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      if (sortBy === 'name') {
+        const nameA = getDisplayName(a.conversation, currentUser?.id);
+        const nameB = getDisplayName(b.conversation, currentUser?.id);
+        return nameA.localeCompare(nameB);
+      } else {
+        // Sort by last message timestamp (most recent first)
+        const dateA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt) : new Date(0);
+        const dateB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt) : new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      }
+    });
+  }, [conversationsWithMeta, filter, searchQuery, searchMode, currentUser?.id, sortBy]);
 
   const handleGlobalConversationClick = (conversation: Conversation) => {
     // If it's a channel and user is not a member, preview it
@@ -192,6 +207,17 @@ export function ChatListPanel({
           />
         </div>
         <ChatFilter value={filter} onChange={setFilter} mode={searchMode} />
+        {searchMode === 'LOCAL' && (
+          <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'name' | 'lastMessage')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="lastMessage">Recent First</SelectItem>
+              <SelectItem value="name">Name (A-Z)</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Scrollable list area */}
