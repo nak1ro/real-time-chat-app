@@ -18,7 +18,7 @@ import type { Conversation, ConversationMember } from '@/types/conversation.type
 import type { Attachment } from '@/types/message.types';
 import type { UserWithStatus } from '@/types/user.types';
 import { Status } from '@/types/enums';
-import { SharedAttachments } from './SharedAttachments';
+import { SharedAttachments } from '../conversation-view/SharedAttachments';
 import { ConfirmationDialog } from './ConfirmationDialog';
 
 interface DirectMessageModalProps {

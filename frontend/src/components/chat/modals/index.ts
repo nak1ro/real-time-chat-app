@@ -8,8 +8,8 @@ export { ChannelModal } from './ChannelModal';
 
 // Sub-modals
 export { ConfirmationDialog } from './ConfirmationDialog';
-export { SharedAttachments } from './SharedAttachments';
-export { MembersList } from './MembersList';
+export { SharedAttachments } from '../conversation-view/SharedAttachments';
+export { MembersList } from '../conversation-view/MembersList';
 export { KickMembersModal } from './KickMembersModal';
 export { InviteMembersModal } from './InviteMembersModal';
 export { ConversationSettingsModal } from './ConversationSettingsModal';

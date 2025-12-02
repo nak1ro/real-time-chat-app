@@ -6,7 +6,7 @@ import { Button, Textarea } from '@/components/ui';
 import { Send, X, Paperclip, Loader2 } from 'lucide-react';
 import type { Message, UploadedAttachment, AttachmentData } from '@/types';
 import { AttachmentType } from '@/types';
-import { AttachmentPreview } from './AttachmentPreview';
+import { AttachmentPreview } from '../attachments/AttachmentPreview';
 
 interface MessageInputProps {
   onSend: (content: string, replyToId?: string, attachments?: AttachmentData[]) => void;

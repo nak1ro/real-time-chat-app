@@ -29,7 +29,7 @@ import type { Conversation } from '@/types/conversation.types';
 import type { Attachment } from '@/types/message.types';
 import type { UserWithStatus } from '@/types/user.types';
 import { MemberRole } from '@/types/enums';
-import { SharedAttachments } from './SharedAttachments';
+import { SharedAttachments } from '../conversation-view/SharedAttachments';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { SubscribersModal } from './SubscribersModal';
 import { ConversationSettingsModal } from './ConversationSettingsModal';

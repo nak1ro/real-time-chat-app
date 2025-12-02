@@ -461,6 +461,7 @@ export default function ChatsPage() {
               conversation={selectedConversation}
               messages={messages}
               currentUserId={user.id}
+              isLoadingMessages={isLoadingMessages}
               onBack={handleBack}
               showBackButton={mobileView === 'detail'}
               onSendMessage={handleSendMessage}

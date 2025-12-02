@@ -10,6 +10,7 @@ interface MessageListProps {
   messages: Message[];
   currentUserId: string;
   conversationId?: string | null;
+  isLoading?: boolean;
   onReply?: (message: Message) => void;
   onEdit?: (message: Message) => void;
   onDelete?: (messageId: string) => void;
@@ -25,6 +26,7 @@ export function MessageList({
   messages,
   currentUserId,
   conversationId,
+  isLoading = false,
   onReply,
   onEdit,
   onDelete,
@@ -81,6 +83,35 @@ export function MessageList({
       console.error('Failed to copy text:', error);
     }
   };
+
+  // Auto-scroll to bottom when messages finish loading
+  useEffect(() => {
+    if (!isLoading && messages.length > 0 && bottomRef.current) {
+      // Use instant scroll on initial load
+      bottomRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
+    }
+  }, [isLoading, messages.length]);
+
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <ScrollArea className="h-full" ref={scrollContainerRef}>
+        <div className="px-4 py-4 space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className={`flex gap-2 ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`h-16 rounded-2xl bg-muted animate-pulse ${i % 3 === 0 ? 'w-3/4' : i % 3 === 1 ? 'w-1/2' : 'w-2/3'
+                  }`}
+              />
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+    );
+  }
 
   if (messages.length === 0) {
     return (

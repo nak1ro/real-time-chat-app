@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { Input, Tabs, TabsList, TabsTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Search } from 'lucide-react';
 import { ChatListItem } from './ChatListItem';
-import { UserListItem } from './UserListItem';
+import { UserListItem } from '../users/UserListItem';
 import { ChatFilter, type ConversationFilter } from './ChatFilter';
 import type { Conversation, Message } from '@/types';
 import type { User } from '@/types/user.types';

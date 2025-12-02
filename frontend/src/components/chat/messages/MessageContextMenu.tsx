@@ -30,7 +30,7 @@ const MENU_WIDTH = 160;
 const MENU_ITEM_HEIGHT = 40;
 const VIEWPORT_PADDING = 12;
 
-import { ReactionPicker } from './ReactionPicker';
+import { ReactionPicker } from '../reactions/ReactionPicker';
 import { useToggleReaction } from '@/hooks';
 
 export function MessageContextMenu({

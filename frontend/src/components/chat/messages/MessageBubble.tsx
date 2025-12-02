@@ -5,8 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { Check, CheckCheck, Trash2 } from 'lucide-react';
 import type { Message } from '@/types';
-import { MessageReactions } from './MessageReactions';
-import { MessageAttachments } from './MessageAttachments';
+import { MessageReactions } from '../reactions/MessageReactions';
+import { MessageAttachments } from '../attachments/MessageAttachments';
 import { MessageStatusIcon } from './MessageStatusIcon';
 import { getMessageStatus } from '@/lib/utils/receiptHelpers';
 
