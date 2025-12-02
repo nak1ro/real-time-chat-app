@@ -10,9 +10,9 @@ export const attachmentApi = {
   },
 
   // Get attachments for a message
-  getForMessage: (messageId: string): Promise<Attachment[]> => {
-    return apiClient
-      .get<AttachmentsResponse>(`/api/messages/${messageId}/attachments`)
-      .then((res) => res.attachments);
+  getForMessage: async (messageId: string): Promise<Attachment[]> => {
+    const res = await apiClient
+        .get<AttachmentsResponse>(`/api/messages/${messageId}/attachments`);
+    return res.attachments;
   },
 };

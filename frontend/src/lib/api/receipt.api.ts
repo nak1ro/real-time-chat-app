@@ -13,9 +13,9 @@ export const receiptApi = {
   },
 
   // Get unread count for a conversation
-  getUnreadCount: (conversationId: string): Promise<number> => {
-    return apiClient
-      .get<UnreadCountResponse>(`/api/conversations/${conversationId}/unread`)
-      .then((res) => res.unreadCount);
+  getUnreadCount: async (conversationId: string): Promise<number> => {
+    const res = await apiClient
+        .get<UnreadCountResponse>(`/api/conversations/${conversationId}/unread`);
+    return res.unreadCount;
   },
 };

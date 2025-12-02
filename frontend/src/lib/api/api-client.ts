@@ -1,7 +1,6 @@
 // Base API Client with interceptors for auth, error handling, and response parsing
 import { env } from '@/config/env';
 import { getToken } from '@/lib/auth/token-storage';
-import type { ApiResponse, ApiError } from '@/types';
 
 // Custom error class for API errors
 export class ApiClientError extends Error {

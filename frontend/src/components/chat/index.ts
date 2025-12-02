@@ -21,6 +21,5 @@ export {
   ConfirmationDialog,
   SharedAttachments,
   MembersList,
-  ChatModalsDemo,
 } from './modals';
 export { ChannelPreview } from './conversation-list/ChannelPreview';

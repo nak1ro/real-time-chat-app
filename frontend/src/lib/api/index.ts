@@ -31,17 +31,3 @@ import { moderationApi } from './moderation.api';
 import { invitationApi } from './invitation.api';
 
 // Aggregated API object for convenience
-export const api = {
-  auth: authApi,
-  users: userApi,
-  conversations: conversationApi,
-  messages: messageApi,
-  attachments: attachmentApi,
-  reactions: reactionApi,
-  mentions: mentionApi,
-  receipts: receiptApi,
-  notifications: notificationApi,
-  moderation: moderationApi,
-  invitations: invitationApi,
-};
-

@@ -16,7 +16,7 @@ import type {
 // Hook to list user's conversations
 export function useConversations(filters?: ConversationFilters) {
   return useQuery({
-    queryKey: queryKeys.conversations.list(filters),
+    queryKey: queryKeys.conversations.list(filters as any),
     queryFn: () => conversationApi.list(filters),
     staleTime: 2 * 60 * 1000,
   });

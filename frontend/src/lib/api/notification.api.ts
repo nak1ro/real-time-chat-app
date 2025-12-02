@@ -18,17 +18,17 @@ export const notificationApi = {
   },
 
   // Get unread notification count
-  getUnreadCount: (): Promise<number> => {
-    return apiClient
-      .get<NotificationUnreadCountResponse>('/api/notifications/unread/count')
-      .then((res) => res.unreadCount);
+  getUnreadCount: async (): Promise<number> => {
+    const res = await apiClient
+        .get<NotificationUnreadCountResponse>('/api/notifications/unread/count');
+    return res.unreadCount;
   },
 
   // Mark a notification as read
-  markAsRead: (id: string): Promise<Notification> => {
-    return apiClient
-      .patch<NotificationResponse>(`/api/notifications/${id}/read`)
-      .then((res) => res.notification);
+  markAsRead: async (id: string): Promise<Notification> => {
+    const res = await apiClient
+        .patch<NotificationResponse>(`/api/notifications/${id}/read`);
+    return res.notification;
   },
 
   // Mark all notifications as read

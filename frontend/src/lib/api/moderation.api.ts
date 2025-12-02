@@ -13,9 +13,9 @@ export const moderationApi = {
   },
 
   // Get active mute status for a user in a conversation
-  getMuteStatus: (conversationId: string, userId: string): Promise<MuteStatus | null> => {
-    return apiClient
-      .get<MuteStatusResponse>(`/api/conversations/${conversationId}/moderation/mutes/${userId}`)
-      .then((res) => res.mute);
+  getMuteStatus: async (conversationId: string, userId: string): Promise<MuteStatus | null> => {
+    const res = await apiClient
+        .get<MuteStatusResponse>(`/api/conversations/${conversationId}/moderation/mutes/${userId}`);
+    return res.mute;
   },
 };

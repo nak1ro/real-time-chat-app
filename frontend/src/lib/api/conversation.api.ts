@@ -1,69 +1,69 @@
-import { apiClient } from './api-client';
+import {apiClient} from './api-client';
 import type {
-    Conversation,
-    CreateDirectConversationData,
-    CreateConversationData,
-    UpdateConversationPatch,
-    ConversationFilters,
     AddMembersData,
-    UpdateMemberRoleData,
-    GenerateSlugData,
+    Conversation,
+    ConversationFilters,
     ConversationResponse,
     ConversationsListResponse,
+    CreateConversationData,
+    CreateDirectConversationData,
+    GenerateSlugData,
+    LeaveConversationResponse,
     PublicChannelsResponse,
     SlugResponse,
-    LeaveConversationResponse,
+    UpdateConversationPatch,
+    UpdateMemberRoleData,
 } from '@/types';
-import type { User } from '@/types/user.types';
+import type {User} from '@/types/user.types';
 
 export const conversationApi = {
     // Create a direct (1-on-1) conversation
-    createDirect: (data: CreateDirectConversationData): Promise<Conversation> => {
-        return apiClient
-            .post<ConversationResponse>('/api/conversations/direct', data)
-            .then((res) => res.conversation);
+    createDirect: async (data: CreateDirectConversationData): Promise<Conversation> => {
+        const res = await apiClient
+            .post<ConversationResponse>('/api/conversations/direct', data);
+        return res.conversation;
     },
 
     // Create a group or channel conversation
-    create: (data: CreateConversationData): Promise<Conversation> => {
-        return apiClient
-            .post<ConversationResponse>('/api/conversations', data)
-            .then((res) => res.conversation);
+    create: async (data: CreateConversationData): Promise<Conversation> => {
+        const res = await apiClient
+            .post<ConversationResponse>('/api/conversations', data);
+        return res.conversation;
     },
 
     // List all conversations for current user
-    list: (filters?: ConversationFilters): Promise<Conversation[]> => {
-        return apiClient
-            .get<ConversationsListResponse>('/api/conversations', { params: filters as any })
-            .then((res) => res.conversations);
+    list: async (filters?: ConversationFilters): Promise<Conversation[]> => {
+        const res = await apiClient
+            .get<ConversationsListResponse>('/api/conversations', {params: filters as any});
+        return res.conversations;
     },
 
     // Get conversation by ID
-    getById: (id: string): Promise<Conversation> => {
-        return apiClient
-            .get<ConversationResponse>(`/api/conversations/${id}`)
-            .then((res) => res.conversation);
+    getById: async (id: string): Promise<Conversation> => {
+        const res = await apiClient
+            .get<ConversationResponse>(`/api/conversations/${id}`);
+        return res.conversation;
     },
 
     // Update conversation details
-    update: (id: string, data: UpdateConversationPatch): Promise<Conversation> => {
-        return apiClient
-            .patch<ConversationResponse>(`/api/conversations/${id}`, data)
-            .then((res) => res.conversation);
+    update: async (id: string, data: UpdateConversationPatch): Promise<Conversation> => {
+        const res = await apiClient
+            .patch<ConversationResponse>(`/api/conversations/${id}`, data);
+        return res.conversation;
     },
 
     // Add members to a conversation
-    addMembers: (id: string, data: AddMembersData): Promise<Conversation> => {
-        return apiClient
-            .post<ConversationResponse>(`/api/conversations/${id}/members`, data)
-            .then((res) => res.conversation);
+    addMembers: async (id: string, data: AddMembersData): Promise<Conversation> => {
+        const res = await apiClient
+            .post<ConversationResponse>(`/api/conversations/${id}/members`, data);
+        return res.conversation;
     },
 
     // Remove a member from a conversation
-    removeMember: (id: string, memberId: string): Promise<Conversation> => {
-        return apiClient
-            .delete<ConversationResponse>(`/api/conversations/${id}/members/${memberId}`)
-            .then((res) => res.conversation);
+    removeMember: async (id: string, memberId: string): Promise<Conversation> => {
+        const res = await apiClient
+            .delete<ConversationResponse>(`/api/conversations/${id}/members/${memberId}`);
+        return res.conversation;
     },
 
     // Leave a conversation
@@ -72,31 +72,31 @@ export const conversationApi = {
     },
 
     // Update a member's role in a conversation
-    updateMemberRole: (id: string, memberId: string, data: UpdateMemberRoleData): Promise<Conversation> => {
-        return apiClient
-            .patch<ConversationResponse>(`/api/conversations/${id}/members/${memberId}/role`, data)
-            .then((res) => res.conversation);
+    updateMemberRole: async (id: string, memberId: string, data: UpdateMemberRoleData): Promise<Conversation> => {
+        const res = await apiClient
+            .patch<ConversationResponse>(`/api/conversations/${id}/members/${memberId}/role`, data);
+        return res.conversation;
     },
 
     // List all public channels
-    listPublic: (filters?: { name?: string }): Promise<Conversation[]> => {
-        return apiClient
-            .get<PublicChannelsResponse>('/api/conversations/public', { params: filters as any })
-            .then((res) => res.channels);
+    listPublic: async (filters?: { name?: string }): Promise<Conversation[]> => {
+        const res = await apiClient
+            .get<PublicChannelsResponse>('/api/conversations/public', {params: filters as any});
+        return res.channels;
     },
 
     // Join a public channel by slug
-    joinBySlug: (slug: string): Promise<Conversation> => {
-        return apiClient
-            .post<ConversationResponse>(`/api/conversations/public/${slug}/join`)
-            .then((res) => res.conversation);
+    joinBySlug: async (slug: string): Promise<Conversation> => {
+        const res = await apiClient
+            .post<ConversationResponse>(`/api/conversations/public/${slug}/join`);
+        return res.conversation;
     },
 
     // Generate a unique slug from a name
-    generateSlug: (data: GenerateSlugData): Promise<string> => {
-        return apiClient
-            .post<SlugResponse>('/api/conversations/slug', data)
-            .then((res) => res.slug);
+    generateSlug: async (data: GenerateSlugData): Promise<string> => {
+        const res = await apiClient
+            .post<SlugResponse>('/api/conversations/slug', data);
+        return res.slug;
     },
 
     // Search conversations and users
@@ -116,16 +116,15 @@ export const conversationApi = {
     },
 
     // Get attachments for a conversation
-    getAttachments: (
+    getAttachments: async (
         id: string,
         params?: { type?: string; cursor?: string; limit?: number }
     ): Promise<{ attachments: any[]; nextCursor: string | null; hasMore: boolean }> => {
-        return apiClient
-            .get<{ attachments: any[]; nextCursor: string | null; hasMore: boolean }>(
+        return await apiClient
+            .get<{ attachments: any[]; nextCursor: string | null; hasMore: boolean; }>(
                 `/api/conversations/${id}/attachments`,
-                { params }
-            )
-            .then((res) => res);
+                {params}
+            );
     },
 
     // Delete a conversation

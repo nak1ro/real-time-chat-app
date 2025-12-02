@@ -128,9 +128,5 @@ export function shouldEmitRead(
     const myReceipt = message.receipts?.find((r) => r.userId === currentUserId);
 
     // Don't emit if already read
-    if (myReceipt?.status === MessageDeliveryStatus.READ) {
-        return false;
-    }
-
-    return true;
+    return myReceipt?.status !== MessageDeliveryStatus.READ;
 }
