@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,11 +17,13 @@ import {
 } from '@/hooks/useNotifications';
 import { invitationApi } from '@/lib/api';
 import { MESSAGE_NOTIFICATION_TYPES } from '@/types/notification.types';
+import { NotificationType } from '@/types/enums';
 import type { Notification } from '@/types';
 import { Button } from '@/components/ui';
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const [messagesOnly, setMessagesOnly] = useState(false);
 
   // Fetch notifications with infinite scroll
   const {
@@ -127,7 +129,16 @@ export default function NotificationsPage() {
 
   // Convert backend Notification to NotificationItemType for display
   const notificationItems = useMemo(() => {
-    return allNotifications.map((notification) => ({
+    let filtered = allNotifications;
+
+    if (messagesOnly) {
+      filtered = allNotifications.filter(n =>
+        n.type === NotificationType.NEW_MESSAGE ||
+        n.type === NotificationType.REPLY
+      );
+    }
+
+    return filtered.map((notification) => ({
       id: notification.id,
       type: notification.type,
       title: notification.title,
@@ -141,7 +152,7 @@ export default function NotificationsPage() {
         avatarUrl: notification.actor?.avatarUrl ?? null,
       },
     }));
-  }, [allNotifications]);
+  }, [allNotifications, messagesOnly]);
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -156,9 +167,8 @@ export default function NotificationsPage() {
 
         {/* Controls */}
         <NotificationControls
-          messagesOnly={false}
-          onMessagesOnlyChange={() => {
-          }} // TODO: Implement filtering
+          messagesOnly={messagesOnly}
+          onMessagesOnlyChange={setMessagesOnly}
           onClearAll={handleClearAll}
           hasNotifications={allNotifications.length > 0}
         />
