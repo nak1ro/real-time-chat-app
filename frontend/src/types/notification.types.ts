@@ -11,6 +11,7 @@ export interface Notification {
   messageId: string | null; // Backend uses 'messageId' not 'relatedMessageId'
   conversationId: string | null; // Backend uses 'conversationId' not 'relatedConversationId'
   actorId: string | null; // Backend uses 'actorId' not 'relatedUserId'
+  invitationId: string | null; // For CONVERSATION_INVITE notifications
   createdAt: Date;
   readAt: Date | null;
 

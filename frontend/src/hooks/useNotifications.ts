@@ -177,9 +177,11 @@ export function useNotificationSocket() {
                 (old: number | undefined) => (old ?? 0) + 1
             );
 
-            // Show toast for NEW_MESSAGE and REACTION notifications
+            // Show toast for NEW_MESSAGE, REACTION, and CONVERSATION_INVITE notifications
             if (
-                (notification.type === NotificationType.NEW_MESSAGE || notification.type === NotificationType.REACTION) &&
+                (notification.type === NotificationType.NEW_MESSAGE ||
+                    notification.type === NotificationType.REACTION ||
+                    notification.type === NotificationType.CONVERSATION_INVITE) &&
                 notification.conversationId
             ) {
                 console.log(`[NOTIFICATION] Processing ${notification.type} notification for conversation:`, notification.conversationId);
@@ -190,19 +192,36 @@ export function useNotificationSocket() {
 
                 console.log('[NOTIFICATION] Is viewing conversation?', isViewingConversation, 'pathname:', pathname);
 
-                // Only show toast if NOT already viewing that conversation
-                if (!isViewingConversation) {
+                // Only show toast if NOT already viewing that conversation (unless it's an invite)
+                const shouldShowToast = !isViewingConversation || notification.type === NotificationType.CONVERSATION_INVITE;
+
+                if (shouldShowToast) {
                     console.log('[NOTIFICATION] Showing toast notification');
-                    toast(notification.title, {
-                        description: notification.body || 'Click to view',
-                        action: {
-                            label: 'Open Chat',
-                            onClick: () => {
-                                router.push(`/chats/${notification.conversationId}`);
+
+                    // Special handling for invitations
+                    if (notification.type === NotificationType.CONVERSATION_INVITE && notification.invitationId) {
+                        toast(notification.title, {
+                            description: notification.body || 'Click to view invitation',
+                            action: {
+                                label: 'View',
+                                onClick: () => {
+                                    router.push(`/notifications`);
+                                },
                             },
-                        },
-                        duration: 5000,
-                    });
+                            duration: 7000,
+                        });
+                    } else {
+                        toast(notification.title, {
+                            description: notification.body || 'Click to view',
+                            action: {
+                                label: 'Open Chat',
+                                onClick: () => {
+                                    router.push(`/chats/${notification.conversationId}`);
+                                },
+                            },
+                            duration: 5000,
+                        });
+                    }
                 } else {
                     console.log('[NOTIFICATION] Toast suppressed - user is viewing the conversation');
                 }

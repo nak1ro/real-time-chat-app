@@ -15,6 +15,7 @@ export { mentionApi } from './mention.api';
 export { receiptApi } from './receipt.api';
 export { notificationApi } from './notification.api';
 export { moderationApi } from './moderation.api';
+export { invitationApi } from './invitation.api';
 
 // Import for aggregated object
 import { authApi } from './auth.api';
@@ -27,6 +28,7 @@ import { mentionApi } from './mention.api';
 import { receiptApi } from './receipt.api';
 import { notificationApi } from './notification.api';
 import { moderationApi } from './moderation.api';
+import { invitationApi } from './invitation.api';
 
 // Aggregated API object for convenience
 export const api = {
@@ -40,5 +42,6 @@ export const api = {
   receipts: receiptApi,
   notifications: notificationApi,
   moderation: moderationApi,
+  invitations: invitationApi,
 };
 

@@ -97,22 +97,64 @@ export const createInvitations = async (
 
         invitations.push(invitation);
 
-        // Create notification for the invitation
+        // Check if a notification already exists for this invitation
+        const existingNotification = await prisma.notification.findUnique({
+            where: { invitationId: invitation.id },
+        });
+
         const { title, body } = buildNotificationContent(
             'CONVERSATION_INVITE',
             actor.name,
             { conversationName: conversation.name }
         );
 
-        const notification = await createNotification({
-            userId: recipientId,
-            type: 'CONVERSATION_INVITE',
-            title,
-            body,
-            conversationId,
-            actorId,
-            invitationId: invitation.id,
-        });
+        let notification;
+
+        if (existingNotification) {
+            // Update existing notification
+            notification = await prisma.notification.update({
+                where: { id: existingNotification.id },
+                data: {
+                    isRead: false,
+                    title,
+                    body,
+                    actorId,
+                    createdAt: new Date(), // Bump timestamp
+                },
+                include: {
+                    actor: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatarUrl: true,
+                        },
+                    },
+                    conversation: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                    message: {
+                        select: {
+                            id: true,
+                            text: true,
+                        },
+                    },
+                },
+            });
+        } else {
+            // Create new notification
+            notification = await createNotification({
+                userId: recipientId,
+                type: 'CONVERSATION_INVITE',
+                title,
+                body,
+                conversationId,
+                actorId,
+                invitationId: invitation.id,
+            });
+        }
 
         notifications.push(notification);
     }

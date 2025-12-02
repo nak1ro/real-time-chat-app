@@ -3,6 +3,7 @@
 import { useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   NotificationItem,
   NotificationSkeleton,
@@ -14,6 +15,7 @@ import {
   useMarkAllNotificationsAsRead,
   useMarkNotificationAsRead,
 } from '@/hooks/useNotifications';
+import { invitationApi } from '@/lib/api';
 import { MESSAGE_NOTIFICATION_TYPES } from '@/types/notification.types';
 import type { Notification } from '@/types';
 import { Button } from '@/components/ui';
@@ -61,6 +63,61 @@ export default function NotificationsPage() {
       }
     },
     [router, markAsRead]
+  );
+
+  // Handle accept invitation
+  const handleAcceptInvitation = useCallback(
+    async (invitationId: string) => {
+      try {
+        const result = await invitationApi.accept(invitationId);
+
+        // Mark notification as read
+        const notification = allNotifications.find(n => n.invitationId === invitationId);
+        if (notification && !notification.isRead) {
+          markAsRead(notification.id);
+        }
+
+        // Show success toast
+        toast.success('Invitation accepted', {
+          description: `You joined ${result.conversation.name}`,
+        });
+
+        // Navigate to the conversation
+        router.push(`/chats/${result.conversationId}`);
+      } catch (error) {
+        console.error('Failed to accept invitation:', error);
+        toast.error('Failed to accept invitation', {
+          description: error instanceof Error ? error.message : 'Please try again',
+        });
+        throw error; // Re-throw to let button handle loading state
+      }
+    },
+    [router, markAsRead, allNotifications]
+  );
+
+  // Handle decline invitation
+  const handleDeclineInvitation = useCallback(
+    async (invitationId: string) => {
+      try {
+        await invitationApi.decline(invitationId);
+
+        // Mark notification as read
+        const notification = allNotifications.find(n => n.invitationId === invitationId);
+        if (notification && !notification.isRead) {
+          markAsRead(notification.id);
+        }
+
+        // Show success toast
+        toast.success('Invitation declined');
+      } catch (error) {
+        console.error('Failed to decline invitation:', error);
+        toast.error('Failed to decline invitation', {
+          description: error instanceof Error ? error.message : 'Please try again',
+        });
+        throw error; // Re-throw to let button handle loading state
+      }
+    },
+    [markAsRead, allNotifications]
   );
 
   // Clear all notifications
@@ -123,19 +180,24 @@ export default function NotificationsPage() {
         ) : (
           <>
             <div className="divide-y divide-border">
-              {notificationItems.map((notification) => (
-                <NotificationItem
-                  key={notification.id}
-                  notification={notification}
-                  onClick={() => {
-                    // Find original notification to pass
-                    const original = allNotifications.find(n => n.id === notification.id);
-                    if (original) {
-                      handleNotificationClick(original);
-                    }
-                  }}
-                />
-              ))}
+              {notificationItems.map((notification) => {
+                // Find original notification to get invitationId
+                const original = allNotifications.find(n => n.id === notification.id);
+
+                return (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={original!}
+                    onClick={() => {
+                      if (original) {
+                        handleNotificationClick(original);
+                      }
+                    }}
+                    onAcceptInvitation={handleAcceptInvitation}
+                    onDeclineInvitation={handleDeclineInvitation}
+                  />
+                );
+              })}
             </div>
 
             {/* Load More Button */}

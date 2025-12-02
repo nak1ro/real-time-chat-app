@@ -519,10 +519,26 @@ export default function ChatsPage() {
             toast.info('Kick member functionality coming soon');
             // TODO: Implement kick member via useRemoveMember hook
           }}
-          onInviteUsers={(userIds) => {
+          onInviteUsers={async (userIds) => {
             console.log('[ChatsPage] Invite users requested:', userIds);
-            toast.info('Invite users functionality coming soon');
-            // TODO: Implement invite users via useAddMembers hook
+            if (!selectedConversation) return;
+
+            try {
+              const { invitationApi } = await import('@/lib/api');
+              const result = await invitationApi.create(selectedConversation.id, userIds);
+
+              toast.success('Invitations sent', {
+                description: `Sent ${result.count} invitation${result.count !== 1 ? 's' : ''}`,
+              });
+
+              // Close the modal
+              setShowConversationModal(false);
+            } catch (error) {
+              console.error('[ChatsPage] Failed to send invitations:', error);
+              toast.error('Failed to send invitations', {
+                description: error instanceof Error ? error.message : 'Please try again',
+              });
+            }
           }}
           onRemoveSubscriber={(userId) => {
             console.log('[ChatsPage] Remove subscriber requested:', userId);
