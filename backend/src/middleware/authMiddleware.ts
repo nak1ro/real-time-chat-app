@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-/** Authenticate request using JWT */
+// Authenticate request using JWT
 export const authenticate = async (
     req: Request,
     res: Response,
@@ -46,7 +46,7 @@ export const authenticate = async (
   }
 };
 
-/** Attach user if token exists, but don't require it */
+// Attach user if token exists, but don't require it
 export const optionalAuthenticate = async (
     req: Request,
     res: Response,
@@ -73,7 +73,7 @@ export const optionalAuthenticate = async (
   }
 };
 
-/** Ensure user is authenticated */
+// Ensure user is authenticated
 export const requireUser = (
     req: Request,
     res: Response,
@@ -85,7 +85,7 @@ export const requireUser = (
   next();
 };
 
-/** Allow only the user themselves (or an admin, in future) */
+// Allow only the user themselves (or an admin, in future)
 export const requireSelfOrAdmin = (
     req: Request,
     res: Response,

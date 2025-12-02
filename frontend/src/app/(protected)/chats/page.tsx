@@ -37,7 +37,7 @@ import { toast } from 'sonner';
 function ConnectionIndicator({ status, isConnected }: { status: string; isConnected: boolean }) {
   if (status === 'connecting') {
     return (
-      <div className="flex items-center gap-1.5 px-2 py-1 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded-md text-xs">
+      <div className="flex items-center gap-1.5 px-2 py-1 gradient-status-connecting text-yellow-600 dark:text-yellow-400 rounded-md text-xs border border-yellow-500/20">
         <Loader2 className="h-3 w-3 animate-spin" />
         <span>Connecting...</span>
       </div>
@@ -46,7 +46,7 @@ function ConnectionIndicator({ status, isConnected }: { status: string; isConnec
 
   if (isConnected) {
     return (
-      <div className="flex items-center gap-1.5 px-2 py-1 bg-green-500/10 text-green-600 dark:text-green-400 rounded-md text-xs">
+      <div className="flex items-center gap-1.5 px-2 py-1 gradient-status-online text-green-600 dark:text-green-400 rounded-md text-xs border border-green-500/20">
         <Wifi className="h-3 w-3" />
         <span>Connected</span>
       </div>
@@ -54,7 +54,7 @@ function ConnectionIndicator({ status, isConnected }: { status: string; isConnec
   }
 
   return (
-    <div className="flex items-center gap-1.5 px-2 py-1 bg-red-500/10 text-red-600 dark:text-red-400 rounded-md text-xs">
+    <div className="flex items-center gap-1.5 px-2 py-1 gradient-status-offline text-red-600 dark:text-red-400 rounded-md text-xs border border-red-500/20">
       <WifiOff className="h-3 w-3" />
       <span>Disconnected</span>
     </div>

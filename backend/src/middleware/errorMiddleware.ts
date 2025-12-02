@@ -63,60 +63,12 @@ export class ConflictError extends AppError {
     Object.setPrototypeOf(this, ConflictError.prototype);
   }
 }
-
-export class RateLimitError extends AppError {
-  constructor(message: string = 'Too many requests') {
-    super(message, 429, true, 'RATE_LIMIT_ERROR');
-    Object.setPrototypeOf(this, RateLimitError.prototype);
-  }
-}
-
 export class BadRequestError extends AppError {
   constructor(message: string, details?: any) {
     super(message, 400, true, 'BAD_REQUEST', details);
     Object.setPrototypeOf(this, BadRequestError.prototype);
   }
 }
-
-/**
- * Chat-specific Error Classes
- */
-
-export class MessageError extends AppError {
-  constructor(message: string, statusCode: number = 400, details?: any) {
-    super(message, statusCode, true, 'MESSAGE_ERROR', details);
-    Object.setPrototypeOf(this, MessageError.prototype);
-  }
-}
-
-export class ConversationError extends AppError {
-  constructor(message: string, statusCode: number = 400, details?: any) {
-    super(message, statusCode, true, 'CONVERSATION_ERROR', details);
-    Object.setPrototypeOf(this, ConversationError.prototype);
-  }
-}
-
-export class MembershipError extends AppError {
-  constructor(message: string, statusCode: number = 403, details?: any) {
-    super(message, statusCode, true, 'MEMBERSHIP_ERROR', details);
-    Object.setPrototypeOf(this, MembershipError.prototype);
-  }
-}
-
-export class ModerationError extends AppError {
-  constructor(message: string, statusCode: number = 403, details?: any) {
-    super(message, statusCode, true, 'MODERATION_ERROR', details);
-    Object.setPrototypeOf(this, ModerationError.prototype);
-  }
-}
-
-export class ChannelBanError extends AppError {
-  constructor(message: string = 'User is banned from this channel') {
-    super(message, 403, true, 'CHANNEL_BAN_ERROR');
-    Object.setPrototypeOf(this, ChannelBanError.prototype);
-  }
-}
-
 export class AttachmentError extends AppError {
   constructor(message: string, details?: any) {
     super(message, 400, true, 'ATTACHMENT_ERROR', details);
@@ -124,9 +76,6 @@ export class AttachmentError extends AppError {
   }
 }
 
-/**
- * Error Response Interface
- */
 interface ErrorResponse {
   status: 'error';
   code?: string;
@@ -135,9 +84,6 @@ interface ErrorResponse {
   stack?: string;
 }
 
-/**
- * Handle Prisma Errors
- */
 const handlePrismaError = (error: any): AppError => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
@@ -221,18 +167,12 @@ const handlePrismaError = (error: any): AppError => {
   return new AppError('An unexpected database error occurred', 500, false);
 };
 
-/**
- * Handle Express Validation Errors
- */
 const handleValidationError = (error: any): AppError => {
   return new ValidationError('Validation failed', {
     errors: error.errors || error.array?.(),
   });
 };
 
-/**
- * Development Error Response
- */
 const sendErrorDev = (err: AppError, res: Response): void => {
   const response: ErrorResponse = {
     status: 'error',
@@ -245,9 +185,6 @@ const sendErrorDev = (err: AppError, res: Response): void => {
   res.status(err.statusCode).json(response);
 };
 
-/**
- * Production Error Response
- */
 const sendErrorProd = (err: AppError, res: Response): void => {
   // Operational, trusted error: send message to client
   if (err.isOperational) {
@@ -273,9 +210,7 @@ const sendErrorProd = (err: AppError, res: Response): void => {
   }
 };
 
-/**
- * Global Error Handler Middleware
- */
+
 export const errorHandler = (
   err: Error,
   req: Request,

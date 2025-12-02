@@ -18,13 +18,6 @@ import { canManageMembers } from '../users/permissions.service';
 import { MEMBER_INCLUDE_WITH_USER } from '../shared/service-constants';
 import { verifyUserExists, verifyUsersExist } from '../../utils/validation-helpers';
 
-// Constants
-
-const ALLOWED_UPDATE_ROLES: MemberRole[] = [MemberRole.OWNER, MemberRole.ADMIN];
-const ALLOWED_ADD_MEMBER_ROLES: MemberRole[] = [MemberRole.OWNER, MemberRole.ADMIN];
-const ALLOWED_REMOVE_MEMBER_ROLES: MemberRole[] = [MemberRole.OWNER, MemberRole.ADMIN];
-const ALLOWED_UPDATE_ROLE_ROLES: MemberRole[] = [MemberRole.OWNER, MemberRole.ADMIN];
-
 // Role hierarchy (higher number = higher authority)
 const ROLE_HIERARCHY: Record<MemberRole, number> = {
     [MemberRole.OWNER]: 3,
@@ -32,12 +25,7 @@ const ROLE_HIERARCHY: Record<MemberRole, number> = {
     [MemberRole.MEMBER]: 0,
 };
 
-
-
-// Helper Functions
-
-
-
+// Roles allowed for management operations
 // Get conversation by ID with members and users or throw
 const findConversationWithMembers = async (
     conversationId: string
@@ -105,14 +93,17 @@ const findUserMembership = (
     return conversation.members.find((member) => member.userId === userId);
 };
 
+// Check if user is a member of conversation
+const isUserMember = (conversation: ConversationWithBasicMembers, userId: string): boolean => {
+    return conversation.members.some((member) => member.userId === userId);
+};
+
 // Ensure user is a member of conversation or throw
 const verifyUserIsMember = (
     conversation: ConversationWithBasicMembers,
     userId: string
 ): void => {
-    const isMember = conversation.members.some((member) => member.userId === userId);
-
-    if (!isMember) {
+    if (!isUserMember(conversation, userId)) {
         throw new AuthorizationError('You are not a member of this conversation');
     }
 };
@@ -196,7 +187,15 @@ const filterExistingMembers = (
     return { newUserIds, existingUserIds };
 };
 
-// Check if removing a member would leave the conversation without an OWNER
+// Get role hierarchy level
+const getRoleLevel = (role: MemberRole): number => ROLE_HIERARCHY[role];
+
+// Check if actor has higher role than target
+const hasHigherRole = (actorRole: MemberRole, targetRole: MemberRole): boolean => {
+    return getRoleLevel(actorRole) > getRoleLevel(targetRole);
+};
+
+// Check if removing member would leave conversation without an OWNER
 const wouldRemoveLastOwner = (
     conversation: ConversationWithBasicMembers,
     memberIdToRemove: string
@@ -211,7 +210,7 @@ const wouldRemoveLastOwner = (
     return ownerCount === 1;
 };
 
-// Check if changing a role would leave the conversation without an OWNER
+// Check if changing role would leave conversation without an OWNER
 const wouldRemoveLastOwnerByRoleChange = (
     conversation: ConversationWithBasicMembers,
     memberId: string,
@@ -227,17 +226,7 @@ const wouldRemoveLastOwnerByRoleChange = (
     return ownerCount === 1;
 };
 
-// Compare role hierarchy levels
-const getRoleLevel = (role: MemberRole): number => {
-    return ROLE_HIERARCHY[role];
-};
 
-// Check if actor has higher role than target
-const hasHigherRole = (actorRole: MemberRole, targetRole: MemberRole): boolean => {
-    return getRoleLevel(actorRole) > getRoleLevel(targetRole);
-};
-
-// Public API
 
 // Create or get existing direct conversation between two users
 export const createDirectConversation = async (
@@ -307,17 +296,6 @@ export const createGroupOrChannelConversation = async (
     });
 };
 
-// Find conversation by ID (optionally with members)
-export const findConversationById = async (
-    conversationId: string,
-    includeMembers: boolean = false
-): Promise<Conversation | ConversationWithMembers | null> => {
-    return prisma.conversation.findUnique({
-        where: { id: conversationId },
-        include: includeMembers ? MEMBER_INCLUDE_WITH_USER : undefined,
-    });
-};
-
 // List all conversations for a user with optional filters
 export const listUserConversations = async (
     userId: string,
@@ -365,7 +343,6 @@ export const updateConversation = async (
     actorId: string,
     patch: UpdateConversationPatch
 ): Promise<ConversationWithMembers> => {
-    // Verify actor has permission to update conversation
     const canManage = await canManageMembers(actorId, conversationId);
     if (!canManage) {
         throw new AuthorizationError('Only OWNER or ADMIN can update conversations');
@@ -384,6 +361,27 @@ export const updateConversation = async (
     });
 };
 
+// Validate user IDs are not empty
+const validateUserIds = (userIds: string[]): void => {
+    if (!userIds.length) {
+        throw new BadRequestError('At least one user ID must be provided');
+    }
+};
+
+// Validate member ID
+const validateMemberId = (memberId: string): void => {
+    if (!memberId) {
+        throw new BadRequestError('Member ID must be provided');
+    }
+};
+
+// Prevent direct conversation member operations
+const preventDirectConversationModification = (conversationType: PrismaConversationType): void => {
+    if (conversationType === PrismaConversationType.DIRECT) {
+        throw new BadRequestError('Cannot modify members in direct conversations');
+    }
+};
+
 // Add members to a conversation (OWNER or ADMIN only)
 export const addConversationMembers = async (
     conversationId: string,
@@ -391,44 +389,26 @@ export const addConversationMembers = async (
     userIds: string[],
     role: MemberRole = MemberRole.MEMBER
 ): Promise<ConversationWithMembers> => {
-    if (!userIds.length) {
-        throw new BadRequestError('At least one user ID must be provided');
-    }
+    validateUserIds(userIds);
 
-    // Remove duplicates from input
     const uniqueUserIds = [...new Set(userIds)];
 
-    // Verify actor has permission to add members
     const canManage = await canManageMembers(actorId, conversationId);
     if (!canManage) {
         throw new AuthorizationError('Only OWNER or ADMIN can add members');
     }
 
-    // Get conversation
     const conversation = await findConversationWithBasicMembers(conversationId);
+    preventDirectConversationModification(conversation.type);
 
-    // Cannot add members to direct conversations
-    if (conversation.type === PrismaConversationType.DIRECT) {
-        throw new BadRequestError('Cannot add members to direct conversations');
-    }
-
-    // Filter out users who are already members
-    const { newUserIds, existingUserIds } = filterExistingMembers(
-        conversation,
-        uniqueUserIds
-    );
+    const { newUserIds } = filterExistingMembers(conversation, uniqueUserIds);
 
     if (newUserIds.length === 0) {
-        if (existingUserIds.length > 0) {
-            throw new BadRequestError('All specified users are already members');
-        }
-        throw new BadRequestError('No valid users to add');
+        throw new BadRequestError('All specified users are already members');
     }
 
-    // Verify all new users exist
     await verifyUsersExist(newUserIds);
 
-    // Add members using a transaction
     await prisma.$transaction(
         newUserIds.map((userId) =>
             prisma.conversationMember.create({
@@ -441,7 +421,6 @@ export const addConversationMembers = async (
         )
     );
 
-    // Return updated conversation with members
     return findConversationWithMembers(conversationId);
 };
 
@@ -451,49 +430,37 @@ export const removeConversationMember = async (
     actorId: string,
     memberId: string
 ): Promise<ConversationWithMembers> => {
-    if (!memberId) {
-        throw new BadRequestError('Member ID must be provided');
-    }
+    validateMemberId(memberId);
 
     if (actorId === memberId) {
         throw new BadRequestError('Cannot remove yourself. Use leaveConversation instead');
     }
 
-    // Verify actor has permission to remove members
     const canManage = await canManageMembers(actorId, conversationId);
     if (!canManage) {
         throw new AuthorizationError('Only OWNER or ADMIN can remove members');
     }
 
-    // Get conversation
     const conversation = await findConversationWithBasicMembers(conversationId);
+    preventDirectConversationModification(conversation.type);
 
-    // Cannot remove members from direct conversations
-    if (conversation.type === PrismaConversationType.DIRECT) {
-        throw new BadRequestError('Cannot remove members from direct conversations');
-    }
-
-    // Check if member exists in conversation
     const memberToRemove = findUserMembership(conversation, memberId);
     if (!memberToRemove) {
         throw new NotFoundError('Member not found in this conversation');
     }
 
-    // Prevent removing the last OWNER
     if (wouldRemoveLastOwner(conversation, memberId)) {
         throw new BadRequestError(
             'Cannot remove the last OWNER. Transfer ownership first or add another OWNER'
         );
     }
 
-    // Remove the member
     await prisma.conversationMember.delete({
         where: {
             id: memberToRemove.id,
         },
     });
 
-    // Return updated conversation with members
     return findConversationWithMembers(conversationId);
 };
 
@@ -502,7 +469,6 @@ export const leaveConversation = async (
     conversationId: string,
     userId: string
 ): Promise<void> => {
-    // Get conversation and verify membership
     const conversation = await findConversationWithBasicMembers(conversationId);
     const membership = findUserMembership(conversation, userId);
 
@@ -510,19 +476,14 @@ export const leaveConversation = async (
         throw new NotFoundError('You are not a member of this conversation');
     }
 
-    // Cannot leave direct conversations
-    if (conversation.type === PrismaConversationType.DIRECT) {
-        throw new BadRequestError('Cannot leave direct conversations');
-    }
+    preventDirectConversationModification(conversation.type);
 
-    // Prevent last OWNER from leaving
     if (wouldRemoveLastOwner(conversation, userId)) {
         throw new BadRequestError(
             'Cannot leave as the last OWNER. Transfer ownership first or add another OWNER'
         );
     }
 
-    // Remove the membership
     await prisma.conversationMember.delete({
         where: {
             id: membership.id,
@@ -537,37 +498,24 @@ export const updateMemberRole = async (
     memberId: string,
     newRole: MemberRole
 ): Promise<ConversationWithMembers> => {
-    if (!memberId) {
-        throw new BadRequestError('Member ID must be provided');
-    }
+    validateMemberId(memberId);
 
     if (actorId === memberId) {
         throw new BadRequestError('Cannot change your own role');
     }
 
-    // Validate new role is allowed
-    if (
-        newRole !== MemberRole.OWNER &&
-        newRole !== MemberRole.ADMIN &&
-        newRole !== MemberRole.MEMBER
-    ) {
+    if (![MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER].includes(newRole)) {
         throw new BadRequestError('Invalid role. Allowed roles: OWNER, ADMIN, MEMBER');
     }
 
-    // Verify actor has permission to update member roles
     const canManage = await canManageMembers(actorId, conversationId);
     if (!canManage) {
         throw new AuthorizationError('Only OWNER or ADMIN can update member roles');
     }
 
     const conversation = await findConversationWithBasicMembers(conversationId);
+    preventDirectConversationModification(conversation.type);
 
-    // Cannot change roles in direct conversations
-    if (conversation.type === PrismaConversationType.DIRECT) {
-        throw new BadRequestError('Cannot change roles in direct conversations');
-    }
-
-    // Get actor and target member
     const actorMember = findUserMembership(conversation, actorId);
     const targetMember = findUserMembership(conversation, memberId);
 
@@ -579,31 +527,26 @@ export const updateMemberRole = async (
         throw new NotFoundError('Target member not found in this conversation');
     }
 
-    // Check if target member already has the new role
     if (targetMember.role === newRole) {
         throw new BadRequestError(`Member already has the role ${newRole}`);
     }
 
-    // Enforce hierarchy: actor must have higher role than target
     if (!hasHigherRole(actorMember.role, targetMember.role)) {
         throw new AuthorizationError(
             'You can only change roles of members with lower roles than yours'
         );
     }
 
-    // Prevent promoting someone to a role equal or higher than actor's own role
     if (getRoleLevel(newRole) >= getRoleLevel(actorMember.role)) {
         throw new AuthorizationError('You cannot promote someone to your role or higher');
     }
 
-    // Prevent demoting the last OWNER
     if (wouldRemoveLastOwnerByRoleChange(conversation, memberId, newRole)) {
         throw new BadRequestError(
             'Cannot demote the last OWNER. Promote another member to OWNER first'
         );
     }
 
-    // Update the member's role
     await prisma.conversationMember.update({
         where: {
             id: targetMember.id,
@@ -613,7 +556,6 @@ export const updateMemberRole = async (
         },
     });
 
-    // Return updated conversation with members
     return findConversationWithMembers(conversationId);
 };
 
@@ -624,7 +566,6 @@ export const listPublicChannels = async (filters?: ConversationFilters) => {
         isPublic: true,
     };
 
-    // Apply optional name filter
     if (filters?.name) {
         where.name = {
             contains: filters.name,
@@ -632,11 +573,9 @@ export const listPublicChannels = async (filters?: ConversationFilters) => {
         };
     }
 
-    const channels = await prisma.conversation.findMany({
+    return prisma.conversation.findMany({
         where,
-        orderBy: [
-            { createdAt: 'desc' },
-        ],
+        orderBy: [{ createdAt: 'desc' }],
         include: {
             _count: {
                 select: {
@@ -645,13 +584,16 @@ export const listPublicChannels = async (filters?: ConversationFilters) => {
             },
         },
     });
+};
 
-    return channels;
+// Check if ban is active (not expired)
+const isBanActive = (ban: { expiresAt: Date | null }): boolean => {
+    if (!ban.expiresAt) return true;
+    return ban.expiresAt > new Date();
 };
 
 // Join a public channel by slug
 export const joinChannelBySlug = async (slug: string, userId: string) => {
-    // Find channel by slug
     const channel = await prisma.conversation.findUnique({
         where: { slug },
         include: {
@@ -663,19 +605,15 @@ export const joinChannelBySlug = async (slug: string, userId: string) => {
         throw new NotFoundError('Channel');
     }
 
-    // Verify it's a public channel
     if (!channel.isPublic || channel.type !== PrismaConversationType.CHANNEL) {
         throw new BadRequestError('This is not a public channel');
     }
 
-    // Check if user is already a member
     const existingMember = channel.members.find((m) => m.userId === userId);
     if (existingMember) {
         throw new BadRequestError('You are already a member of this channel');
     }
 
-    // Check for active ban
-    const now = new Date();
     const activeBan = await prisma.channelBan.findUnique({
         where: {
             userId_conversationId: {
@@ -685,14 +623,13 @@ export const joinChannelBySlug = async (slug: string, userId: string) => {
         },
     });
 
-    if (activeBan && (!activeBan.expiresAt || activeBan.expiresAt > now)) {
+    if (activeBan && isBanActive(activeBan)) {
         const message = activeBan.expiresAt
             ? `You are banned from this channel until ${activeBan.expiresAt.toISOString()}`
             : 'You are permanently banned from this channel';
         throw new AuthorizationError(message);
     }
 
-    // Add user as member
     await prisma.conversationMember.create({
         data: {
             userId,
@@ -701,21 +638,22 @@ export const joinChannelBySlug = async (slug: string, userId: string) => {
         },
     });
 
-    // Return updated channel with members
     return findConversationWithMembers(channel.id);
 };
 
-// Generate unique slug from channel name
-export const generateSlug = async (name: string): Promise<string> => {
-    const baseSlug = name
+// Clean up slug by removing special characters and replacing spaces
+const cleanSlugName = (name: string): string => {
+    return name
         .toLowerCase()
         .trim()
-        .replace(/[^\w\s-]/g, '') // Remove non-alphanumeric except spaces and hyphens
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .replace(/-+/g, '-') // Replace multiple hyphens with single
-        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+};
 
-    // Check if slug exists
+// Find next available slug if base exists
+const findAvailableSlug = async (baseSlug: string): Promise<string> => {
     const existing = await prisma.conversation.findUnique({
         where: { slug: baseSlug },
     });
@@ -724,7 +662,6 @@ export const generateSlug = async (name: string): Promise<string> => {
         return baseSlug;
     }
 
-    // If exists, append number
     let counter = 1;
     let slug = `${baseSlug}-${counter}`;
 
@@ -736,7 +673,77 @@ export const generateSlug = async (name: string): Promise<string> => {
     return slug;
 };
 
+// Generate unique slug from channel name
+export const generateSlug = async (name: string): Promise<string> => {
+    const baseSlug = cleanSlugName(name);
+    return findAvailableSlug(baseSlug);
+};
 
+// Build conversation search where clause
+const buildConversationSearchWhere = (
+    searchQuery: string,
+    type?: string,
+    currentUserId?: string
+): Prisma.ConversationWhereInput => {
+    const baseWhere: Prisma.ConversationWhereInput = {
+        OR: [
+            { name: { contains: searchQuery, mode: 'insensitive' } },
+            { description: { contains: searchQuery, mode: 'insensitive' } },
+        ],
+    };
+
+    if (type === 'DIRECT') {
+        return {
+            ...baseWhere,
+            type: PrismaConversationType.DIRECT,
+            members: {
+                some: { userId: currentUserId },
+            },
+        };
+    }
+
+    if (type === 'GROUP') {
+        return {
+            ...baseWhere,
+            type: PrismaConversationType.GROUP,
+            AND: [
+                {
+                    OR: [
+                        { isPublic: true },
+                        { members: { some: { userId: currentUserId } } },
+                    ],
+                },
+            ],
+        };
+    }
+
+    if (type === 'CHANNEL') {
+        return {
+            ...baseWhere,
+            type: PrismaConversationType.CHANNEL,
+            AND: [
+                {
+                    OR: [
+                        { isPublic: true },
+                        { members: { some: { userId: currentUserId } } },
+                    ],
+                },
+            ],
+        };
+    }
+
+    return {
+        ...baseWhere,
+        AND: [
+            {
+                OR: [
+                    { isPublic: true },
+                    { members: { some: { userId: currentUserId } } },
+                ],
+            },
+        ],
+    };
+};
 
 // Search conversations and users
 export const searchConversations = async (
@@ -749,60 +756,8 @@ export const searchConversations = async (
         return { conversations: [], users: [] };
     }
 
-    const conversationWhere: Prisma.ConversationWhereInput = {
-        OR: [
-            { name: { contains: searchQuery, mode: 'insensitive' } },
-            { description: { contains: searchQuery, mode: 'insensitive' } },
-        ],
-    };
-
-    let searchUsers = false;
-
-    // Apply filters based on type
-    if (type === 'DIRECT') {
-        // Direct messages: Only existing DMs where user is a member
-        conversationWhere.type = PrismaConversationType.DIRECT;
-        conversationWhere.members = {
-            some: { userId: currentUserId },
-        };
-        // Do not search for new users in "Direct" filter, only existing convos
-        searchUsers = false;
-    } else if (type === 'GROUP') {
-        // Groups: Public groups OR private groups where user is a member
-        conversationWhere.type = PrismaConversationType.GROUP;
-        conversationWhere.AND = [
-            {
-                OR: [
-                    { isPublic: true },
-                    { members: { some: { userId: currentUserId } } },
-                ],
-            },
-        ];
-        searchUsers = false;
-    } else if (type === 'CHANNEL') {
-        // Channels: Public channels OR private channels where user is a member
-        conversationWhere.type = PrismaConversationType.CHANNEL;
-        conversationWhere.AND = [
-            {
-                OR: [
-                    { isPublic: true },
-                    { members: { some: { userId: currentUserId } } },
-                ],
-            },
-        ];
-        searchUsers = false;
-    } else {
-        // All (Default): Public convos OR any convo where user is a member
-        conversationWhere.AND = [
-            {
-                OR: [
-                    { isPublic: true },
-                    { members: { some: { userId: currentUserId } } },
-                ],
-            },
-        ];
-        searchUsers = true;
-    }
+    const conversationWhere = buildConversationSearchWhere(searchQuery, type, currentUserId);
+    const searchUsers = !type || type === 'ALL';
 
     const conversations = await prisma.conversation.findMany({
         where: conversationWhere,
@@ -817,9 +772,7 @@ export const searchConversations = async (
         users = await prisma.user.findMany({
             where: {
                 id: { not: currentUserId },
-                OR: [
-                    { name: { contains: searchQuery, mode: 'insensitive' } },
-                ],
+                name: { contains: searchQuery, mode: 'insensitive' },
             },
             orderBy: {
                 name: 'asc',
@@ -831,6 +784,11 @@ export const searchConversations = async (
     return { conversations, users };
 };
 
+// Normalize pagination limit to safe boundaries
+const normalizePaginationLimit = (limit?: number): number => {
+    return Math.min(limit || 20, 50);
+};
+
 // Get attachments for a conversation with pagination
 export const getConversationAttachments = async (
     conversationId: string,
@@ -838,17 +796,16 @@ export const getConversationAttachments = async (
     type?: string,
     pagination?: { cursor?: string; limit?: number }
 ) => {
-    // Verify membership
     const conversation = await findConversationWithBasicMembers(conversationId);
     verifyUserIsMember(conversation, userId);
 
-    const limit = Math.min(pagination?.limit || 20, 50);
+    const limit = normalizePaginationLimit(pagination?.limit);
     const cursor = pagination?.cursor;
 
     const where: Prisma.AttachmentWhereInput = {
         message: {
             conversationId,
-            deletedAt: null, // Don't show attachments from deleted messages
+            deletedAt: null,
         },
     };
 
@@ -889,28 +846,20 @@ export const getConversationAttachments = async (
     };
 };
 
-// Delete a conversation (Direct: any member, Group/Channel: OWNER only)
+// Delete a conversation
 export const deleteConversation = async (
     conversationId: string,
     actorId: string
 ): Promise<void> => {
     const conversation = await findConversationWithBasicMembers(conversationId);
 
-    // Check if user is a member
     const membership = findUserMembership(conversation, actorId);
     if (!membership) {
         throw new NotFoundError('You are not a member of this conversation');
     }
 
-    // Logic based on conversation type
-    if (conversation.type === PrismaConversationType.DIRECT) {
-        // For Direct conversations, any member can delete it (as per user request)
-        // This deletes it for BOTH sides
-    } else {
-        // For Group/Channel, only OWNER can delete
-        if (membership.role !== MemberRole.OWNER) {
-            throw new AuthorizationError('Only OWNER can delete this conversation');
-        }
+    if (conversation.type !== PrismaConversationType.DIRECT && membership.role !== MemberRole.OWNER) {
+        throw new AuthorizationError('Only OWNER can delete this conversation');
     }
 
     await prisma.conversation.delete({

@@ -1,10 +1,10 @@
 'use client';
 
-import {useEffect, useCallback, useRef} from 'react';
-import {useMutation, useQuery, useQueryClient, useInfiniteQuery} from '@tanstack/react-query';
-import {messageApi, attachmentApi, receiptApi} from '@/lib/api';
-import {queryKeys} from '@/lib/react-query/query-keys';
-import {useSocket} from '@/context/SocketContext';
+import { useEffect, useCallback, useRef } from 'react';
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { messageApi, attachmentApi, receiptApi } from '@/lib/api';
+import { queryKeys } from '@/lib/react-query/query-keys';
+import { useSocket } from '@/context/SocketContext';
 import {
     SOCKET_EVENTS,
     createMessageListeners,
@@ -12,7 +12,7 @@ import {
     getSocket,
     isSocketConnected,
 } from '@/lib/socket';
-import {emitWithAck} from '@/lib/socket/emitWithAck';
+import { emitWithAck } from '@/lib/socket/emitWithAck';
 import {
     type Message,
     type CreateMessageData,
@@ -27,10 +27,10 @@ import type {
     ReceiptUpdatePayload,
     BulkReceiptUpdate as SocketBulkReceiptUpdate,
 } from '@/lib/socket/events';
-import {updateMessageReceipt} from "@/lib/utils/receiptHelpers";
+import { updateMessageReceipt } from "@/lib/utils/receiptHelpers";
 
 // Helper type for the messages query data structure
-interface MessagesQueryData {
+export interface MessagesQueryData {
     messages: Message[];
     nextCursor: string | null;
     hasMore: boolean;
@@ -41,7 +41,7 @@ interface MessagesQueryData {
 export function useMessages(conversationId: string | undefined, options?: MessagePaginationOptions) {
     return useQuery({
         queryKey: queryKeys.messages.list(conversationId!),
-        queryFn: () => messageApi.list(conversationId!, {sortOrder: 'asc', ...options}),
+        queryFn: () => messageApi.list(conversationId!, { sortOrder: 'asc', ...options }),
         enabled: !!conversationId,
     });
 }
@@ -50,7 +50,7 @@ export function useMessages(conversationId: string | undefined, options?: Messag
 export function useInfiniteMessages(conversationId: string | undefined, options?: Omit<MessagePaginationOptions, 'cursor'>) {
     return useInfiniteQuery({
         queryKey: [...queryKeys.messages.list(conversationId!), 'infinite'],
-        queryFn: ({pageParam}) => messageApi.list(conversationId!, {sortOrder: 'asc', ...options, cursor: pageParam}),
+        queryFn: ({ pageParam }) => messageApi.list(conversationId!, { sortOrder: 'asc', ...options, cursor: pageParam }),
         initialPageParam: undefined as string | undefined,
         getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
         enabled: !!conversationId,
@@ -175,7 +175,7 @@ function updateMessageInCache(
             return {
                 ...oldData,
                 messages: oldData.messages.map((msg) =>
-                    msg.id === messageId ? {...msg, ...updates} : msg
+                    msg.id === messageId ? { ...msg, ...updates } : msg
                 ),
             };
         }
@@ -225,7 +225,7 @@ export function useCreateMessage(options?: {
             addMessageToCache(queryClient, variables.conversationId, response.message);
 
             // Update conversation list to show latest message
-            queryClient.invalidateQueries({queryKey: queryKeys.conversations.list()});
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations.list() });
 
             options?.onSuccess?.(response.message, response.mentionedUserIds);
         },
@@ -245,7 +245,7 @@ export function useEditMessage(options?: {
     const lastEditedMessageIdRef = useRef<string | null>(null);
 
     return useMutation({
-        mutationFn: async ({id, data}: { id: string; data: EditMessageData }): Promise<Message> => {
+        mutationFn: async ({ id, data }: { id: string; data: EditMessageData }): Promise<Message> => {
             const socket = getConnectedSocket();
 
             console.log('[useEditMessage] Editing message via socket:', id);
@@ -273,7 +273,7 @@ export function useEditMessage(options?: {
         onError: (error: Error, variables) => {
             console.error('[useEditMessage] Error:', error.message);
             // Revert optimistic update on error
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.list(variables.id)});
+            queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(variables.id) });
             options?.onError?.(error);
         },
     });
@@ -315,7 +315,7 @@ export function useDeleteMessage(options?: {
             });
 
             // Update conversations list to reflect the change
-            queryClient.invalidateQueries({queryKey: queryKeys.conversations.list()});
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations.list() });
             options?.onSuccess?.(message);
         },
         onError: (error: Error) => {
@@ -333,13 +333,13 @@ export function useMarkAsRead(options?: {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({conversationId, upToMessageId}: {
+        mutationFn: async ({ conversationId, upToMessageId }: {
             conversationId: string;
             upToMessageId: string
         }): Promise<BulkReceiptUpdate> => {
             const socket = getConnectedSocket();
 
-            console.log('[useMarkAsRead] Marking messages as read via socket:', {conversationId, upToMessageId});
+            console.log('[useMarkAsRead] Marking messages as read via socket:', { conversationId, upToMessageId });
 
             const response = await emitWithAck<
                 { conversationId: string; upToMessageId: string },
@@ -359,9 +359,9 @@ export function useMarkAsRead(options?: {
                 timestamp: new Date(),
             };
         },
-        onSuccess: (result, {conversationId}) => {
-            queryClient.invalidateQueries({queryKey: queryKeys.conversations.detail(conversationId)});
-            queryClient.invalidateQueries({queryKey: queryKeys.notifications.unreadCount()});
+        onSuccess: (result, { conversationId }) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations.detail(conversationId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.notifications.unreadCount() });
             options?.onSuccess?.(result);
         },
         onError: (error: Error) => {
@@ -381,14 +381,14 @@ export interface UseMessageSocketListenersOptions {
 
 // Hook to listen for real-time message updates via WebSocket with deduplication
 export function useMessageSocketListeners({
-                                              conversationId,
-                                              onNewMessage,
-                                              onMessageUpdated,
-                                              onMessageDeleted,
-                                              onReceiptUpdated,
-                                          }: UseMessageSocketListenersOptions) {
+    conversationId,
+    onNewMessage,
+    onMessageUpdated,
+    onMessageDeleted,
+    onReceiptUpdated,
+}: UseMessageSocketListenersOptions) {
     const queryClient = useQueryClient();
-    const {socket, isConnected} = useSocket();
+    const { socket, isConnected } = useSocket();
 
     // Handle new message with deduplication
     const handleNewMessage = useCallback((message: Message) => {
@@ -412,7 +412,7 @@ export function useMessageSocketListeners({
             addMessageToCache(queryClient, conversationId, message);
 
             // Update conversation list
-            queryClient.invalidateQueries({queryKey: queryKeys.conversations.list()});
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations.list() });
 
             onNewMessage?.(message);
         }
@@ -467,7 +467,7 @@ export function useMessageSocketListeners({
                 }
             );
 
-            queryClient.invalidateQueries({queryKey: queryKeys.messages.receipts(data.messageId)});
+            queryClient.invalidateQueries({ queryKey: queryKeys.messages.receipts(data.messageId) });
         }
 
         // Check if it's a bulk update (multiple messages)
@@ -506,7 +506,7 @@ export function useMessageSocketListeners({
         }
 
         if (conversationId) {
-            queryClient.invalidateQueries({queryKey: [...queryKeys.conversations.detail(conversationId), 'unread']});
+            queryClient.invalidateQueries({ queryKey: [...queryKeys.conversations.detail(conversationId), 'unread'] });
         }
         onReceiptUpdated?.(data);
     }, [conversationId, queryClient, onReceiptUpdated]);

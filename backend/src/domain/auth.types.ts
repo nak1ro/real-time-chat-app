@@ -1,59 +1,44 @@
-import { User } from '@prisma/client';
+import {User} from '@prisma/client';
 
-/**
- * DTOs (Data Transfer Objects)
- */
-
+// DTOs (Data Transfer Objects)
 export interface RegisterDto {
-  name: string;
-  password: string;
-  avatarUrl?: string;
+    name: string;
+    password: string;
+    avatarUrl?: string;
 }
 
 export interface LoginDto {
-  name: string;
-  password: string;
+    name: string;
+    password: string;
 }
 
 export interface AuthResponse {
-  user: UserResponse;
-  token: string;
+    user: UserResponse;
+    token: string;
 }
 
 export interface UserResponse {
-  id: string;
-  name: string;
-  avatarUrl: string | null;
-  status: string | null;
-  lastSeenAt: Date | null;
-  createdAt: Date;
-}
-
-/**
- * Request Extensions
- */
-export interface AuthenticatedRequest {
-  user?: {
     id: string;
     name: string;
-  };
+    avatarUrl: string | null;
+    status: string | null;
+    lastSeenAt: Date | null;
+    createdAt: Date;
 }
 
-/**
- * Token Payload
- */
+// Token Payload
 export interface TokenPayload {
-  userId: string;
-  name: string;
-  iat?: number;
-  exp?: number;
+    userId: string;
+    name: string;
+    iat?: number;
+    exp?: number;
 }
 
-/**
- * Type Guards
- */
+
+// Type Guards
+
 export const isUser = (obj: any): obj is User => {
-  return obj && typeof obj.id === 'string' && typeof obj.name === 'string';
+    return obj && typeof obj.id === 'string' && typeof obj.name === 'string';
 };
 
 

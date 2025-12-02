@@ -116,19 +116,64 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
+/* Gradient utilities for enhanced UI */
+@layer utilities {
+
+  /* Subtle card gradient - adapts to theme */
+  .gradient-card {
+    background: linear-gradient(to bottom right, hsl(var(--background)), hsl(var(--muted) / 0.3));
+  }
+
+  /* Header gradient - subtle emphasis */
+  .gradient-header {
+    background: linear-gradient(to right, hsl(var(--background)), hsl(var(--muted) / 0.2), hsl(var(--background)));
+  }
+
+  /* Avatar fallback gradients - vibrant and engaging */
+  .gradient-avatar-blue {
+    background: linear-gradient(to bottom right, hsl(210 100% 60%), hsl(250 100% 65%));
+  }
+
+  .gradient-avatar-primary {
+    background: linear-gradient(to bottom right, hsl(var(--primary) / 0.8), hsl(var(--accent) / 0.6));
+  }
+
+  /* Status indicator gradients */
+  .gradient-status-online {
+    background: linear-gradient(to right, hsl(142 76% 36% / 0.2), hsl(160 84% 39% / 0.2));
+  }
+
+  .gradient-status-connecting {
+    background: linear-gradient(to right, hsl(48 96% 53% / 0.2), hsl(27 96% 61% / 0.2));
+  }
+
+  .gradient-status-offline {
+    background: linear-gradient(to right, hsl(0 84% 60% / 0.2), hsl(350 89% 60% / 0.2));
+  }
+
+  /* Modal header gradient - accent emphasis */
+  .gradient-modal-header {
+    background: linear-gradient(to bottom right, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.05));
+  }
+}
+
 /* Hide scrollbar utility */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 /* Reply navigation highlight animation */
@@ -137,6 +182,7 @@
     background-color: hsl(var(--accent) / 0.5);
     box-shadow: 0 0 0 2px hsl(var(--accent));
   }
+
   100% {
     background-color: transparent;
     box-shadow: 0 0 0 2px transparent;

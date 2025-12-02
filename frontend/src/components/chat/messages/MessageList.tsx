@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { ScrollArea, Skeleton } from '@/components/ui';
 import { MessageBubble } from './MessageBubble';
-import { MessageContextMenu } from './MessageContextMenu';
+import { MessageContextMenu } from '@/components/chat';
 import type { Message } from '@/types';
 
 interface MessageListProps {
@@ -33,9 +33,8 @@ function LoadingSkeletons() {
           className={`flex gap-2 ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}
         >
           <Skeleton
-            className={`h-16 rounded-2xl ${
-              i % 3 === 0 ? 'w-3/4' : i % 3 === 1 ? 'w-1/2' : 'w-2/3'
-            }`}
+            className={`h-16 rounded-2xl ${i % 3 === 0 ? 'w-3/4' : i % 3 === 1 ? 'w-1/2' : 'w-2/3'
+              }`}
           />
         </div>
       ))}
@@ -59,7 +58,6 @@ function EmptyState({ searchQuery }: { searchQuery: string }) {
 export function MessageList({
   messages,
   currentUserId,
-  conversationId,
   isLoading = false,
   searchQuery = '',
   onReply,
@@ -152,6 +150,7 @@ export function MessageList({
               message={message}
               isOwn={message.userId === currentUserId}
               currentUserId={currentUserId}
+              conversationId={message.conversationId || undefined}
               showAvatar={shouldShowAvatar(index)}
               isHighlighted={highlightedMessageId === message.id}
               onContextMenu={handleContextMenu}

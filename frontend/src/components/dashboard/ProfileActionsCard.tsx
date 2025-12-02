@@ -115,7 +115,7 @@ export function ProfileActionsCard() {
             <div className="relative">
               <Avatar className="h-14 w-14">
                 <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name} />
-                <AvatarFallback className="text-lg font-medium bg-primary/10 text-primary">
+                <AvatarFallback className="text-lg font-medium gradient-avatar-blue text-white">
                   {user?.name ? getInitials(user.name) : '?'}
                 </AvatarFallback>
               </Avatar>

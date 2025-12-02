@@ -91,6 +91,11 @@ export interface ReactionUpdatePayload {
   emoji: string;
   userId: string;
   action: 'added' | 'removed';
+  user?: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
 }
 
 // Notification count update (matches backend socket.notifications.ts emit)
@@ -173,10 +178,7 @@ export interface ClientToServerEvents {
     data: { conversationId: string; upToMessageId?: string },
     callback?: (response: SocketResponse<{ messagesAffected: number; lastMessageId: string | null }>) => void
   ) => void;
-  [SOCKET_EVENTS.RECEIPT_DELIVERED]: (
-    data: { messageId: string; conversationId: string },
-    callback?: (response: SocketResponse<{ success: boolean }>) => void
-  ) => void;
+
   [SOCKET_EVENTS.REACTION_TOGGLE]: (
     data: { messageId: string; emoji: string },
     callback?: (response: SocketResponse<{ action: 'added' | 'removed' }>) => void

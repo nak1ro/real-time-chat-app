@@ -1,13 +1,12 @@
 import { MemberRole, InvitationStatus } from '@prisma/client';
 import { prisma } from '../../db/prisma';
 import { NotFoundError, AuthorizationError, BadRequestError } from '../../middleware';
-import { createNotification, buildNotificationContent, getUnreadCount } from '../messages/notification.service';
+import { createNotification, buildNotificationContent } from '../messages/notification.service';
 import {
     findConversationWithBasicMembers,
     verifyUserMembershipAndRole,
 } from './conversation.service';
 
-// Type definitions
 export interface CreateInvitationsResult {
     invitations: any[];
     notifications: any[];
@@ -18,20 +17,128 @@ export interface AcceptInvitationResult {
     conversation: any;
 }
 
-/**
- * Create invitations for multiple recipients to join a conversation
- * Only ADMIN or OWNER can create invitations
- */
+// Check if user is the target recipient of invitation
+const verifyInvitationOwnership = (invitation: { recipientId: string }, userId: string): void => {
+    if (invitation.recipientId !== userId) {
+        throw new AuthorizationError('You can only accept your own invitations');
+    }
+};
+
+// Validate invitation is still pending
+const verifyInvitationPending = (invitation: { status: InvitationStatus }): void => {
+    if (invitation.status !== InvitationStatus.PENDING) {
+        throw new BadRequestError(`Invitation is ${invitation.status.toLowerCase()}`);
+    }
+};
+
+// Check if invitation has expired
+const verifyInvitationNotExpired = (invitation: { expiresAt: Date | null }): void => {
+    if (invitation.expiresAt && invitation.expiresAt < new Date()) {
+        throw new BadRequestError('Invitation has expired');
+    }
+};
+
+// Check if recipient already exists as member
+const checkExistingMembership = async (
+    recipientId: string,
+    conversationId: string
+): Promise<boolean> => {
+    const existing = await prisma.conversationMember.findUnique({
+        where: {
+            userId_conversationId: {
+                userId: recipientId,
+                conversationId,
+            },
+        },
+    });
+
+    return !!existing;
+};
+
+// Verify recipient user exists
+const verifyRecipientExists = async (recipientId: string): Promise<any> => {
+    const recipient = await prisma.user.findUnique({
+        where: { id: recipientId },
+    });
+
+    if (!recipient) {
+        return null;
+    }
+
+    return recipient;
+};
+
+// Get or create notification for invitation
+const getOrCreateInvitationNotification = async (
+    invitation: any,
+    actor: any,
+    conversation: any,
+    recipientId: string
+): Promise<any> => {
+    const existingNotification = await prisma.notification.findUnique({
+        where: { invitationId: invitation.id },
+    });
+
+    const { title, body } = buildNotificationContent(
+        'CONVERSATION_INVITE',
+        actor.name,
+        { conversationName: conversation.name }
+    );
+
+    if (existingNotification) {
+        return prisma.notification.update({
+            where: { id: existingNotification.id },
+            data: {
+                isRead: false,
+                title,
+                body,
+                actorId: actor.id,
+                createdAt: new Date(),
+            },
+            include: {
+                actor: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatarUrl: true,
+                    },
+                },
+                conversation: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                message: {
+                    select: {
+                        id: true,
+                        text: true,
+                    },
+                },
+            },
+        });
+    }
+
+    return createNotification({
+        userId: recipientId,
+        type: 'CONVERSATION_INVITE',
+        title,
+        body,
+        conversationId: conversation.id,
+        actorId: actor.id,
+        invitationId: invitation.id,
+    });
+};
+
+// Create invitations for multiple recipients to join a conversation
 export const createInvitations = async (
     conversationId: string,
     actorId: string,
     recipientIds: string[]
 ): Promise<CreateInvitationsResult> => {
-    // Validate that actorId is a member with ADMIN or OWNER role
     const conversation = await findConversationWithBasicMembers(conversationId);
     verifyUserMembershipAndRole(conversation, actorId, [MemberRole.ADMIN, MemberRole.OWNER]);
 
-    // Get actor details for notification
     const actor = await prisma.user.findUnique({
         where: { id: actorId },
         select: { id: true, name: true },
@@ -44,37 +151,21 @@ export const createInvitations = async (
     const invitations: any[] = [];
     const notifications: any[] = [];
 
-    // Process each recipient
     for (const recipientId of recipientIds) {
-        // Skip if recipient is the actor
         if (recipientId === actorId) {
             continue;
         }
 
-        // Check if user exists
-        const recipient = await prisma.user.findUnique({
-            where: { id: recipientId },
-        });
-
+        const recipient = await verifyRecipientExists(recipientId);
         if (!recipient) {
-            continue; // Skip non-existent users
+            continue;
         }
 
-        // Check if user is already a member
-        const existingMembership = await prisma.conversationMember.findUnique({
-            where: {
-                userId_conversationId: {
-                    userId: recipientId,
-                    conversationId,
-                },
-            },
-        });
-
-        if (existingMembership) {
-            continue; // Skip users who are already members
+        const isMember = await checkExistingMembership(recipientId, conversationId);
+        if (isMember) {
+            continue;
         }
 
-        // Upsert invitation (handle unique constraint [conversationId, recipientId])
         const invitation = await prisma.conversationInvitation.upsert({
             where: {
                 conversationId_recipientId: {
@@ -97,64 +188,12 @@ export const createInvitations = async (
 
         invitations.push(invitation);
 
-        // Check if a notification already exists for this invitation
-        const existingNotification = await prisma.notification.findUnique({
-            where: { invitationId: invitation.id },
-        });
-
-        const { title, body } = buildNotificationContent(
-            'CONVERSATION_INVITE',
-            actor.name,
-            { conversationName: conversation.name }
+        const notification = await getOrCreateInvitationNotification(
+            invitation,
+            actor,
+            conversation,
+            recipientId
         );
-
-        let notification;
-
-        if (existingNotification) {
-            // Update existing notification
-            notification = await prisma.notification.update({
-                where: { id: existingNotification.id },
-                data: {
-                    isRead: false,
-                    title,
-                    body,
-                    actorId,
-                    createdAt: new Date(), // Bump timestamp
-                },
-                include: {
-                    actor: {
-                        select: {
-                            id: true,
-                            name: true,
-                            avatarUrl: true,
-                        },
-                    },
-                    conversation: {
-                        select: {
-                            id: true,
-                            name: true,
-                        },
-                    },
-                    message: {
-                        select: {
-                            id: true,
-                            text: true,
-                        },
-                    },
-                },
-            });
-        } else {
-            // Create new notification
-            notification = await createNotification({
-                userId: recipientId,
-                type: 'CONVERSATION_INVITE',
-                title,
-                body,
-                conversationId,
-                actorId,
-                invitationId: invitation.id,
-            });
-        }
 
         notifications.push(notification);
     }
@@ -162,14 +201,11 @@ export const createInvitations = async (
     return { invitations, notifications };
 };
 
-/**
- * Accept an invitation to join a conversation
- */
+// Accept an invitation to join a conversation
 export const acceptInvitation = async (
     invitationId: string,
     userId: string
 ): Promise<AcceptInvitationResult> => {
-    // Load the invitation with conversation
     const invitation = await prisma.conversationInvitation.findUnique({
         where: { id: invitationId },
         include: {
@@ -181,24 +217,11 @@ export const acceptInvitation = async (
         throw new NotFoundError('Invitation not found');
     }
 
-    // Ensure invitation belongs to the user
-    if (invitation.recipientId !== userId) {
-        throw new AuthorizationError('You can only accept your own invitations');
-    }
+    verifyInvitationOwnership(invitation, userId);
+    verifyInvitationPending(invitation);
+    verifyInvitationNotExpired(invitation);
 
-    // Ensure invitation is still pending
-    if (invitation.status !== InvitationStatus.PENDING) {
-        throw new BadRequestError(`Invitation is ${invitation.status.toLowerCase()}`);
-    }
-
-    // Check if invitation has expired
-    if (invitation.expiresAt && invitation.expiresAt < new Date()) {
-        throw new BadRequestError('Invitation has expired');
-    }
-
-    // Use transaction to ensure atomicity
     await prisma.$transaction(async (tx) => {
-        // Upsert ConversationMember (in case somehow already exists)
         await tx.conversationMember.upsert({
             where: {
                 userId_conversationId: {
@@ -214,13 +237,11 @@ export const acceptInvitation = async (
             },
         });
 
-        // Update invitation status
         await tx.conversationInvitation.update({
             where: { id: invitationId },
             data: { status: InvitationStatus.ACCEPTED },
         });
 
-        // Mark related notifications as read
         await tx.notification.updateMany({
             where: {
                 userId,
@@ -240,14 +261,11 @@ export const acceptInvitation = async (
     };
 };
 
-/**
- * Decline an invitation to join a conversation
- */
+// Decline an invitation to join a conversation
 export const declineInvitation = async (
     invitationId: string,
     userId: string
 ): Promise<void> => {
-    // Load the invitation
     const invitation = await prisma.conversationInvitation.findUnique({
         where: { id: invitationId },
     });
@@ -256,25 +274,15 @@ export const declineInvitation = async (
         throw new NotFoundError('Invitation not found');
     }
 
-    // Ensure invitation belongs to the user
-    if (invitation.recipientId !== userId) {
-        throw new AuthorizationError('You can only decline your own invitations');
-    }
+    verifyInvitationOwnership(invitation, userId);
+    verifyInvitationPending(invitation);
 
-    // Ensure invitation is still pending
-    if (invitation.status !== InvitationStatus.PENDING) {
-        throw new BadRequestError(`Invitation is ${invitation.status.toLowerCase()}`);
-    }
-
-    // Use transaction to ensure atomicity
     await prisma.$transaction(async (tx) => {
-        // Update invitation status
         await tx.conversationInvitation.update({
             where: { id: invitationId },
             data: { status: InvitationStatus.DECLINED },
         });
 
-        // Mark related notifications as read
         await tx.notification.updateMany({
             where: {
                 userId,

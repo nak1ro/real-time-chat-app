@@ -39,6 +39,8 @@ export function useMessageReactions(messageId: string | undefined) {
     });
 }
 
+import { MessagesQueryData } from './useMessages';
+
 // Hook to toggle a reaction on a message via WebSocket
 export function useToggleReaction(options?: {
     onSuccess?: (response: ToggleReactionResponse) => void;
@@ -70,8 +72,20 @@ export function useToggleReaction(options?: {
                 reaction: null,
             };
         },
-        onSuccess: (response, { messageId }) => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.messages.reactions(messageId) });
+        onSuccess: (response, { messageId, emoji }) => {
+            // We can't easily optimistically update here without the full reaction object or user info
+            // But we can invalidate the message list to refetch
+            // OR we can try to update if we have enough info.
+            // For now, let's rely on the socket event which should follow shortly,
+            // or just invalidate the message list.
+            // Actually, the socket event is the source of truth for other users, but for the sender,
+            // we might want immediate feedback.
+            // However, since we are moving away from individual message reaction fetching,
+            // we should invalidate the conversation messages list or update it.
+
+            // Ideally we should wait for the socket event to update the UI to ensure consistency.
+            // But to be responsive, we can assume success.
+
             options?.onSuccess?.(response);
         },
         onError: (error: Error) => {
@@ -103,19 +117,114 @@ export function useReactionSocketListeners({
             return;
         }
 
-        queryClient.invalidateQueries({ queryKey: queryKeys.messages.reactions(data.messageId) });
+        // Update the message in the cache
+        // We need to find the conversationId for this message if not provided.
+        // But usually we are in a conversation context.
+        // If conversationId is passed, use it.
+
+        if (conversationId) {
+            queryClient.setQueryData<MessagesQueryData>(
+                queryKeys.messages.list(conversationId),
+                (oldData) => {
+                    if (!oldData) return oldData;
+
+                    return {
+                        ...oldData,
+                        messages: oldData.messages.map((msg) => {
+                            if (msg.id !== data.messageId) return msg;
+
+                            // Update reactions
+                            let reactions = msg.reactions || [];
+
+                            // Check if this specific reaction (user + emoji) already exists
+                            const existingIndex = reactions.findIndex(
+                                r => r.userId === data.userId && r.emoji === data.emoji
+                            );
+
+                            if (data.action === 'added') {
+                                if (existingIndex === -1) {
+                                    // Add new reaction
+                                    reactions = [...reactions, {
+                                        id: `reaction-${data.messageId}-${data.userId}-${data.emoji}`,
+                                        messageId: data.messageId,
+                                        userId: data.userId,
+                                        emoji: data.emoji,
+                                        createdAt: new Date(),
+                                        user: data.user, // Assuming data.user is sent with the event
+                                    }];
+                                }
+                            } else if (data.action === 'removed') {
+                                if (existingIndex !== -1) {
+                                    // Remove reaction
+                                    reactions = reactions.filter((_, index) => index !== existingIndex);
+                                }
+                            }
+
+                            return { ...msg, reactions };
+                        }),
+                    };
+                }
+            );
+        } else {
+            // If we don't have conversationId, we might need to iterate over all cached conversations
+            // or just invalidate. But since we usually have it in the context where this hook is used...
+            // For MessageReactions component, we might NOT have conversationId passed explicitly if it's just inside MessageBubble.
+            // MessageBubble is inside MessageList which has conversationId.
+            // But MessageReactions is a child.
+            // We should pass conversationId to MessageReactions if possible, or use a context.
+            // Alternatively, we can use `queryClient.setQueriesData` to update all message lists.
+
+            queryClient.setQueriesData<MessagesQueryData>(
+                { queryKey: queryKeys.messages.all },
+                (oldData) => {
+                    if (!oldData) return oldData;
+
+                    // Check if this list contains the message
+                    const msgExists = oldData.messages?.some(m => m.id === data.messageId);
+                    if (!msgExists) return oldData;
+
+                    return {
+                        ...oldData,
+                        messages: oldData.messages.map((msg) => {
+                            if (msg.id !== data.messageId) return msg;
+
+                            let reactions = msg.reactions || [];
+                            const existingIndex = reactions.findIndex(
+                                r => r.userId === data.userId && r.emoji === data.emoji
+                            );
+
+                            if (data.action === 'added') {
+                                if (existingIndex === -1) {
+                                    reactions = [...reactions, {
+                                        id: `reaction-${data.messageId}-${data.userId}-${data.emoji}`,
+                                        messageId: data.messageId,
+                                        userId: data.userId,
+                                        emoji: data.emoji,
+                                        createdAt: new Date(),
+                                        user: data.user,
+                                    }];
+                                }
+                            } else if (data.action === 'removed') {
+                                if (existingIndex !== -1) {
+                                    reactions = reactions.filter((_, index) => index !== existingIndex);
+                                }
+                            }
+
+                            return { ...msg, reactions };
+                        }),
+                    };
+                }
+            );
+        }
+
         onReactionUpdated?.(data);
-    }, [queryClient, messageId, onReactionUpdated]);
+    }, [queryClient, messageId, conversationId, onReactionUpdated]);
 
     // Register socket listeners
     useEffect(() => {
         if (!socket || !isConnected) {
             return;
         }
-
-        // If conversationId is provided, we might want to log it, but reactions are usually global or per-message
-        // The backend broadcasts reaction updates to the conversation room, so we need to be joined to it.
-        // Assuming the component using this is already inside a conversation context or the user has joined the conversation.
 
         const cleanupReactionListener = createReactionListener(socket, handleReactionUpdated);
 

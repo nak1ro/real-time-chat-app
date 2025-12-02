@@ -35,13 +35,24 @@ export const handleToggleReaction = async (
             },
         });
 
-        if (message) {
+        // Get reactor's details for broadcasting
+        const reactor = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                name: true,
+                avatarUrl: true,
+            },
+        });
+
+        if (message && reactor) {
             // Broadcast update to conversation
             io.to(message.conversationId).emit(SOCKET_EVENTS.REACTION_UPDATED, {
                 messageId,
                 emoji,
                 userId,
                 action: result.action,
+                user: reactor,
             });
 
             // Create notification if:
@@ -49,11 +60,7 @@ export const handleToggleReaction = async (
             // 2. Reactor is NOT the message author (don't notify yourself)
             if (result.action === 'added' && message.userId !== userId) {
                 try {
-                    // Get reactor's name
-                    const reactor = await prisma.user.findUnique({
-                        where: { id: userId },
-                        select: { name: true },
-                    });
+                    // Reactor is already fetched above as 'reactor'
 
                     const notification = await createNotification({
                         userId: message.userId, // Notify the message author

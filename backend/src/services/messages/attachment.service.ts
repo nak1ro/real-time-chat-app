@@ -4,12 +4,8 @@ import { BadRequestError } from '../../middleware';
 import { uploadToS3 } from '../shared/s3.service';
 import sharp from 'sharp';
 import ffmpeg from 'fluent-ffmpeg';
-import { promisify } from 'util';
 
-// Type for Prisma transaction client
 type PrismaTransactionClient = Prisma.TransactionClient;
-
-// Constants
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -35,8 +31,6 @@ const ALLOWED_MIMETYPES: Record<string, AttachmentType> = {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'DOCUMENT',
 };
 
-// Types
-
 export interface AttachmentData {
     url: string;
     thumbnailUrl?: string;
@@ -53,21 +47,32 @@ export interface AttachmentUploadResult extends AttachmentData {
     id?: string;
 }
 
-// Helper Functions
-
-// Validate file before upload
-const validateFile = (file: Express.Multer.File): void => {
-    if (!file) {
-        throw new BadRequestError('No file provided');
-    }
-
+// Helper: Validate file size
+const validateFileSize = (file: Express.Multer.File): void => {
     if (file.size > MAX_FILE_SIZE) {
         throw new BadRequestError(`File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`);
     }
+};
 
-    if (!ALLOWED_MIMETYPES[file.mimetype]) {
-        throw new BadRequestError(`File type ${file.mimetype} is not allowed`);
+// Helper: Validate file type
+const validateFileType = (mimeType: string): void => {
+    if (!ALLOWED_MIMETYPES[mimeType]) {
+        throw new BadRequestError(`File type ${mimeType} is not allowed`);
     }
+};
+
+// Helper: Validate file exists
+const validateFileExists = (file: Express.Multer.File): void => {
+    if (!file) {
+        throw new BadRequestError('No file provided');
+    }
+};
+
+// Validate file before upload
+const validateFile = (file: Express.Multer.File): void => {
+    validateFileExists(file);
+    validateFileSize(file);
+    validateFileType(file.mimetype);
 };
 
 // Determine attachment type from mime type
@@ -76,10 +81,7 @@ const determineAttachmentType = (mimeType: string): AttachmentType => {
 };
 
 // Extract image metadata using sharp
-const extractImageMetadata = async (buffer: Buffer): Promise<{
-    width?: number;
-    height?: number;
-}> => {
+const extractImageMetadata = async (buffer: Buffer): Promise<{ width?: number; height?: number }> => {
     try {
         const metadata = await sharp(buffer).metadata();
         return {
@@ -92,85 +94,76 @@ const extractImageMetadata = async (buffer: Buffer): Promise<{
     }
 };
 
-// Extract video metadata using ffmpeg
-const extractVideoMetadata = async (buffer: Buffer): Promise<{
-    width?: number;
-    height?: number;
-    durationMs?: number;
-}> => {
-    return new Promise((resolve) => {
-        // Create a temporary file path (ffmpeg needs a file path, not just a buffer)
-        const tempPath = `/tmp/${Date.now()}-${Math.random()}.mp4`;
+// Helper: Write buffer to temporary file
+const writeTempFile = (fileName: string, buffer: Buffer): string => {
+    const fs = require('fs');
+    const tempPath = `/tmp/${Date.now()}-${Math.random()}.${fileName.split('.').pop()}`;
+    fs.writeFileSync(tempPath, buffer);
+    return tempPath;
+};
+
+// Helper: Clean up temporary file
+const cleanupTempFile = (filePath: string): void => {
+    try {
         const fs = require('fs');
+        fs.unlinkSync(filePath);
+    } catch (e) {
+        // Ignore cleanup errors
+    }
+};
 
-        try {
-            // Write buffer to temp file
-            fs.writeFileSync(tempPath, buffer);
+// Helper: Extract video stream metadata
+const parseVideoMetadata = (metadata: any): { width?: number; height?: number; durationMs?: number } => {
+    try {
+        const videoStream = metadata.streams.find((s: any) => s.codec_type === 'video');
+        return {
+            width: videoStream?.width,
+            height: videoStream?.height,
+            durationMs: metadata.format.duration ? Math.floor(metadata.format.duration * 1000) : undefined,
+        };
+    } catch (error) {
+        console.error('Failed to parse video metadata:', error);
+        return {};
+    }
+};
 
-            ffmpeg.ffprobe(tempPath, (err, metadata) => {
-                // Clean up temp file
-                try {
-                    fs.unlinkSync(tempPath);
-                } catch (e) {
-                    // Ignore cleanup errors
-                }
+// Extract video metadata using ffmpeg
+const extractVideoMetadata = async (
+    buffer: Buffer
+): Promise<{ width?: number; height?: number; durationMs?: number }> => {
+    return new Promise((resolve) => {
+        const tempPath = writeTempFile('video', buffer);
 
-                if (err) {
-                    console.error('Failed to extract video metadata:', err);
-                    resolve({});
-                    return;
-                }
+        ffmpeg.ffprobe(tempPath, (err, metadata) => {
+            cleanupTempFile(tempPath);
 
-                try {
-                    const videoStream = metadata.streams.find((s) => s.codec_type === 'video');
-                    resolve({
-                        width: videoStream?.width,
-                        height: videoStream?.height,
-                        durationMs: metadata.format.duration
-                            ? Math.floor(metadata.format.duration * 1000)
-                            : undefined,
-                    });
-                } catch (error) {
-                    console.error('Failed to parse video metadata:', error);
-                    resolve({});
-                }
-            });
-        } catch (error) {
-            console.error('Failed to process video file:', error);
-            // Clean up temp file if it exists
-            try {
-                fs.unlinkSync(tempPath);
-            } catch (e) {
-                // Ignore cleanup errors
+            if (err) {
+                console.error('Failed to extract video metadata:', err);
+                resolve({});
+                return;
             }
-            resolve({});
-        }
+
+            resolve(parseVideoMetadata(metadata));
+        });
     });
 };
 
 // Extract metadata from file based on type
-const extractMetadata = async (file: Express.Multer.File): Promise<{
-    width?: number;
-    height?: number;
-    durationMs?: number;
-}> => {
+const extractMetadata = async (
+    file: Express.Multer.File
+): Promise<{ width?: number; height?: number; durationMs?: number }> => {
     const mimeType = file.mimetype;
 
-    // Extract image metadata
     if (mimeType.startsWith('image/')) {
         return await extractImageMetadata(file.buffer);
     }
 
-    // Extract video metadata
     if (mimeType.startsWith('video/')) {
         return await extractVideoMetadata(file.buffer);
     }
 
-    // No metadata for other types
     return {};
 };
-
-// Public API
 
 // Upload attachment file
 export const uploadAttachment = async (
@@ -179,13 +172,8 @@ export const uploadAttachment = async (
 ): Promise<AttachmentUploadResult> => {
     validateFile(file);
 
-    // Upload to S3
     const url = await uploadToS3(file, 'attachments');
-
-    // Determine type
     const type = determineAttachmentType(file.mimetype);
-
-    // Extract metadata
     const metadata = await extractMetadata(file);
 
     return {
@@ -198,8 +186,23 @@ export const uploadAttachment = async (
     };
 };
 
+// Helper: Build attachment data for creation
+const buildAttachmentCreateData = (messageId: string, attachment: AttachmentData) => {
+    return {
+        messageId,
+        url: attachment.url,
+        fileName: attachment.fileName,
+        mimeType: attachment.mimeType,
+        sizeBytes: attachment.sizeBytes,
+        type: attachment.type,
+        width: attachment.width,
+        height: attachment.height,
+        durationMs: attachment.durationMs,
+        thumbnailUrl: attachment.thumbnailUrl,
+    };
+};
+
 // Attach files to a message
-// Accepts an optional transaction client for use within transactions
 export const attachFilesToMessage = async (
     messageId: string,
     attachments: AttachmentData[],
@@ -209,30 +212,17 @@ export const attachFilesToMessage = async (
         return;
     }
 
-    // Use the transaction client if provided, otherwise use the global prisma client
     const client = tx ?? prisma;
 
-    return await client.attachment.createMany({
-        data: attachments.map((att) => ({
-            messageId,
-            url: att.url,
-            fileName: att.fileName,
-            mimeType: att.mimeType,
-            sizeBytes: att.sizeBytes,
-            type: att.type,
-            width: att.width,
-            height: att.height,
-            durationMs: att.durationMs,
-            thumbnailUrl: att.thumbnailUrl,
-        })),
+    return client.attachment.createMany({
+        data: attachments.map((att) => buildAttachmentCreateData(messageId, att)),
     });
 };
 
 // Get attachments for a message
 export const getMessageAttachments = async (messageId: string) => {
-    return await prisma.attachment.findMany({
-        where: { messageId },
-        orderBy: { createdAt: 'asc' },
+    return prisma.attachment.findMany({
+        where: {messageId},
+        orderBy: {createdAt: 'asc'},
     });
 };
-

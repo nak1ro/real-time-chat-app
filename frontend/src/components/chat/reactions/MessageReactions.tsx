@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import {
-    useMessageReactions,
     useToggleReaction,
     useReactionSocketListeners,
 } from '@/hooks';
@@ -14,9 +13,13 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+import { Reaction } from '@/types';
+
 interface MessageReactionsProps {
     messageId: string;
     currentUserId: string;
+    conversationId?: string;
+    reactions?: Reaction[];
     className?: string;
 }
 
@@ -27,14 +30,9 @@ interface GroupedReaction {
     users: string[]; // List of user names
 }
 
-export function MessageReactions({ messageId, currentUserId, className }: MessageReactionsProps) {
-    // Fetch reactions
-    const { data } = useMessageReactions(messageId);
-    // Ensure reactions is always an array (defensive check for API response edge cases)
-    const reactions = Array.isArray(data) ? data : [];
-
+export function MessageReactions({ messageId, currentUserId, conversationId, reactions = [], className }: MessageReactionsProps) {
     // Listen for real-time updates
-    useReactionSocketListeners({ messageId });
+    useReactionSocketListeners({ messageId, conversationId });
 
     // Toggle reaction mutation
     const { mutate: toggleReaction, isPending: isTogglingReaction } = useToggleReaction();

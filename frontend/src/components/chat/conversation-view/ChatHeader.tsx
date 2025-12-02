@@ -71,8 +71,8 @@ export function ChatHeader({
     onBack,
     showBackButton = false,
     onOpenDetails,
-                               searchQuery = '',
-                               onSearchChange,
+    searchQuery = '',
+    onSearchChange,
 }: ChatHeaderProps) {
     const [showSearch, setShowSearch] = useState(false);
 
@@ -85,7 +85,7 @@ export function ChatHeader({
     }, [conversation, currentUserId]);
 
     return (
-        <div className="border-b border-border bg-background">
+        <div className="border-b border-border gradient-header">
             <div className="flex items-center gap-2 h-14 px-3">
                 {showBackButton && (
                     <Button
@@ -105,7 +105,7 @@ export function ChatHeader({
                 >
                     <Avatar className="h-10 w-10 flex-shrink-0">
                         <AvatarImage src={avatarUrl} alt={displayName} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                        <AvatarFallback className="gradient-avatar-primary text-white text-sm">
                             {getInitials(displayName)}
                         </AvatarFallback>
                     </Avatar>

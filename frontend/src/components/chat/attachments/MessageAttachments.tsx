@@ -5,7 +5,7 @@ import {cn} from '@/lib/utils';
 import type {Attachment} from '@/types';
 import {AttachmentType} from '@/types';
 import {useState, useEffect} from 'react';
-import {formatFileSize, getAttachmentIcon} from '@/lib/utils/attachmentUtils'; // Import utilities
+import {formatFileSize, getAttachmentIcon} from '@/components/chat/attachments/attachmentUtils'; // Import utilities
 
 interface MessageAttachmentsProps {
     attachments: Attachment[];

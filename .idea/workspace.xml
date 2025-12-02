@@ -5,14 +5,40 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/copilotDiffState.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/domain/auth.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/domain/auth.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/middleware/authMiddleware.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/middleware/authMiddleware.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/middleware/errorMiddleware.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/middleware/errorMiddleware.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/scripts/check-db.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/scripts/check-receipts.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/scripts/check-schema.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/conversations/conversation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/conversations/conversation.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/conversations/invitation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/conversations/invitation.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/conversations/moderation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/conversations/moderation.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/attachment.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/attachment.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/mention.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/mention.service.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/services/messages/message.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/message.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/reaction.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/reaction.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/receipt.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/receipt.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/shared/service-constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/shared/service-constants.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.reactions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.reactions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/(protected)/chats/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/(protected)/chats/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/attachments/AttachmentPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/attachments/AttachmentPreview.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/attachments/MessageAttachments.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/attachments/MessageAttachments.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatHeader.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageBubble.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageBubble.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageContextMenu.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageContextMenu.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageInput.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageStatusIcon.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageStatusIcon.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/messages/messages.utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/messages.utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/modals/GroupModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/modals/GroupModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/reactions/MessageReactions.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/reactions/MessageReactions.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/dashboard/ProfileActionsCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/dashboard/ProfileActionsCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ui/card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ui/card.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/hooks/useMessages.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/hooks/useMessages.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/hooks/useReactions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/hooks/useReactions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/lib/socket/events.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/socket/events.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/lib/utils/attachmentUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/attachments/attachmentUtils.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,27 +74,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/max68/RiderProjects/real-time-chat-app",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.github.copilot.settings.customization.CustomizationConfigurable",
-    "ts.external.directory.path": "C:\\Users\\max68\\RiderProjects\\real-time-chat-app\\backend\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/max68/RiderProjects/real-time-chat-app&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.github.copilot.settings.customization.CustomizationConfigurable&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\max68\\RiderProjects\\real-time-chat-app\\backend\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\max68\RiderProjects\real-time-chat-app\frontend\src\components\chat\attachments" />
       <recent name="C:\Users\max68\RiderProjects\real-time-chat-app\frontend\src\components\chat\messages" />
       <recent name="C:\Users\max68\RiderProjects\real-time-chat-app\frontend\src\components\chat\conversation-view" />
       <recent name="C:\Users\max68\RiderProjects\real-time-chat-app\frontend\src\components\chat\conversation-list" />
@@ -93,7 +120,7 @@
       <workItem from="1764516474401" duration="7452000" />
       <workItem from="1764548560602" duration="1645000" />
       <workItem from="1764599094389" duration="4153000" />
-      <workItem from="1764705902552" duration="1639000" />
+      <workItem from="1764705902552" duration="5759000" />
     </task>
     <servers />
   </component>

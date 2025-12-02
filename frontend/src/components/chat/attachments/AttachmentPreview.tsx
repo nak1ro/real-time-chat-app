@@ -5,7 +5,7 @@ import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { UploadedAttachment } from '@/types';
 import { AttachmentType } from '@/types';
-import {formatFileSize, getAttachmentIcon} from "@/lib/utils/attachmentUtils";
+import {formatFileSize, getAttachmentIcon} from "@/components/chat/attachments/attachmentUtils";
 
 interface AttachmentPreviewProps {
     attachments: UploadedAttachment[];
