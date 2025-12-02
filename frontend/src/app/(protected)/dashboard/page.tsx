@@ -4,7 +4,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme';
-import { ProfileActionsCard, QuickStatsCard, PeopleOnlineCard } from '@/components/dashboard';
+import { ProfileActionsCard, PeopleOnlineCard } from '@/components/dashboard';
 import { LogOut } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -38,11 +38,6 @@ export default function DashboardPage() {
           <div className="space-y-5 lg:col-span-5 xl:col-span-4">
             <ProfileActionsCard />
             <PeopleOnlineCard />
-          </div>
-
-          {/* Right Column: Quick Stats */}
-          <div className="lg:col-span-7 xl:col-span-8">
-            <QuickStatsCard />
           </div>
         </div>
       </main>

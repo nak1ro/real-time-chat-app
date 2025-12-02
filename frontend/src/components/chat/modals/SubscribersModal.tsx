@@ -34,6 +34,7 @@ interface SubscribersModalProps {
   channelName: string;
   getUserStatus?: (userId: string) => UserWithStatus | undefined;
   onRemoveSubscriber?: (userId: string) => void;
+  onMemberClick?: (member: ConversationMember) => void;
 }
 
 function getInitials(name: string): string {
@@ -48,14 +49,14 @@ function getInitials(name: string): string {
 function formatLastSeen(lastSeenAt: Date | null, status: Status | null): string {
   if (status === Status.ONLINE) return 'online';
   if (!lastSeenAt) return 'offline';
-  
+
   const now = new Date();
   const lastSeen = new Date(lastSeenAt);
   const diffMs = now.getTime() - lastSeen.getTime();
   const diffMins = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffMins < 1) return 'just now';
   if (diffMins < 60) return `${diffMins} min ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
@@ -72,7 +73,7 @@ function RoleBadge({ role, isOwner }: { role: MemberRole; isOwner: boolean }) {
       </Badge>
     );
   }
-  
+
   if (role === MemberRole.ADMIN) {
     return (
       <Badge variant="default" className="bg-blue-500/15 text-blue-600 border-blue-500/30 text-[10px] px-1.5 py-0">
@@ -81,7 +82,7 @@ function RoleBadge({ role, isOwner }: { role: MemberRole; isOwner: boolean }) {
       </Badge>
     );
   }
-  
+
   return null; // Don't show badge for regular subscribers
 }
 
@@ -96,14 +97,15 @@ export function SubscribersModal({
   channelName,
   getUserStatus,
   onRemoveSubscriber,
+  onMemberClick,
 }: SubscribersModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [memberToRemove, setMemberToRemove] = useState<ConversationMember | null>(null);
-  
+
   const filteredMembers = searchQuery
-    ? members.filter(m => 
-        m.user.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? members.filter(m =>
+      m.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : members;
 
   const handleRemove = (member: ConversationMember) => {
@@ -157,11 +159,18 @@ export function SubscribersModal({
                   const isMemberOwner = member.userId === createdById;
                   const isSelf = member.userId === currentUserId;
                   const canRemove = isElevated && !isSelf && !isMemberOwner;
-                  
+
                   return (
                     <div
                       key={member.id}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50"
+                      className={cn(
+                        "flex items-center gap-3 p-2 rounded-lg transition-colors",
+                        onMemberClick ? "hover:bg-muted/50 cursor-pointer" : "hover:bg-muted/50"
+                      )}
+                      onClick={onMemberClick ? () => {
+                        onMemberClick(member);
+                        onOpenChange(false);
+                      } : undefined}
                     >
                       <div className="relative flex-shrink-0">
                         <Avatar className="h-10 w-10">
@@ -174,7 +183,7 @@ export function SubscribersModal({
                           <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-background" />
                         )}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-sm truncate">{member.user.name}</p>
@@ -187,7 +196,7 @@ export function SubscribersModal({
                           {formatLastSeen(userStatus?.lastSeenAt || null, userStatus?.status || null)}
                         </p>
                       </div>
-                      
+
                       {canRemove && (
                         <Button
                           variant="ghost"

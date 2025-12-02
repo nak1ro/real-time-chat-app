@@ -128,29 +128,6 @@ export function ChatHeader({
                     >
                         <Search className="h-4 w-4"/>
                     </Button>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4"/>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                <Trash2 className="h-4 w-4 mr-2"/>
-                                Delete chat
-                            </DropdownMenuItem>
-                            {conversation.type === 'DIRECT' && (
-                                <>
-                                    <DropdownMenuSeparator/>
-                                    <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                        <Ban className="h-4 w-4 mr-2"/>
-                                        Block user
-                                    </DropdownMenuItem>
-                                </>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
             </div>
 

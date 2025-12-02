@@ -1,15 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  Avatar, 
-  AvatarFallback, 
-  AvatarImage, 
-  Badge, 
-  Button, 
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Badge,
+  Button,
   Input,
   ScrollArea,
-  Skeleton 
+  Skeleton
 } from '@/components/ui';
 import { Search, Crown, Shield, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -41,14 +41,14 @@ function getInitials(name: string): string {
 function formatLastSeen(lastSeenAt: Date | null, status: Status | null): string {
   if (status === Status.ONLINE) return 'online';
   if (!lastSeenAt) return 'offline';
-  
+
   const now = new Date();
   const lastSeen = new Date(lastSeenAt);
   const diffMs = now.getTime() - lastSeen.getTime();
   const diffMins = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffMins < 1) return 'just now';
   if (diffMins < 60) return `${diffMins} min ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
@@ -65,7 +65,7 @@ function RoleBadge({ role, isOwner }: { role: MemberRole; isOwner: boolean }) {
       </Badge>
     );
   }
-  
+
   if (role === MemberRole.ADMIN) {
     return (
       <Badge variant="default" className="bg-blue-500/15 text-blue-600 border-blue-500/30 text-[10px] px-1.5 py-0">
@@ -74,7 +74,7 @@ function RoleBadge({ role, isOwner }: { role: MemberRole; isOwner: boolean }) {
       </Badge>
     );
   }
-  
+
   return (
     <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
       Member
@@ -82,20 +82,20 @@ function RoleBadge({ role, isOwner }: { role: MemberRole; isOwner: boolean }) {
   );
 }
 
-function MemberItem({ 
-  member, 
+function MemberItem({
+  member,
   isOwner,
   userStatus,
-  onClick 
-}: { 
-  member: ConversationMember; 
+  onClick
+}: {
+  member: ConversationMember;
   isOwner: boolean;
   userStatus?: UserWithStatus;
   onClick?: () => void;
 }) {
   const isOnline = userStatus?.status === Status.ONLINE;
   const lastSeenText = formatLastSeen(userStatus?.lastSeenAt || null, userStatus?.status || null);
-  
+
   return (
     <button
       className={cn(
@@ -117,7 +117,7 @@ function MemberItem({
           <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-background" />
         )}
       </div>
-      
+
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm truncate">{member.user.name}</span>
@@ -158,19 +158,19 @@ export function MembersList({
   getUserStatus,
 }: MembersListProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const filteredMembers = searchQuery
-    ? members.filter(m => 
-        m.user.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? members.filter(m =>
+      m.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : members;
-  
-  const visibleMembers = maxVisible 
-    ? filteredMembers.slice(0, maxVisible) 
+
+  const visibleMembers = maxVisible
+    ? filteredMembers.slice(0, maxVisible)
     : filteredMembers;
-  
+
   const hasMore = maxVisible && filteredMembers.length > maxVisible;
-  
+
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -188,7 +188,7 @@ export function MembersList({
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -197,7 +197,7 @@ export function MembersList({
           Members ({members.length})
         </h3>
       </div>
-      
+
       {showSearch && members.length > 5 && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -209,7 +209,7 @@ export function MembersList({
           />
         </div>
       )}
-      
+
       {filteredMembers.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
           <Users className="h-10 w-10 mb-2 opacity-50" />
@@ -232,7 +232,7 @@ export function MembersList({
           </div>
         </ScrollArea>
       )}
-      
+
       {hasMore && (
         <Button
           variant="outline"

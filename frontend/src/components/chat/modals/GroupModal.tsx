@@ -13,17 +13,17 @@ import {
   Separator,
   Skeleton,
 } from '@/components/ui';
-import { 
-  X, 
-  Users, 
-  LogOut, 
-  Settings, 
-  UserPlus, 
-  UserMinus, 
+import {
+  X,
+  Users,
+  LogOut,
+  Settings,
+  UserPlus,
+  UserMinus,
   Shield,
   Loader2
 } from 'lucide-react';
-import type { Conversation } from '@/types/conversation.types';
+import type { Conversation, ConversationMember } from '@/types/conversation.types';
 import type { Attachment } from '@/types/message.types';
 import type { UserWithStatus } from '@/types/user.types';
 import { MemberRole } from '@/types/enums';
@@ -58,6 +58,7 @@ interface GroupModalProps {
   onInviteUsers?: (userIds: string[]) => void;
   onUpdateSettings?: (data: { name?: string; description?: string; avatarUrl?: string }) => void;
   onUpdateRoles?: (updates: { userId: string; role: MemberRole }[]) => void;
+  onMemberClick?: (member: ConversationMember) => void;
 }
 
 function getInitials(name: string | null): string {
@@ -92,6 +93,7 @@ export function GroupModal({
   onInviteUsers,
   onUpdateSettings,
   onUpdateRoles,
+  onMemberClick,
 }: GroupModalProps) {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showKickModal, setShowKickModal] = useState(false);
@@ -101,7 +103,7 @@ export function GroupModal({
 
   const groupName = conversation.name || 'Unnamed Group';
   const memberCount = conversation._count?.members || conversation.members?.length || 0;
-  
+
   // Use passed-in role or fallback to computing from members
   const effectiveRole = currentUserRole ?? conversation.members?.find(m => m.userId === currentUserId)?.role ?? MemberRole.MEMBER;
 
@@ -118,7 +120,7 @@ export function GroupModal({
                   <Users className="h-8 w-8" />
                 </AvatarFallback>
               </Avatar>
-              
+
               <div className="flex-1 min-w-0 pt-1">
                 <DialogTitle className="text-xl font-semibold truncate">
                   {groupName}
@@ -160,6 +162,7 @@ export function GroupModal({
               maxVisible={15}
               isLoading={isLoading}
               getUserStatus={getUserStatus}
+              onMemberClick={onMemberClick}
             />
 
             {/* Moderation Actions (Admin/Owner only) */}
@@ -182,7 +185,7 @@ export function GroupModal({
                     <Shield className="h-4 w-4" />
                     Moderation Actions
                   </h3>
-                  
+
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
@@ -192,7 +195,7 @@ export function GroupModal({
                       <UserMinus className="h-4 w-4 mr-2" />
                       Kick Members
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       className="justify-start"
@@ -212,7 +215,7 @@ export function GroupModal({
                     <Settings className="h-4 w-4" />
                     Group Settings
                   </h3>
-                  
+
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
@@ -222,7 +225,7 @@ export function GroupModal({
                       <Settings className="h-4 w-4 mr-2" />
                       Edit Group
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       className="justify-start"

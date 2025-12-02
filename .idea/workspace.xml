@@ -5,27 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatHeader.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/(protected)/chats/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/(protected)/chats/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/ChannelPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChannelPreview.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/ChatDetailPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatDetailPanel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/ChatFilter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChatFilter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/ChatHeader.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/ChatListItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChatListItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/ChatListPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChatListPanel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/EmptyChatState.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/EmptyChatState.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/MessageBubble.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageBubble.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/MessageContextMenu.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageContextMenu.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/MessageInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageInput.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/MessageList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/MessageStatusIcon.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageStatusIcon.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/modals/ChannelModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/modals/ChannelModal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/modals/DirectMessageModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/modals/DirectMessageModal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/modals/GroupModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/modals/GroupModal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/modals/SharedAttachments.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/SharedAttachments.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/modals/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/modals/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatHeader.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

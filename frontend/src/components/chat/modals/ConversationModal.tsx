@@ -7,6 +7,10 @@ import { ConversationType, MemberRole } from '@/types/enums';
 import { DirectMessageModal } from './DirectMessageModal';
 import { GroupModal } from './GroupModal';
 import { ChannelModal } from './ChannelModal';
+import { conversationApi } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import type { ConversationMember } from '@/types/conversation.types';
 
 interface ConversationModalProps {
   open: boolean;
@@ -18,7 +22,7 @@ interface ConversationModalProps {
   isLoading?: boolean;
   isError?: boolean;
   getUserStatus?: (userId: string) => UserWithStatus | undefined;
-  
+
   // Role-based permissions (from useConversationRole hook)
   role?: MemberRole | null;
   isOwner?: boolean;
@@ -26,30 +30,30 @@ interface ConversationModalProps {
   isElevated?: boolean;
   isMember?: boolean;
   isRoleLoading?: boolean;
-  
+
   // Loading states for actions
   isDeleting?: boolean;
   isLeaving?: boolean;
   isSavingSettings?: boolean;
-  
+
   // Retry callback
   onRetryAttachments?: () => void;
-  
+
   // DM-specific callbacks
   onStartMessaging?: () => void;
   onDeleteChat?: () => void;
   onBlockUser?: () => void;
-  
+
   // Group-specific callbacks
   onLeaveGroup?: () => void;
   onKickMember?: (userId: string) => void;
   onInviteUsers?: (userIds: string[]) => void;
-  
+
   // Channel-specific callbacks
   onLeaveChannel?: () => void;
   onDeleteChannel?: () => void;
   onRemoveSubscriber?: (userId: string) => void;
-  
+
   // Common callbacks
   onUpdateSettings?: (data: { name?: string; description?: string; avatarUrl?: string }) => void;
   onUpdateRoles?: (updates: { userId: string; role: MemberRole }[]) => void;
@@ -91,13 +95,30 @@ export function ConversationModal({
   onUpdateSettings,
   onUpdateRoles,
 }: ConversationModalProps) {
+  const router = useRouter();
+
+  const handleMemberClick = async (member: ConversationMember) => {
+    if (member.userId === currentUserId) {
+      return;
+    }
+
+    try {
+      onOpenChange(false);
+      const conversation = await conversationApi.createDirect({ otherUserId: member.userId });
+      router.push(`/chats/${conversation.id}`);
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+      toast.error('Failed to start conversation');
+    }
+  };
+
   // Find the other user for DM conversations
   const otherMember = conversation.type === ConversationType.DIRECT
     ? conversation.members?.find(m => m.userId !== currentUserId)
     : undefined;
 
-  const otherUserStatus = otherMember 
-    ? getUserStatus?.(otherMember.userId) 
+  const otherUserStatus = otherMember
+    ? getUserStatus?.(otherMember.userId)
     : undefined;
 
   // Render the appropriate modal based on conversation type
@@ -155,6 +176,7 @@ export function ConversationModal({
           onInviteUsers={onInviteUsers}
           onUpdateSettings={onUpdateSettings}
           onUpdateRoles={onUpdateRoles}
+          onMemberClick={handleMemberClick}
         />
       );
 
@@ -183,6 +205,7 @@ export function ConversationModal({
           onRemoveSubscriber={onRemoveSubscriber}
           onUpdateSettings={onUpdateSettings}
           onUpdateRoles={onUpdateRoles}
+          onMemberClick={handleMemberClick}
         />
       );
 

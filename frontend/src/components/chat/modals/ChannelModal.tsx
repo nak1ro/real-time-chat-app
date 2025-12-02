@@ -13,19 +13,19 @@ import {
   Separator,
   Skeleton,
 } from '@/components/ui';
-import { 
-  X, 
-  Megaphone, 
-  LogOut, 
-  Settings, 
-  Users, 
+import {
+  X,
+  Megaphone,
+  LogOut,
+  Settings,
+  Users,
   Shield,
   Trash2,
   ChevronDown,
   ChevronUp,
   Loader2
 } from 'lucide-react';
-import type { Conversation } from '@/types/conversation.types';
+import type { Conversation, ConversationMember } from '@/types/conversation.types';
 import type { Attachment } from '@/types/message.types';
 import type { UserWithStatus } from '@/types/user.types';
 import { MemberRole } from '@/types/enums';
@@ -59,6 +59,7 @@ interface ChannelModalProps {
   onRemoveSubscriber?: (userId: string) => void;
   onUpdateSettings?: (data: { name?: string; description?: string; avatarUrl?: string }) => void;
   onUpdateRoles?: (updates: { userId: string; role: MemberRole }[]) => void;
+  onMemberClick?: (member: ConversationMember) => void;
 }
 
 function getInitials(name: string | null): string {
@@ -94,6 +95,7 @@ export function ChannelModal({
   onRemoveSubscriber,
   onUpdateSettings,
   onUpdateRoles,
+  onMemberClick,
 }: ChannelModalProps) {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -106,7 +108,7 @@ export function ChannelModal({
   const subscriberCount = conversation._count?.members || conversation.members?.length || 0;
   const description = conversation.description || '';
   const shouldTruncateDescription = description.length > 150;
-  
+
   // Use passed-in role or fallback to computing from members
   const effectiveRole = currentUserRole ?? conversation.members?.find(m => m.userId === currentUserId)?.role ?? MemberRole.MEMBER;
 
@@ -123,7 +125,7 @@ export function ChannelModal({
                   <Megaphone className="h-8 w-8" />
                 </AvatarFallback>
               </Avatar>
-              
+
               <div className="flex-1 min-w-0 pt-1">
                 <DialogTitle className="text-xl font-semibold truncate">
                   {channelName}
@@ -211,7 +213,7 @@ export function ChannelModal({
                     <Settings className="h-4 w-4" />
                     Channel Settings
                   </h3>
-                  
+
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
@@ -221,7 +223,7 @@ export function ChannelModal({
                       <Settings className="h-4 w-4 mr-2" />
                       Edit Channel
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       className="justify-start"
@@ -323,6 +325,7 @@ export function ChannelModal({
         channelName={channelName}
         getUserStatus={getUserStatus}
         onRemoveSubscriber={onRemoveSubscriber}
+        onMemberClick={onMemberClick}
       />
 
       {/* Settings Modal */}
