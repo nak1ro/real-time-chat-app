@@ -217,10 +217,10 @@ const countAllUnreadMessages = async (
     conversationId: string,
     userId: string
 ): Promise<number> => {
-    return await prisma.message.count({
+    return prisma.message.count({
         where: {
             conversationId,
-            userId: { not: userId },
+            userId: {not: userId},
             deletedAt: null,
         },
     });
@@ -232,11 +232,11 @@ const countUnreadMessagesAfter = async (
     userId: string,
     lastReadAt: Date
 ): Promise<number> => {
-    return await prisma.message.count({
+    return prisma.message.count({
         where: {
             conversationId,
-            userId: { not: userId },
-            createdAt: { gt: lastReadAt },
+            userId: {not: userId},
+            createdAt: {gt: lastReadAt},
             deletedAt: null,
         },
     });

@@ -154,6 +154,22 @@ export function SocketProvider({ children }: SocketProviderProps) {
     }
   }, [isAuthenticated, token, connect, disconnect]);
 
+  // Handle tab visibility changes - restore presence when user returns
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && socket?.connected) {
+        console.log('[SocketProvider] Tab became visible, sending heartbeat to restore online status...');
+        socket.emit(SOCKET_EVENTS.PRESENCE_HEARTBEAT);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [socket]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
