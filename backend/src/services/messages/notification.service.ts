@@ -250,11 +250,13 @@ export const getUserNotifications = async (
 
     const where: any = {
         userId,
+        isRead: false,
     };
 
-    if (options.unreadOnly) {
-        where.isRead = false;
-    }
+    // Removed optional check, always filter read notifications
+    // if (options.unreadOnly) {
+    //     where.isRead = false;
+    // }
 
     if (options.cursor) {
         where.createdAt = { lt: new Date(options.cursor) };
