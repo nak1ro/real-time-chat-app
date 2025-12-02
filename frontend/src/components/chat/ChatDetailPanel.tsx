@@ -85,6 +85,7 @@ export function ChatDetailPanel({
         <MessageList
           messages={messages}
           currentUserId={currentUserId}
+          conversationId={conversation.id}
           onReply={handleReply}
           onEdit={handleEdit}
           onDelete={handleDelete}

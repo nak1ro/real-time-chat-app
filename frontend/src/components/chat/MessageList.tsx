@@ -4,11 +4,13 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui';
 import { MessageBubble } from './MessageBubble';
 import { MessageContextMenu } from './MessageContextMenu';
+import { useReadReceipts } from '@/hooks/useReadReceipts';
 import type { Message } from '@/types';
 
 interface MessageListProps {
   messages: Message[];
   currentUserId: string;
+  conversationId?: string | null;
   onReply?: (message: Message) => void;
   onEdit?: (message: Message) => void;
   onDelete?: (messageId: string) => void;
@@ -23,14 +25,24 @@ interface ContextMenuState {
 export function MessageList({
   messages,
   currentUserId,
+  conversationId,
   onReply,
   onEdit,
   onDelete,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+
+  // Setup read receipts with viewport detection
+  const { registerMessageRef } = useReadReceipts({
+    conversationId,
+    currentUserId,
+    messages,
+    scrollContainerRef,
+  });
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -39,17 +51,17 @@ export function MessageList({
   // Handle reply click - scroll to and highlight the original message
   const handleReplyClick = useCallback((messageId: string) => {
     const messageElement = messageRefs.current.get(messageId);
-    
+
     if (messageElement) {
       // Scroll to the message
-      messageElement.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
+      messageElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
       });
-      
+
       // Highlight the message
       setHighlightedMessageId(messageId);
-      
+
       // Clear highlight after animation completes
       setTimeout(() => {
         setHighlightedMessageId(null);
@@ -57,14 +69,16 @@ export function MessageList({
     }
   }, []);
 
-  // Register message ref
+  // Register message ref for both viewport detection and scroll-to-highlight
   const setMessageRef = useCallback((messageId: string, element: HTMLDivElement | null) => {
     if (element) {
       messageRefs.current.set(messageId, element);
+      registerMessageRef(messageId, element);
     } else {
       messageRefs.current.delete(messageId);
+      registerMessageRef(messageId, null);
     }
-  }, []);
+  }, [registerMessageRef]);
 
   const handleContextMenu = (message: Message, position: { x: number; y: number }) => {
     const isOwnMessage = message.userId === currentUserId;
@@ -99,12 +113,13 @@ export function MessageList({
   };
 
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full" ref={scrollContainerRef}>
       <div className="px-4 py-4 space-y-3">
         {messages.map((message, index) => (
           <div
             key={message.id}
             ref={(el) => setMessageRef(message.id, el)}
+            data-message-id={message.id}
           >
             <MessageBubble
               message={message}

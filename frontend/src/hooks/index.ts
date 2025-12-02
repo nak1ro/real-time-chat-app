@@ -73,6 +73,9 @@ export {
   useMessageSocketListeners,
 } from './useMessages';
 
+// Receipt hooks
+export { useReadReceipts } from './useReadReceipts';
+
 // Reaction hooks
 export {
   useMessageReactions,

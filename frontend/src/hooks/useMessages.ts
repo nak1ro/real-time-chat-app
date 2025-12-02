@@ -13,14 +13,15 @@ import {
     isSocketConnected,
 } from '@/lib/socket';
 import {emitWithAck} from '@/lib/socket/emitWithAck';
-import type {
-    Message,
-    CreateMessageData,
-    EditMessageData,
-    MessagePaginationOptions,
-    BulkReceiptUpdate,
-    UploadAttachmentResponse,
-    AttachmentData,
+import {
+    type Message,
+    type CreateMessageData,
+    type EditMessageData,
+    type MessagePaginationOptions,
+    type BulkReceiptUpdate,
+    type UploadAttachmentResponse,
+    type AttachmentData,
+    MessageDeliveryStatus,
 } from '@/types';
 import type {
     ReceiptUpdatePayload,
@@ -457,14 +458,132 @@ export function useMessageSocketListeners({
     const handleReceiptUpdated = useCallback((data: ReceiptUpdatePayload | SocketBulkReceiptUpdate) => {
         console.log('[useMessageSocketListeners] Receipt updated:', data);
 
-        if ('messageId' in data) {
+        if (!conversationId) return;
+
+        // Check if it's a single message update
+        if ('messageId' in data && data.messageId) {
+            // Update single message receipt in cache
+            queryClient.setQueryData<MessagesQueryData>(
+                queryKeys.messages.list(conversationId),
+                (oldData) => {
+                    if (!oldData) return oldData;
+
+                    return {
+                        ...oldData,
+                        messages: oldData.messages.map((msg) => {
+                            if (msg.id !== data.messageId) return msg;
+
+                            const receipts = msg.receipts || [];
+                            const existingIndex = receipts.findIndex(r => r.userId === data.userId);
+
+                            let updatedReceipts;
+                            if (existingIndex >= 0) {
+                                // Update existing receipt
+                                updatedReceipts = receipts.map((r, idx) =>
+                                    idx === existingIndex
+                                        ? {
+                                            ...r,
+                                            status: data.status,
+                                            deliveredAt: data.status === MessageDeliveryStatus.DELIVERED ? data.timestamp : r.deliveredAt,
+                                            seenAt: data.seenAt,
+                                            updatedAt: data.timestamp,
+                                        }
+                                        : r
+                                );
+                            } else {
+                                // Add new receipt
+                                updatedReceipts = [
+                                    ...receipts,
+                                    {
+                                        id: `temp-${Date.now()}`,
+                                        messageId: data.messageId,
+                                        userId: data.userId,
+                                        status: data.status,
+                                        deliveredAt: data.status === MessageDeliveryStatus.DELIVERED ? data.timestamp : null,
+                                        seenAt: data.seenAt,
+                                        createdAt: data.timestamp,
+                                        updatedAt: data.timestamp,
+                                    },
+                                ];
+                            }
+
+                            return {
+                                ...msg,
+                                receipts: updatedReceipts,
+                            };
+                        }),
+                    };
+                }
+            );
+
             queryClient.invalidateQueries({queryKey: queryKeys.messages.receipts(data.messageId)});
         }
+
+        // Check if it's a bulk update (multiple messages)
+        if ('lastReadMessageId' in data && data.lastReadMessageId) {
+            // For bulk updates, update all messages up to lastReadMessageId
+            queryClient.setQueryData<MessagesQueryData>(
+                queryKeys.messages.list(conversationId),
+                (oldData) => {
+                    if (!oldData) return oldData;
+
+                    // Find the index of the last read message
+                    const lastReadIndex = oldData.messages.findIndex(m => m.id === data.lastReadMessageId);
+                    if (lastReadIndex === -1) return oldData;
+
+                    // Update all messages up to and including the last read message
+                    return {
+                        ...oldData,
+                        messages: oldData.messages.map((msg, idx) => {
+                            if (idx > lastReadIndex) return msg;
+
+                            const receipts = msg.receipts || [];
+                            const existingReceiptIndex = receipts.findIndex(r => r.userId === data.userId);
+
+                            let updatedReceipts;
+                            if (existingReceiptIndex >= 0) {
+                                updatedReceipts = receipts.map((r, rIdx) =>
+                                    rIdx === existingReceiptIndex
+                                        ? {
+                                            ...r,
+                                            status: MessageDeliveryStatus.READ,
+                                            seenAt: data.timestamp,
+                                            updatedAt: data.timestamp,
+                                        }
+                                        : r
+                                );
+                            } else {
+                                updatedReceipts = [
+                                    ...receipts,
+                                    {
+                                        id: `temp-${Date.now()}-${idx}`,
+                                        messageId: msg.id,
+                                        userId: data.userId,
+                                        status: MessageDeliveryStatus.READ,
+                                        deliveredAt: null,
+                                        seenAt: data.timestamp,
+                                        createdAt: data.timestamp,
+                                        updatedAt: data.timestamp,
+                                    },
+                                ];
+                            }
+
+                            return {
+                                ...msg,
+                                receipts: updatedReceipts,
+                            };
+                        }),
+                    };
+                }
+            );
+        }
+
         if (conversationId) {
             queryClient.invalidateQueries({queryKey: [...queryKeys.conversations.detail(conversationId), 'unread']});
         }
         onReceiptUpdated?.(data);
     }, [conversationId, queryClient, onReceiptUpdated]);
+
 
     // Register socket listeners
     useEffect(() => {

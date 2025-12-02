@@ -7,6 +7,8 @@ import { Check, CheckCheck, Trash2 } from 'lucide-react';
 import type { Message } from '@/types';
 import { MessageReactions } from './MessageReactions';
 import { MessageAttachments } from './MessageAttachments';
+import { MessageStatusIcon } from './MessageStatusIcon';
+import { getMessageStatus } from '@/lib/utils/receiptHelpers';
 
 interface MessageBubbleProps {
   message: Message;
@@ -132,18 +134,17 @@ function DeletedMessageContent({ isOwn }: { isOwn: boolean }) {
   );
 }
 
-export function MessageBubble({ 
-  message, 
-  isOwn, 
-  currentUserId, 
-  showAvatar = true, 
+export function MessageBubble({
+  message,
+  isOwn,
+  currentUserId,
+  showAvatar = true,
   isHighlighted = false,
   onContextMenu,
-  onReplyClick 
+  onReplyClick
 }: MessageBubbleProps) {
   const senderName = message.user?.name || 'Unknown';
   const senderAvatar = message.user?.avatarUrl;
-  const isRead = (message._count?.receipts ?? 0) > 0;
   const hasReply = !!message.replyTo;
 
   // Long-press detection for mobile
@@ -226,9 +227,9 @@ export function MessageBubble({
         >
           {/* Reply preview */}
           {hasReply && message.replyTo && (
-            <ReplyPreview 
-              replyTo={message.replyTo} 
-              isOwn={isOwn} 
+            <ReplyPreview
+              replyTo={message.replyTo}
+              isOwn={isOwn}
               onClick={() => onReplyClick?.(message.replyTo!.id)}
             />
           )}
@@ -270,13 +271,10 @@ export function MessageBubble({
             <span className="text-[10px] text-muted-foreground">(edited)</span>
           )}
           {isOwn && (
-            <span className="text-muted-foreground">
-              {isRead ? (
-                <CheckCheck className="h-3 w-3 text-primary" />
-              ) : (
-                <Check className="h-3 w-3" />
-              )}
-            </span>
+            <MessageStatusIcon
+              status={getMessageStatus(message, currentUserId)}
+              className="w-3 h-3"
+            />
           )}
         </div>
       </div>
