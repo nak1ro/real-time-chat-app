@@ -5,12 +5,19 @@
 import { ReactQueryProvider, AuthProvider, SocketProvider } from '@/providers';
 import { AuthGuard } from '@/components/auth';
 import { AppNav, AppNavLayout } from '@/components/navigation';
-import { useNotificationSocket } from '@/hooks/useNotifications';
+import { useNotificationSocket, useNotificationUnreadCount } from '@/hooks/useNotifications';
 
 // Component to initialize real-time notification listeners
 function NotificationSocketListener() {
   useNotificationSocket();
   return null;
+}
+
+// Component to provide unread notification count to AppNav
+function AppNavWithCount() {
+  const { data: unreadCount = 0 } = useNotificationUnreadCount();
+
+  return <AppNav unreadNotifications={unreadCount} />;
 }
 
 export default function ProtectedLayout({
@@ -24,7 +31,7 @@ export default function ProtectedLayout({
         <SocketProvider>
           <AuthGuard>
             <NotificationSocketListener />
-            <AppNav unreadNotifications={3} />
+            <AppNavWithCount />
             <AppNavLayout>
               {children}
             </AppNavLayout>
