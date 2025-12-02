@@ -37,7 +37,7 @@ interface SubscribersModalProps {
   onMemberClick?: (member: ConversationMember) => void;
 }
 
-function getInitials(name: string): string {
+export function getInitials(name: string): string {
   return name
     .split(' ')
     .map((n) => n[0])
@@ -46,7 +46,7 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-function formatLastSeen(lastSeenAt: Date | null, status: Status | null): string {
+export function formatLastSeen(lastSeenAt: Date | null, status: Status | null): string {
   if (status === Status.ONLINE) return 'online';
   if (!lastSeenAt) return 'offline';
 

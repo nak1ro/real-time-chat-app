@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { Copy, Reply, Edit, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { Message } from '@/types';
+import {useEffect, useRef, useState, useCallback} from 'react';
+import {Copy, Reply, Edit, Trash2} from 'lucide-react';
+import {cn} from '@/lib/utils';
+import type {Message} from '@/types';
 
 export interface MessageContextMenuProps {
     message: Message;
@@ -30,24 +30,24 @@ const MENU_WIDTH = 160;
 const MENU_ITEM_HEIGHT = 40;
 const VIEWPORT_PADDING = 12;
 
-import { ReactionPicker } from '../reactions/ReactionPicker';
-import { useToggleReaction } from '@/hooks';
+import {ReactionPicker} from '../reactions/ReactionPicker';
+import {useToggleReaction} from '@/hooks';
 
 export function MessageContextMenu({
-    message,
-    currentUserId,
-    position,
-    isOwnMessage: isOwnMessageProp,
-    onClose,
-    onReply,
-    onCopy,
-    onEdit,
-    onDelete,
-}: MessageContextMenuProps) {
+                                       message,
+                                       currentUserId,
+                                       position,
+                                       isOwnMessage: isOwnMessageProp,
+                                       onClose,
+                                       onReply,
+                                       onCopy,
+                                       onEdit,
+                                       onDelete,
+                                   }: MessageContextMenuProps) {
     const menuRef = useRef<HTMLDivElement>(null);
     const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
     const [isVisible, setIsVisible] = useState(false);
-    const { mutate: toggleReaction } = useToggleReaction();
+    const {mutate: toggleReaction} = useToggleReaction();
 
     const isOwnMessage = isOwnMessageProp ?? message.userId === currentUserId;
     const canCopy = !message.isDeleted;
@@ -208,7 +208,7 @@ export function MessageContextMenu({
     };
 
     const handleReaction = (emoji: string) => {
-        toggleReaction({ messageId: message.id, emoji });
+        toggleReaction({messageId: message.id, emoji});
         onClose();
     };
 
@@ -242,7 +242,7 @@ export function MessageContextMenu({
                         isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
                     )}
                 >
-                    <ReactionPicker onReactionSelect={handleReaction} />
+                    <ReactionPicker onReactionSelect={handleReaction}/>
                 </div>
 
                 {/* Context Menu */}
@@ -275,7 +275,7 @@ export function MessageContextMenu({
                             'text-foreground transition-colors'
                         )}
                     >
-                        <Reply className="h-4 w-4 text-muted-foreground" />
+                        <Reply className="h-4 w-4 text-muted-foreground"/>
                         <span>Reply</span>
                     </button>
 
@@ -290,7 +290,7 @@ export function MessageContextMenu({
                                 'text-foreground transition-colors'
                             )}
                         >
-                            <Copy className="h-4 w-4 text-muted-foreground" />
+                            <Copy className="h-4 w-4 text-muted-foreground"/>
                             <span>Copy</span>
                         </button>
                     )}
@@ -306,7 +306,7 @@ export function MessageContextMenu({
                                 'text-foreground transition-colors'
                             )}
                         >
-                            <Edit className="h-4 w-4 text-muted-foreground" />
+                            <Edit className="h-4 w-4 text-muted-foreground"/>
                             <span>Edit</span>
                         </button>
                     )}
@@ -322,7 +322,7 @@ export function MessageContextMenu({
                                 'text-destructive transition-colors'
                             )}
                         >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4"/>
                             <span>Delete</span>
                         </button>
                     )}

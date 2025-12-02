@@ -13,51 +13,56 @@ interface ChatFilterProps {
 }
 
 export function ChatFilter({ value, onChange, mode = 'LOCAL' }: ChatFilterProps) {
+  const isLocal = mode === 'LOCAL';
+
+  // Base class for trigger items
+  const triggerClass = "flex-1 text-xs gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm";
+
   return (
-    <ToggleGroup
-      type="single"
-      value={value}
-      onValueChange={(v) => v && onChange(v as ConversationFilter)}
-      className="w-full bg-muted/50 p-1 rounded-lg"
-    >
-      {mode === 'LOCAL' && (
-        <ToggleGroupItem
-          value="ALL"
-          size="sm"
-          className="flex-1 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm"
-        >
-          All
-        </ToggleGroupItem>
-      )}
-
-      <ToggleGroupItem
-        value="DIRECT"
-        size="sm"
-        className="flex-1 text-xs gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+      <ToggleGroup
+          type="single"
+          value={value}
+          onValueChange={(v) => v && onChange(v as ConversationFilter)}
+          className="w-full bg-muted/50 p-1 rounded-lg"
       >
-        <MessageCircle className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Direct</span>
-      </ToggleGroupItem>
+        {isLocal && (
+            <ToggleGroupItem
+                value="ALL"
+                size="sm"
+                className={triggerClass}
+            >
+              All
+            </ToggleGroupItem>
+        )}
 
-      {mode === 'LOCAL' && (
         <ToggleGroupItem
-          value="GROUP"
-          size="sm"
-          className="flex-1 text-xs gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+            value="DIRECT"
+            size="sm"
+            className={triggerClass}
         >
-          <Users className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Groups</span>
+          <MessageCircle className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Direct</span>
         </ToggleGroupItem>
-      )}
 
-      <ToggleGroupItem
-        value="CHANNEL"
-        size="sm"
-        className="flex-1 text-xs gap-1 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-      >
-        <Megaphone className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Channels</span>
-      </ToggleGroupItem>
-    </ToggleGroup>
+        {isLocal && (
+            <ToggleGroupItem
+                value="GROUP"
+                size="sm"
+                className={triggerClass}
+            >
+              <Users className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Groups</span>
+            </ToggleGroupItem>
+        )}
+
+        <ToggleGroupItem
+            value="CHANNEL"
+            size="sm"
+            className={triggerClass}
+        >
+          <Megaphone className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Channels</span>
+        </ToggleGroupItem>
+      </ToggleGroup>
   );
 }

@@ -16,9 +16,6 @@ export { ConversationSettingsModal } from './ConversationSettingsModal';
 export { ManageRolesModal } from './ManageRolesModal';
 export { SubscribersModal } from './SubscribersModal';
 
-// Demo component for testing
-export { ChatModalsDemo } from './ChatModalsDemo';
-
 // Mock data for development/testing
 export * from './mock-data';
 

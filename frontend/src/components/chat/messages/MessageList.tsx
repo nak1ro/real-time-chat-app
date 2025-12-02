@@ -11,6 +11,7 @@ interface MessageListProps {
   currentUserId: string;
   conversationId?: string | null;
   isLoading?: boolean;
+  searchQuery?: string;
   onReply?: (message: Message) => void;
   onEdit?: (message: Message) => void;
   onDelete?: (messageId: string) => void;
@@ -27,6 +28,7 @@ export function MessageList({
   currentUserId,
   conversationId,
   isLoading = false,
+  searchQuery = '',
   onReply,
   onEdit,
   onDelete,
@@ -116,7 +118,9 @@ export function MessageList({
   if (messages.length === 0) {
     return (
       <div className="h-full flex items-center justify-center">
-        <p className="text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
+        <p className="text-muted-foreground text-sm">
+          {searchQuery.trim() ? `No messages found matching "${searchQuery}"` : 'No messages yet. Start the conversation!'}
+        </p>
       </div>
     );
   }

@@ -12,15 +12,15 @@ interface ChannelPreviewProps {
 }
 
 export function ChannelPreview({
-    channel,
-    onJoin,
-    onCancel,
-    isJoining = false,
-}: ChannelPreviewProps) {
+                                   channel,
+                                   onJoin,
+                                   onCancel,
+                                   isJoining = false,
+                               }: ChannelPreviewProps) {
     return (
         <div className="flex flex-col items-center justify-center h-full p-8 text-center animate-in fade-in zoom-in-95 duration-200">
             <div className="max-w-md w-full space-y-8 bg-card p-8 rounded-2xl border border-border shadow-sm">
-                {/* Header */}
+                {/* Header section */}
                 <div className="flex flex-col items-center space-y-4">
                     <Avatar className="h-24 w-24 border-4 border-muted">
                         <AvatarImage src={channel.avatarUrl || undefined} />
@@ -39,7 +39,7 @@ export function ChannelPreview({
                     </div>
                 </div>
 
-                {/* Stats */}
+                {/* Stats section */}
                 <div className="flex items-center justify-center gap-6 py-4 border-y border-border">
                     <div className="flex flex-col items-center gap-1">
                         <div className="flex items-center gap-2 text-muted-foreground">
@@ -52,7 +52,7 @@ export function ChannelPreview({
                     </div>
                 </div>
 
-                {/* Actions */}
+                {/* Actions section */}
                 <div className="flex flex-col gap-3">
                     <Button
                         size="lg"

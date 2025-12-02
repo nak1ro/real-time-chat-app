@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChatHeader } from './ChatHeader';
-import { MessageList } from '../messages/MessageList';
-import { MessageInput } from '../messages/MessageInput';
+import { MessageList, MessageInput } from '@/components/chat';
 import type { Conversation, Message, AttachmentData, UploadedAttachment } from '@/types';
 
 interface ChatDetailPanelProps {
@@ -41,29 +40,50 @@ export function ChatDetailPanel({
 }: ChatDetailPanelProps) {
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
+  // Filter messages based on search query
+  const filteredMessages = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return messages;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return messages.filter((message) => {
+      // Don't filter out deleted messages if they match
+      const text = message.isDeleted ? '[deleted message]' : message.text;
+      return text.toLowerCase().includes(query);
+    });
+  }, [messages, searchQuery]);
+
+  // Function to set message for reply
   const handleReply = (message: Message) => {
     setReplyToMessage(message);
     setEditingMessage(null); // Cancel edit if replying
   };
 
+  // Function to set message for editing
   const handleEdit = (message: Message) => {
     setEditingMessage(message);
     setReplyToMessage(null); // Cancel reply if editing
   };
 
+  // Function to handle message deletion
   const handleDelete = (messageId: string) => {
     onDeleteMessage?.(messageId);
   };
 
+  // Function to clear the reply state
   const handleCancelReply = () => {
     setReplyToMessage(null);
   };
 
+  // Function to clear the edit state
   const handleCancelEdit = () => {
     setEditingMessage(null);
   };
 
+  // Function to handle save for edited message
   const handleEditSave = (messageId: string, text: string) => {
     onEditMessage?.(messageId, text);
     setEditingMessage(null);
@@ -80,16 +100,19 @@ export function ChatDetailPanel({
           showBackButton={showBackButton}
           onOpenDetails={onOpenDetails}
           currentUserId={currentUserId}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
       </div>
 
       {/* Message list - scrollable */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <MessageList
-          messages={messages}
+          messages={filteredMessages}
           currentUserId={currentUserId}
           conversationId={conversation.id}
           isLoading={isLoadingMessages}
+          searchQuery={searchQuery}
           onReply={handleReply}
           onEdit={handleEdit}
           onDelete={handleDelete}

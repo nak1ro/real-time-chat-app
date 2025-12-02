@@ -5,18 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/auth/BaseGuard.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/auth/GuardLayout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/chat/modals/ChatModalsDemo.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next-env.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/(public)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/(public)/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/auth/AuthGuard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/auth/AuthGuard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/auth/GuestGuard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/auth/GuestGuard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/auth/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/auth/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/attachments/AttachmentPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/attachments/AttachmentPreview.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ui/button.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ui/button.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChannelPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChannelPreview.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChatFilter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChatFilter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChatListItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChatListItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChatListPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-list/ChatListPanel.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatDetailPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatDetailPanel.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/ChatHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/MembersList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/MembersList.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/SharedAttachments.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/conversation-view/SharedAttachments.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageBubble.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageBubble.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageContextMenu.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageContextMenu.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/messages/MessageList.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/modals/SubscribersModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/modals/SubscribersModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/modals/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/modals/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,25 +55,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/max68/RiderProjects/real-time-chat-app&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\max68\\RiderProjects\\real-time-chat-app\\backend\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/max68/RiderProjects/real-time-chat-app",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.github.copilot.settings.customization.CustomizationConfigurable",
+    "ts.external.directory.path": "C:\\Users\\max68\\RiderProjects\\real-time-chat-app\\backend\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\max68\RiderProjects\real-time-chat-app\frontend\src\components\chat\messages" />
@@ -97,10 +100,19 @@
       <workItem from="1764516474401" duration="7452000" />
       <workItem from="1764548560602" duration="1645000" />
       <workItem from="1764599094389" duration="4153000" />
+      <workItem from="1764705902552" duration="559000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
   </component>
 </project>

@@ -1,33 +1,18 @@
 'use client';
 
-import {useState, useMemo} from 'react';
+import { useState, useMemo } from 'react';
 import {
     Avatar,
     AvatarFallback,
     AvatarImage,
     Button,
     Input,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
 } from '@/components/ui';
-import {ArrowLeft, Search, MoreVertical, Trash2, Ban, X} from 'lucide-react';
-import {cn} from '@/lib/utils';
-import type {Conversation} from '@/types';
+import { ArrowLeft, Search, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { Conversation } from '@/types';
 
-interface ChatHeaderProps {
-    conversation: Conversation;
-    /** Needed so we can show only the *other* user in DIRECT convos */
-    currentUserId?: string;
-    /** Presence of the other user (for DIRECT); ignored for groups/channels */
-    isOnline?: boolean;
-    onBack?: () => void;
-    showBackButton?: boolean;
-    onOpenDetails?: () => void;
-}
-
+// Utility function to get initials from a name
 function getInitials(name: string | null): string {
     if (!name) return '?';
     return name
@@ -38,15 +23,9 @@ function getInitials(name: string | null): string {
         .slice(0, 2);
 }
 
-/**
- * For DIRECT conversations:
- *  - Ignore conversation.name (which might be "Me, Other")
- *  - Show only the *other* member's name.
- *
- * For GROUP/CHANNEL:
- *  - Fall back to conversation.name or "Unnamed".
- */
+// Utility function to determine the display name for the conversation
 function getDisplayName(conversation: Conversation, currentUserId?: string): string {
+    // Logic for DIRECT conversations: show the other member's name
     if (conversation.type === 'DIRECT' && conversation.members.length > 0) {
         const otherMember = currentUserId
             ? conversation.members.find((m) => m.userId !== currentUserId && m.user)
@@ -54,35 +33,51 @@ function getDisplayName(conversation: Conversation, currentUserId?: string): str
         return otherMember?.user?.name || 'Unknown';
     }
 
+    // Fallback for GROUP/CHANNEL
     if (conversation.name) return conversation.name;
     return 'Unnamed';
 }
 
-/**
- * For DIRECT conversations, we want the other user's avatar if available.
- * For others, we use conversation.avatarUrl.
- */
+// Utility function to determine the avatar URL for the conversation
 function getAvatarUrl(conversation: Conversation, currentUserId?: string): string | undefined {
+    // Logic for DIRECT conversations: use the other user's avatar
     if (conversation.type === 'DIRECT' && conversation.members.length > 0) {
         const otherMember = currentUserId
             ? conversation.members.find((m) => m.userId !== currentUserId && m.user)
             : conversation.members.find((m) => m.user);
         return otherMember?.user?.avatarUrl || undefined;
     }
+    // Fallback for GROUP/CHANNEL
     return conversation.avatarUrl || undefined;
 }
 
-export function ChatHeader({
-                               conversation,
-                               currentUserId,
-                               onBack,
-                               showBackButton = false,
-                               onOpenDetails,
-                           }: ChatHeaderProps) {
-    const [showSearch, setShowSearch] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+interface ChatHeaderProps {
+    conversation: Conversation;
+    // Current user ID to help determine the other user in DIRECT conversations
+    currentUserId?: string;
+    // Presence of the other user (for DIRECT)
+    isOnline?: boolean;
+    onBack?: () => void;
+    showBackButton?: boolean;
+    onOpenDetails?: () => void;
+    // Search state props
+    searchQuery?: string;
+    onSearchChange?: (query: string) => void;
+}
 
-    const {displayName, avatarUrl} = useMemo(() => {
+export function ChatHeader({
+    conversation,
+    currentUserId,
+    onBack,
+    showBackButton = false,
+    onOpenDetails,
+                               searchQuery = '',
+                               onSearchChange,
+}: ChatHeaderProps) {
+    const [showSearch, setShowSearch] = useState(false);
+
+    // Memoize the display name and avatar URL
+    const { displayName, avatarUrl } = useMemo(() => {
         return {
             displayName: getDisplayName(conversation, currentUserId),
             avatarUrl: getAvatarUrl(conversation, currentUserId),
@@ -99,17 +94,17 @@ export function ChatHeader({
                         onClick={onBack}
                         className="md:hidden flex-shrink-0"
                     >
-                        <ArrowLeft className="h-5 w-5"/>
+                        <ArrowLeft className="h-5 w-5" />
                     </Button>
                 )}
 
-                {/* Clickable avatar and name to open conversation details */}
+                {/* Clickable area for avatar and name to open conversation details */}
                 <button
                     className="flex items-center gap-3 flex-1 min-w-0 hover:bg-muted/50 rounded-lg p-1 -ml-1 transition-colors"
                     onClick={onOpenDetails}
                 >
                     <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarImage src={avatarUrl} alt={displayName}/>
+                        <AvatarImage src={avatarUrl} alt={displayName} />
                         <AvatarFallback className="bg-primary/10 text-primary text-sm">
                             {getInitials(displayName)}
                         </AvatarFallback>
@@ -126,7 +121,7 @@ export function ChatHeader({
                         onClick={() => setShowSearch(!showSearch)}
                         className={cn(showSearch && 'bg-muted')}
                     >
-                        <Search className="h-4 w-4"/>
+                        <Search className="h-4 w-4" />
                     </Button>
                 </div>
             </div>
@@ -134,12 +129,12 @@ export function ChatHeader({
             {showSearch && (
                 <div className="px-3 pb-3 flex items-center gap-2">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="text"
                             placeholder="Search in chat..."
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => onSearchChange?.(e.target.value)}
                             className="pl-9 h-9"
                             autoFocus
                         />
@@ -149,11 +144,11 @@ export function ChatHeader({
                         size="icon"
                         onClick={() => {
                             setShowSearch(false);
-                            setSearchQuery('');
+                            onSearchChange?.('');
                         }}
                         className="h-9 w-9"
                     >
-                        <X className="h-4 w-4"/>
+                        <X className="h-4 w-4" />
                     </Button>
                 </div>
             )}

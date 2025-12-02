@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import type { UploadedAttachment } from '@/types';
 import { AttachmentType } from '@/types';
 import {formatFileSize, getAttachmentIcon} from "@/lib/utils/attachmentUtils";
-import Image from 'next/image';
 
 interface AttachmentPreviewProps {
     attachments: UploadedAttachment[];
@@ -26,7 +25,7 @@ function AttachmentThumbnail({ attachment }: { attachment: UploadedAttachment })
 
     if (isImage && attachment.url) {
         return (
-            <Image
+            <img
                 src={attachment.url}
                 alt={attachment.fileName}
                 className="w-12 h-12 object-cover rounded border border-border"
