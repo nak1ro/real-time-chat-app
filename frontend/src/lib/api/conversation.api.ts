@@ -104,10 +104,13 @@ export const conversationApi = {
         query: string,
         type?: string
     ): Promise<{ conversations: Conversation[]; users: User[] }> => {
+        // Map DIRECT to USER for search endpoint
+        const searchType = type === 'DIRECT' ? 'USER' : type;
+
         return apiClient.get<{ conversations: Conversation[]; users: User[] }>(
             '/api/conversations/search',
             {
-                params: { q: query, type },
+                params: { q: query, type: searchType },
             }
         );
     },

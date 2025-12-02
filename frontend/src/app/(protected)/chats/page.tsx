@@ -72,7 +72,7 @@ export default function ChatsPage() {
   const urlConversationId = (params?.conversationId as string) || searchParams?.get('conversation');
 
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(urlConversationId || null);
-  const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
+  const [mobileView, setMobileView] = useState<'list' | 'detail'>(urlConversationId ? 'detail' : 'list');
 
   // Conversation details modal state (defined early for use in hooks)
   const [showConversationModal, setShowConversationModal] = useState(false);
@@ -284,9 +284,13 @@ export default function ChatsPage() {
   // Handle conversation selection
   const handleSelectConversation = useCallback((conversationId: string) => {
     console.log('[ChatsPage] Selecting conversation:', conversationId);
+    // Optimistically update state for instant feedback
+    setSelectedConversationId(conversationId);
+    setMobileView('detail');
+    setPreviewConversation(null); // Clear preview when selecting a chat
+
     // Navigate to the conversation URL (enables deep-linking and browser history)
     router.push(`/chats/${conversationId}`);
-    setPreviewConversation(null); // Clear preview when selecting a chat
   }, [router]);
 
   // Handle preview request from global search
@@ -328,8 +332,12 @@ export default function ChatsPage() {
 
   // Handle back navigation (mobile)
   const handleBack = useCallback(() => {
-    router.push('/chats'); // Navigate back to chat list
+    // Optimistically update state
+    setSelectedConversationId(null);
+    setMobileView('list');
     setPreviewConversation(null);
+
+    router.push('/chats'); // Navigate back to chat list
   }, [router]);
 
   // Handle send message
