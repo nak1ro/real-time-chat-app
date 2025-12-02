@@ -5,3 +5,9 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+module.exports = {
+    output: 'export',
+    basePath: '/real-time-chat-app',
+    assetPrefix: '/real-time-chat-app/',
+}
