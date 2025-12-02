@@ -4,11 +4,32 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="" />
+    <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/auth/BaseGuard.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/auth/GuardLayout.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/chat/modals/ChatModalsDemo.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next-env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/(public)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/(public)/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/auth/AuthGuard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/auth/AuthGuard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/auth/GuestGuard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/auth/GuestGuard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/auth/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/auth/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/attachments/AttachmentPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/attachments/AttachmentPreview.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ui/button.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ui/button.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript JSX File" />
+        <option value="TypeScript File" />
+      </list>
+    </option>
   </component>
   <component name="FormatOnSaveOptions">
     <option name="myRunOnSave" value="false" />
@@ -24,6 +45,9 @@
   &quot;associatedIndex&quot;: 2
 }</component>
   <component name="ProjectId" id="36CZmUAgLq5da5szIlSZF2ZqH5Z" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />

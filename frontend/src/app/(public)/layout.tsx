@@ -4,6 +4,7 @@
 // Redirects to dashboard if already authenticated
 import { ReactQueryProvider, AuthProvider } from '@/providers';
 import { GuestGuard } from '@/components/auth';
+import React from "react";
 
 export default function PublicLayout({
   children,
