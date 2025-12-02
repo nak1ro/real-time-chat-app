@@ -1,333 +1,289 @@
 'use client';
 
-import {useEffect, useRef, useState, useCallback} from 'react';
-import {Copy, Reply, Edit, Trash2} from 'lucide-react';
-import {cn} from '@/lib/utils';
-import type {Message} from '@/types';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Copy, Reply, Edit, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui';
+import type { Message } from '@/types';
+import { ReactionPicker } from '../reactions/ReactionPicker';
+import { useToggleReaction } from '@/hooks';
+import { MENU_WIDTH, MENU_ITEM_HEIGHT, VIEWPORT_PADDING } from './messages.utils';
 
 export interface MessageContextMenuProps {
-    message: Message;
-    currentUserId: string;
-    position: { x: number; y: number };
-    isOwnMessage?: boolean;
-    onClose: () => void;
-    onReply: (message: Message) => void;
-    onCopy: (text: string) => void;
-    onEdit: (message: Message) => void;
-    onDelete: (messageId: string) => void;
+  message: Message;
+  currentUserId: string;
+  position: { x: number; y: number };
+  isOwnMessage?: boolean;
+  onClose: () => void;
+  onReply: (message: Message) => void;
+  onCopy: (text: string) => void;
+  onEdit: (message: Message) => void;
+  onDelete: (messageId: string) => void;
 }
 
 interface MenuPosition {
-    x: number;
-    y: number;
-    placement: {
-        horizontal: 'left' | 'right';
-        vertical: 'top' | 'bottom';
-    };
+  x: number;
+  y: number;
+  placement: {
+    horizontal: 'left' | 'right';
+    vertical: 'top' | 'bottom';
+  };
 }
 
-const MENU_WIDTH = 160;
-const MENU_ITEM_HEIGHT = 40;
-const VIEWPORT_PADDING = 12;
+// Calculate optimal menu position based on viewport and click position
+function calculateMenuPosition(
+  position: { x: number; y: number },
+  isOwnMessage: boolean,
+  menuHeight: number
+): MenuPosition {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
 
-import {ReactionPicker} from '../reactions/ReactionPicker';
-import {useToggleReaction} from '@/hooks';
+  let x = position.x;
+  let y = position.y;
+  let horizontalPlacement: 'left' | 'right' = isOwnMessage ? 'left' : 'right';
+
+  const spaceLeft = position.x;
+  const spaceRight = viewportWidth - position.x;
+  const spaceTop = position.y;
+  const spaceBottom = viewportHeight - position.y;
+
+  // Horizontal positioning
+  if (horizontalPlacement === 'left') {
+    if (spaceLeft >= MENU_WIDTH + VIEWPORT_PADDING) {
+      x = position.x - MENU_WIDTH;
+    } else if (spaceRight >= MENU_WIDTH + VIEWPORT_PADDING) {
+      x = position.x;
+      horizontalPlacement = 'right';
+    } else {
+      x = Math.max(VIEWPORT_PADDING, (viewportWidth - MENU_WIDTH) / 2);
+    }
+  } else {
+    if (spaceRight >= MENU_WIDTH + VIEWPORT_PADDING) {
+      x = position.x;
+    } else if (spaceLeft >= MENU_WIDTH + VIEWPORT_PADDING) {
+      x = position.x - MENU_WIDTH;
+      horizontalPlacement = 'left';
+    } else {
+      x = Math.max(VIEWPORT_PADDING, (viewportWidth - MENU_WIDTH) / 2);
+    }
+  }
+
+  // Vertical positioning
+  let verticalPlacement: 'top' | 'bottom' = 'bottom';
+  if (spaceBottom >= menuHeight + VIEWPORT_PADDING) {
+    y = position.y;
+  } else if (spaceTop >= menuHeight + VIEWPORT_PADDING) {
+    y = position.y - menuHeight;
+    verticalPlacement = 'top';
+  } else {
+    y = spaceBottom >= spaceTop
+      ? viewportHeight - menuHeight - VIEWPORT_PADDING
+      : VIEWPORT_PADDING;
+    verticalPlacement = spaceBottom >= spaceTop ? 'bottom' : 'top';
+  }
+
+  x = Math.max(VIEWPORT_PADDING, Math.min(x, viewportWidth - MENU_WIDTH - VIEWPORT_PADDING));
+  y = Math.max(VIEWPORT_PADDING, Math.min(y, viewportHeight - menuHeight - VIEWPORT_PADDING));
+
+  return { x, y, placement: { horizontal: horizontalPlacement, vertical: verticalPlacement } };
+}
+
+// Menu item button component
+interface MenuItemProps {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  variant?: 'default' | 'destructive';
+}
+
+function MenuItem({ icon, label, onClick, variant = 'default' }: MenuItemProps) {
+  const isDestructive = variant === 'destructive';
+  return (
+    <Button
+      role="menuitem"
+      variant="ghost"
+      onClick={onClick}
+      className={cn(
+        'w-full justify-start gap-3 h-10',
+        isDestructive && 'text-destructive hover:bg-destructive/10 focus:bg-destructive/10'
+      )}
+    >
+      {icon}
+      <span>{label}</span>
+    </Button>
+  );
+}
 
 export function MessageContextMenu({
-                                       message,
-                                       currentUserId,
-                                       position,
-                                       isOwnMessage: isOwnMessageProp,
-                                       onClose,
-                                       onReply,
-                                       onCopy,
-                                       onEdit,
-                                       onDelete,
-                                   }: MessageContextMenuProps) {
-    const menuRef = useRef<HTMLDivElement>(null);
-    const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
-    const [isVisible, setIsVisible] = useState(false);
-    const {mutate: toggleReaction} = useToggleReaction();
+  message,
+  currentUserId,
+  position,
+  isOwnMessage: isOwnMessageProp,
+  onClose,
+  onReply,
+  onCopy,
+  onEdit,
+  onDelete,
+}: MessageContextMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const { mutate: toggleReaction } = useToggleReaction();
 
-    const isOwnMessage = isOwnMessageProp ?? message.userId === currentUserId;
-    const canCopy = !message.isDeleted;
-    const canEdit = isOwnMessage && !message.isDeleted;
-    const canDelete = isOwnMessage && !message.isDeleted;
+  const isOwnMessage = isOwnMessageProp ?? message.userId === currentUserId;
+  const canCopy = !message.isDeleted;
+  const canEdit = isOwnMessage && !message.isDeleted;
+  const canDelete = isOwnMessage && !message.isDeleted;
 
-    // Calculate number of menu items to determine menu height
-    // Reply is always shown, others are conditional
-    const menuItemCount = 1 + (canCopy ? 1 : 0) + (canEdit ? 1 : 0) + (canDelete ? 1 : 0);
-    const menuHeight = menuItemCount * MENU_ITEM_HEIGHT + 16; // 16px for padding
+  // Calculate menu height based on visible items
+  const menuItemCount = 1 + (canCopy ? 1 : 0) + (canEdit ? 1 : 0) + (canDelete ? 1 : 0);
+  const menuHeight = menuItemCount * MENU_ITEM_HEIGHT + 16;
 
-    // Calculate optimal menu position
-    const calculatePosition = useCallback(() => {
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        let x = position.x;
-        let y = position.y;
-
-        // Determine horizontal placement based on message ownership
-        let horizontalPlacement: 'left' | 'right' = isOwnMessage ? 'left' : 'right';
-
-        // Calculate available space in each direction
-        const spaceLeft = position.x;
-        const spaceRight = viewportWidth - position.x;
-        const spaceTop = position.y;
-        const spaceBottom = viewportHeight - position.y;
-
-        // Horizontal positioning
-        if (horizontalPlacement === 'left') {
-            if (spaceLeft >= MENU_WIDTH + VIEWPORT_PADDING) {
-                x = position.x - MENU_WIDTH;
-            } else if (spaceRight >= MENU_WIDTH + VIEWPORT_PADDING) {
-                x = position.x;
-                horizontalPlacement = 'right';
-            } else {
-                x = Math.max(VIEWPORT_PADDING, (viewportWidth - MENU_WIDTH) / 2);
-            }
-        } else {
-            if (spaceRight >= MENU_WIDTH + VIEWPORT_PADDING) {
-                x = position.x;
-            } else if (spaceLeft >= MENU_WIDTH + VIEWPORT_PADDING) {
-                x = position.x - MENU_WIDTH;
-                horizontalPlacement = 'left';
-            } else {
-                x = Math.max(VIEWPORT_PADDING, (viewportWidth - MENU_WIDTH) / 2);
-            }
-        }
-
-        // Vertical positioning - prefer below click point
-        let verticalPlacement: 'top' | 'bottom' = 'bottom';
-        if (spaceBottom >= menuHeight + VIEWPORT_PADDING) {
-            y = position.y;
-        } else if (spaceTop >= menuHeight + VIEWPORT_PADDING) {
-            y = position.y - menuHeight;
-            verticalPlacement = 'top';
-        } else {
-            if (spaceBottom >= spaceTop) {
-                y = viewportHeight - menuHeight - VIEWPORT_PADDING;
-            } else {
-                y = VIEWPORT_PADDING;
-                verticalPlacement = 'top';
-            }
-        }
-
-        // Final boundary checks
-        x = Math.max(VIEWPORT_PADDING, Math.min(x, viewportWidth - MENU_WIDTH - VIEWPORT_PADDING));
-        y = Math.max(VIEWPORT_PADDING, Math.min(y, viewportHeight - menuHeight - VIEWPORT_PADDING));
-
-        return {
-            x,
-            y,
-            placement: {
-                horizontal: horizontalPlacement,
-                vertical: verticalPlacement,
-            },
-        };
-    }, [position, isOwnMessage, menuHeight]);
-
-    // Calculate position on mount and when dependencies change
-    useEffect(() => {
-        const newPosition = calculatePosition();
-        setMenuPosition(newPosition);
-        // Small delay for animation
-        requestAnimationFrame(() => {
-            setIsVisible(true);
-        });
-    }, [calculatePosition]);
-
-    // Handle click outside to close menu
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                // Check if click is on a reaction picker button (which might be outside menuRef if rendered separately)
-                // But we will render it inside a wrapper or handle it.
-                // Actually, if we render ReactionPicker as a sibling, we need to check it too.
-                // For now, let's assume if we click outside menuRef, we close.
-                // We'll wrap both in a container or check target.
-                const target = event.target as Element;
-                if (!target.closest('[role="dialog"]')) {
-                    onClose();
-                }
-            }
-        };
-
-        const handleTouchOutside = (event: TouchEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                const target = event.target as Element;
-                if (!target.closest('[role="dialog"]')) {
-                    onClose();
-                }
-            }
-        };
-
-        // Handle ESC key
-        const handleEscKey = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                onClose();
-            }
-        };
-
-        // Handle scroll to close
-        const handleScroll = () => {
-            onClose();
-        };
-
-        // Add listeners with slight delay to prevent immediate close
-        const timeoutId = setTimeout(() => {
-            document.addEventListener('mousedown', handleClickOutside);
-            document.addEventListener('touchstart', handleTouchOutside);
-            document.addEventListener('keydown', handleEscKey);
-            window.addEventListener('scroll', handleScroll, true);
-        }, 10);
-
-        return () => {
-            clearTimeout(timeoutId);
-            document.removeEventListener('mousedown', handleClickOutside);
-            document.removeEventListener('touchstart', handleTouchOutside);
-            document.removeEventListener('keydown', handleEscKey);
-            window.removeEventListener('scroll', handleScroll, true);
-        };
-    }, [onClose]);
-
-    // Handle window resize
-    useEffect(() => {
-        const handleResize = () => {
-            const newPosition = calculatePosition();
-            setMenuPosition(newPosition);
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [calculatePosition]);
-
-    const handleAction = (action: () => void) => {
-        action();
-        onClose();
+  // Setup event listeners for closing menu
+  const setupCloseListeners = useCallback(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        if (!target.closest('[role="dialog"]')) onClose();
+      }
     };
 
-    const handleReaction = (emoji: string) => {
-        toggleReaction({messageId: message.id, emoji});
-        onClose();
+    const handleTouchOutside = (event: TouchEvent) => {
+      const target = event.target as Element;
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        if (!target.closest('[role="dialog"]')) onClose();
+      }
     };
 
-    // Don't render until position is calculated
-    if (!menuPosition) {
-        return null;
-    }
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
 
-    return (
-        <>
-            {/* Backdrop for mobile - invisible but captures touches */}
-            <div
-                className="fixed inset-0 z-[9998] md:hidden"
-                onClick={onClose}
-                onTouchStart={onClose}
+    const handleScroll = () => onClose();
+
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleTouchOutside);
+      document.addEventListener('keydown', handleEscKey);
+      window.addEventListener('scroll', handleScroll, true);
+    }, 10);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleTouchOutside);
+      document.removeEventListener('keydown', handleEscKey);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [onClose]);
+
+  // Initialize menu position
+  useEffect(() => {
+    const newPosition = calculateMenuPosition(position, isOwnMessage, menuHeight);
+    setMenuPosition(newPosition);
+    requestAnimationFrame(() => setIsVisible(true));
+  }, [position, isOwnMessage, menuHeight]);
+
+  // Setup close listeners
+  useEffect(() => {
+    return setupCloseListeners();
+  }, [setupCloseListeners]);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const newPosition = calculateMenuPosition(position, isOwnMessage, menuHeight);
+      setMenuPosition(newPosition);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [position, isOwnMessage, menuHeight]);
+
+  const handleAction = (action: () => void) => {
+    action();
+    onClose();
+  };
+
+  if (!menuPosition) return null;
+
+  return (
+    <>
+      {/* Mobile backdrop */}
+      <div
+        className="fixed inset-0 z-[9998] md:hidden"
+        onClick={onClose}
+        onTouchStart={onClose}
+      />
+
+      {/* Menu container */}
+      <div
+        className="fixed z-[9999]"
+        style={{ left: `${menuPosition.x}px`, top: `${menuPosition.y}px` }}
+        role="dialog"
+      >
+        {/* Reaction picker */}
+        <div
+          className={cn(
+            'absolute bottom-full left-0 mb-2 transition-all duration-150 ease-out origin-bottom-left',
+            isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+          )}
+        >
+          <ReactionPicker
+            onReactionSelect={(emoji) => {
+              toggleReaction({ messageId: message.id, emoji });
+              onClose();
+            }}
+          />
+        </div>
+
+        {/* Menu items */}
+        <div
+          ref={menuRef}
+          role="menu"
+          aria-label="Message actions"
+          className={cn(
+            'min-w-[160px] py-2 rounded-xl shadow-lg bg-popover border border-border',
+            'transition-all duration-150 ease-out',
+            isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
+            menuPosition.placement.vertical === 'top' && 'origin-bottom',
+            menuPosition.placement.vertical === 'bottom' && 'origin-top'
+          )}
+          style={{ width: `${MENU_WIDTH}px` }}
+        >
+          <MenuItem
+            icon={<Reply className="h-4 w-4 text-muted-foreground" />}
+            label="Reply"
+            onClick={() => handleAction(() => onReply(message))}
+          />
+
+          {canCopy && (
+            <MenuItem
+              icon={<Copy className="h-4 w-4 text-muted-foreground" />}
+              label="Copy"
+              onClick={() => handleAction(() => onCopy(message.text))}
             />
+          )}
 
-            {/* Container for positioning both picker and menu */}
-            <div
-                className="fixed z-[9999]"
-                style={{
-                    left: `${menuPosition.x}px`,
-                    top: `${menuPosition.y}px`,
-                }}
-                role="dialog"
-            >
-                {/* Reaction Picker - Positioned above the menu */}
-                <div
-                    className={cn(
-                        "absolute bottom-full left-0 mb-2 transition-all duration-150 ease-out origin-bottom-left",
-                        isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                    )}
-                >
-                    <ReactionPicker onReactionSelect={handleReaction}/>
-                </div>
+          {canEdit && (
+            <MenuItem
+              icon={<Edit className="h-4 w-4 text-muted-foreground" />}
+              label="Edit"
+              onClick={() => handleAction(() => onEdit(message))}
+            />
+          )}
 
-                {/* Context Menu */}
-                <div
-                    ref={menuRef}
-                    role="menu"
-                    aria-label="Message actions"
-                    className={cn(
-                        'min-w-[160px] py-2 rounded-xl shadow-lg',
-                        'bg-popover border border-border',
-                        'transition-all duration-150 ease-out',
-                        isVisible
-                            ? 'opacity-100 scale-100'
-                            : 'opacity-0 scale-95',
-                        // Add subtle origin transform based on placement
-                        menuPosition.placement.vertical === 'top' && 'origin-bottom',
-                        menuPosition.placement.vertical === 'bottom' && 'origin-top'
-                    )}
-                    style={{
-                        width: `${MENU_WIDTH}px`,
-                    }}
-                >
-                    {/* Reply */}
-                    <button
-                        role="menuitem"
-                        onClick={() => handleAction(() => onReply(message))}
-                        className={cn(
-                            'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
-                            'hover:bg-accent focus:bg-accent focus:outline-none',
-                            'text-foreground transition-colors'
-                        )}
-                    >
-                        <Reply className="h-4 w-4 text-muted-foreground"/>
-                        <span>Reply</span>
-                    </button>
-
-                    {/* Copy - only for non-deleted messages */}
-                    {canCopy && (
-                        <button
-                            role="menuitem"
-                            onClick={() => handleAction(() => onCopy(message.text))}
-                            className={cn(
-                                'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
-                                'hover:bg-accent focus:bg-accent focus:outline-none',
-                                'text-foreground transition-colors'
-                            )}
-                        >
-                            <Copy className="h-4 w-4 text-muted-foreground"/>
-                            <span>Copy</span>
-                        </button>
-                    )}
-
-                    {/* Edit - only for own messages */}
-                    {canEdit && (
-                        <button
-                            role="menuitem"
-                            onClick={() => handleAction(() => onEdit(message))}
-                            className={cn(
-                                'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
-                                'hover:bg-accent focus:bg-accent focus:outline-none',
-                                'text-foreground transition-colors'
-                            )}
-                        >
-                            <Edit className="h-4 w-4 text-muted-foreground"/>
-                            <span>Edit</span>
-                        </button>
-                    )}
-
-                    {/* Delete - only for own messages */}
-                    {canDelete && (
-                        <button
-                            role="menuitem"
-                            onClick={() => handleAction(() => onDelete(message.id))}
-                            className={cn(
-                                'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
-                                'hover:bg-destructive/10 focus:bg-destructive/10 focus:outline-none',
-                                'text-destructive transition-colors'
-                            )}
-                        >
-                            <Trash2 className="h-4 w-4"/>
-                            <span>Delete</span>
-                        </button>
-                    )}
-                </div>
-            </div>
-        </>
-    );
+          {canDelete && (
+            <MenuItem
+              icon={<Trash2 className="h-4 w-4" />}
+              label="Delete"
+              onClick={() => handleAction(() => onDelete(message.id))}
+              variant="destructive"
+            />
+          )}
+        </div>
+      </div>
+    </>
+  );
 }

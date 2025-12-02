@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { ScrollArea } from '@/components/ui';
+import { ScrollArea, Skeleton } from '@/components/ui';
 import { MessageBubble } from './MessageBubble';
 import { MessageContextMenu } from './MessageContextMenu';
 import type { Message } from '@/types';
@@ -23,6 +23,39 @@ interface ContextMenuState {
   isOwnMessage: boolean;
 }
 
+// Loading skeleton for message list
+function LoadingSkeletons() {
+  return (
+    <div className="px-4 py-4 space-y-3">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          className={`flex gap-2 ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}
+        >
+          <Skeleton
+            className={`h-16 rounded-2xl ${
+              i % 3 === 0 ? 'w-3/4' : i % 3 === 1 ? 'w-1/2' : 'w-2/3'
+            }`}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Empty state display
+function EmptyState({ searchQuery }: { searchQuery: string }) {
+  const message = searchQuery.trim()
+    ? `No messages found matching "${searchQuery}"`
+    : 'No messages yet. Start the conversation!';
+
+  return (
+    <div className="h-full flex items-center justify-center">
+      <p className="text-muted-foreground text-sm">{message}</p>
+    </div>
+  );
+}
+
 export function MessageList({
   messages,
   currentUserId,
@@ -39,28 +72,21 @@ export function MessageList({
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
 
-  // Handle reply click - scroll to and highlight the original message
+  // Scroll to and highlight a specific message
   const handleReplyClick = useCallback((messageId: string) => {
     const messageElement = messageRefs.current.get(messageId);
 
     if (messageElement) {
-      // Scroll to the message
-      messageElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-
-      // Highlight the message
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setHighlightedMessageId(messageId);
 
-      // Clear highlight after animation completes
       setTimeout(() => {
         setHighlightedMessageId(null);
       }, 1500);
     }
   }, []);
 
-  // Register message ref for scroll-to-highlight
+  // Register message ref
   const setMessageRef = useCallback((messageId: string, element: HTMLDivElement | null) => {
     if (element) {
       messageRefs.current.set(messageId, element);
@@ -86,45 +112,26 @@ export function MessageList({
     }
   };
 
-  // Auto-scroll to bottom when messages finish loading
+  // Auto-scroll to bottom when messages load
   useEffect(() => {
     if (!isLoading && messages.length > 0 && bottomRef.current) {
-      // Use instant scroll on initial load
       bottomRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
     }
   }, [isLoading, messages.length]);
 
-  // Loading skeleton
   if (isLoading) {
     return (
       <ScrollArea className="h-full" ref={scrollContainerRef}>
-        <div className="px-4 py-4 space-y-3">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className={`flex gap-2 ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`h-16 rounded-2xl bg-muted animate-pulse ${i % 3 === 0 ? 'w-3/4' : i % 3 === 1 ? 'w-1/2' : 'w-2/3'
-                  }`}
-              />
-            </div>
-          ))}
-        </div>
+        <LoadingSkeletons />
       </ScrollArea>
     );
   }
 
   if (messages.length === 0) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <p className="text-muted-foreground text-sm">
-          {searchQuery.trim() ? `No messages found matching "${searchQuery}"` : 'No messages yet. Start the conversation!'}
-        </p>
-      </div>
-    );
+    return <EmptyState searchQuery={searchQuery} />;
   }
 
+  // Determine if avatar should be shown for current message
   const shouldShowAvatar = (index: number): boolean => {
     if (index === 0) return true;
     const prevMessage = messages[index - 1];
@@ -162,16 +169,10 @@ export function MessageList({
           position={contextMenu.position}
           isOwnMessage={contextMenu.isOwnMessage}
           onClose={handleCloseContextMenu}
-          onReply={(msg) => {
-            onReply?.(msg);
-          }}
+          onReply={(msg) => onReply?.(msg)}
           onCopy={handleCopy}
-          onEdit={(msg) => {
-            onEdit?.(msg);
-          }}
-          onDelete={(id) => {
-            onDelete?.(id);
-          }}
+          onEdit={(msg) => onEdit?.(msg)}
+          onDelete={(id) => onDelete?.(id)}
         />
       )}
     </ScrollArea>

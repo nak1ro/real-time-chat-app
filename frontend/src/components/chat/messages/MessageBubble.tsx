@@ -9,6 +9,7 @@ import {MessageReactions} from '../reactions/MessageReactions';
 import {MessageAttachments} from '../attachments/MessageAttachments';
 import {MessageStatusIcon} from './MessageStatusIcon';
 import {getMessageStatus} from '@/lib/utils/receiptHelpers';
+import {formatTime, getInitials, truncateText} from './messages.utils';
 
 interface MessageBubbleProps {
     message: Message;
@@ -20,62 +21,49 @@ interface MessageBubbleProps {
     onReplyClick?: (messageId: string) => void;
 }
 
-function formatTime(date: Date | string): string {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-}
 
-function getInitials(name: string): string {
-    return name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-}
-
-// Truncate text to specified number of lines (approximated by character count)
-function truncateText(text: string, maxLength: number = 80): string {
-    if (text.length <= maxLength) return text;
-    return text.slice(0, maxLength).trim() + '...';
-}
-
-// Reply preview component
+// Reply preview component for quoted messages
 function ReplyPreview({
                           replyTo,
                           isOwn,
-                          onClick
+                          onClick,
                       }: {
     replyTo: NonNullable<Message['replyTo']>;
     isOwn: boolean;
     onClick?: () => void;
 }) {
-    // Check if the reply-to message is deleted using isDeleted field or empty text as fallback
-    const isReplyDeleted = ('isDeleted' in replyTo && replyTo.isDeleted) || !replyTo.text || replyTo.text === '';
+    // Check if reply-to message is deleted
+    const isReplyDeleted =
+        ('isDeleted' in replyTo && replyTo.isDeleted) ||
+        !replyTo.text ||
+        replyTo.text === '';
     const senderName = replyTo.user?.name || 'Unknown';
+    const displayText = isReplyDeleted ? 'This message was deleted' : truncateText(replyTo.text);
 
-    const displayText = isReplyDeleted
-        ? 'This message was deleted'
-        : truncateText(replyTo.text);
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onClick?.();
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick?.();
+        }
+    };
 
     return (
         <div
             className={cn(
                 'flex rounded-t-xl overflow-hidden mb-0.5 cursor-pointer transition-colors',
-                isOwn ? 'bg-primary/20 hover:bg-primary/30' : 'bg-muted-foreground/10 hover:bg-muted-foreground/20'
+                isOwn
+                    ? 'bg-primary/20 hover:bg-primary/30'
+                    : 'bg-muted-foreground/10 hover:bg-muted-foreground/20'
             )}
-            onClick={(e) => {
-                e.stopPropagation();
-                onClick?.();
-            }}
+            onClick={handleClick}
+            onKeyDown={handleKeyDown}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onClick?.();
-                }
-            }}
         >
             {/* Accent bar */}
             <div
@@ -101,7 +89,9 @@ function ReplyPreview({
                 <span
                     className={cn(
                         'text-xs line-clamp-2 break-words',
-                        isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground',
+                        isOwn
+                            ? 'text-primary-foreground/60'
+                            : 'text-muted-foreground',
                         isReplyDeleted && 'italic'
                     )}
                 >
@@ -112,7 +102,7 @@ function ReplyPreview({
     );
 }
 
-// Deleted message content
+// Deleted message content display
 function DeletedMessageContent({isOwn}: { isOwn: boolean }) {
     return (
         <div className="flex items-center gap-1.5">
@@ -141,41 +131,33 @@ export function MessageBubble({
                                   showAvatar = true,
                                   isHighlighted = false,
                                   onContextMenu,
-                                  onReplyClick
+                                  onReplyClick,
                               }: MessageBubbleProps) {
     const senderName = message.user?.name || 'Unknown';
     const senderAvatar = message.user?.avatarUrl;
     const hasReply = !!message.replyTo;
 
-    // Long-press detection for mobile
+    // Touch handlers for long-press detection on mobile
     const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
     const touchStartPos = React.useRef<{ x: number; y: number } | null>(null);
 
     const handleTouchStart = (e: React.TouchEvent) => {
         const touch = e.touches[0];
         touchStartPos.current = {x: touch.clientX, y: touch.clientY};
-
         longPressTimerRef.current = setTimeout(() => {
             if (onContextMenu && touchStartPos.current) {
                 onContextMenu(message, touchStartPos.current);
             }
-        }, 500); // 500ms for long-press
+        }, 500);
     };
 
     const handleTouchEnd = () => {
-        if (longPressTimerRef.current) {
-            clearTimeout(longPressTimerRef.current);
-            longPressTimerRef.current = null;
-        }
+        if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
         touchStartPos.current = null;
     };
 
     const handleTouchMove = () => {
-        // Cancel long-press if user moves finger
-        if (longPressTimerRef.current) {
-            clearTimeout(longPressTimerRef.current);
-            longPressTimerRef.current = null;
-        }
+        if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
     };
 
     const handleRightClick = (e: React.MouseEvent) => {
@@ -217,7 +199,6 @@ export function MessageBubble({
                         isOwn
                             ? 'bg-primary text-primary-foreground rounded-br-md'
                             : 'bg-muted rounded-bl-md',
-                        // When there's a reply, we need different padding structure
                         !hasReply && 'px-3 py-2'
                     )}
                     onContextMenu={handleRightClick}
@@ -225,7 +206,6 @@ export function MessageBubble({
                     onTouchEnd={handleTouchEnd}
                     onTouchMove={handleTouchMove}
                 >
-                    {/* Reply preview */}
                     {hasReply && message.replyTo && (
                         <ReplyPreview
                             replyTo={message.replyTo}
@@ -245,7 +225,6 @@ export function MessageBubble({
                                         {message.text}
                                     </p>
                                 )}
-                                {/* Attachments */}
                                 {message.attachments && message.attachments.length > 0 && (
                                     <MessageAttachments attachments={message.attachments}/>
                                 )}
@@ -254,7 +233,7 @@ export function MessageBubble({
                     </div>
                 </div>
 
-                {/* Reactions */}
+                {/* Reactions display */}
                 {!message.isDeleted && (
                     <MessageReactions
                         messageId={message.id}
@@ -263,6 +242,7 @@ export function MessageBubble({
                     />
                 )}
 
+                {/* Message metadata */}
                 <div className="flex items-center gap-1 px-1">
           <span className="text-[10px] text-muted-foreground">
             {formatTime(message.createdAt)}
