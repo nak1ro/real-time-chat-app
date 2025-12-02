@@ -79,6 +79,7 @@ export function ChatDetailPanel({
           onBack={onBack}
           showBackButton={showBackButton}
           onOpenDetails={onOpenDetails}
+          currentUserId={currentUserId}
         />
       </div>
 

@@ -13,8 +13,8 @@ export enum ConversationType {
 
 export enum MemberRole {
   MEMBER = 'MEMBER',
-  MODERATOR = 'ADMIN',
-  ADMIN = 'OWNER',
+  ADMIN = 'ADMIN',
+  OWNER = 'OWNER',
 }
 
 export enum AttachmentType {

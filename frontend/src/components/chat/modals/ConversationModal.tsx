@@ -11,6 +11,7 @@ import { conversationApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { ConversationMember } from '@/types/conversation.types';
+import { useRemoveMember, useUpdateMemberRole } from '@/hooks';
 
 interface ConversationModalProps {
   open: boolean;
@@ -96,6 +97,8 @@ export function ConversationModal({
   onUpdateRoles,
 }: ConversationModalProps) {
   const router = useRouter();
+  const removeMember = useRemoveMember();
+  const updateMemberRole = useUpdateMemberRole();
 
   const handleMemberClick = async (member: ConversationMember) => {
     if (member.userId === currentUserId) {
@@ -110,6 +113,33 @@ export function ConversationModal({
       console.error('Failed to start conversation:', error);
       toast.error('Failed to start conversation');
     }
+  };
+
+  const handleKickMember = (memberId: string) => {
+    removeMember.mutate({ id: conversation.id, memberId }, {
+      onSuccess: () => {
+        toast.success('Member removed successfully');
+      },
+      onError: (error) => {
+        toast.error('Failed to remove member');
+        console.error('Failed to remove member:', error);
+      }
+    });
+  };
+
+  const handleUpdateRoles = (updates: { userId: string; role: MemberRole }[]) => {
+    // Process updates sequentially
+    updates.forEach(({ userId, role }) => {
+      updateMemberRole.mutate({ id: conversation.id, memberId: userId, role }, {
+        onSuccess: () => {
+          toast.success('Role updated successfully');
+        },
+        onError: (error) => {
+          toast.error('Failed to update role');
+          console.error('Failed to update role:', error);
+        }
+      });
+    });
   };
 
   // Find the other user for DM conversations
@@ -172,10 +202,10 @@ export function ConversationModal({
           getUserStatus={getUserStatus}
           onRetryAttachments={onRetryAttachments}
           onLeaveGroup={onLeaveGroup}
-          onKickMember={onKickMember}
+          onKickMember={handleKickMember}
           onInviteUsers={onInviteUsers}
           onUpdateSettings={onUpdateSettings}
-          onUpdateRoles={onUpdateRoles}
+          onUpdateRoles={handleUpdateRoles}
           onMemberClick={handleMemberClick}
         />
       );
@@ -202,9 +232,9 @@ export function ConversationModal({
           onRetryAttachments={onRetryAttachments}
           onLeaveChannel={onLeaveChannel}
           onDeleteChannel={onDeleteChannel}
-          onRemoveSubscriber={onRemoveSubscriber}
+          onRemoveSubscriber={handleKickMember}
           onUpdateSettings={onUpdateSettings}
-          onUpdateRoles={onUpdateRoles}
+          onUpdateRoles={handleUpdateRoles}
           onMemberClick={handleMemberClick}
         />
       );

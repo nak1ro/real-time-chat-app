@@ -64,37 +64,37 @@ interface GroupModalProps {
 function getInitials(name: string | null): string {
   if (!name) return '?';
   return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
 }
 
 export function GroupModal({
-  open,
-  onOpenChange,
-  conversation,
-  currentUserId,
-  images = [],
-  files = [],
-  isLoading = false,
-  isError = false,
-  isLeaving = false,
-  isSavingSettings = false,
-  isElevated = false,
-  isOwner = false,
-  isRoleLoading = false,
-  currentUserRole,
-  getUserStatus,
-  onRetryAttachments,
-  onLeaveGroup,
-  onKickMember,
-  onInviteUsers,
-  onUpdateSettings,
-  onUpdateRoles,
-  onMemberClick,
-}: GroupModalProps) {
+                             open,
+                             onOpenChange,
+                             conversation,
+                             currentUserId,
+                             images = [],
+                             files = [],
+                             isLoading = false,
+                             isError = false,
+                             isLeaving = false,
+                             isSavingSettings = false,
+                             isElevated = false,
+                             isOwner = false,
+                             isRoleLoading = false,
+                             currentUserRole,
+                             getUserStatus,
+                             onRetryAttachments,
+                             onLeaveGroup,
+                             onKickMember,
+                             onInviteUsers,
+                             onUpdateSettings,
+                             onUpdateRoles,
+                             onMemberClick,
+                           }: GroupModalProps) {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showKickModal, setShowKickModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -105,224 +105,226 @@ export function GroupModal({
   const memberCount = conversation._count?.members || conversation.members?.length || 0;
 
   // Use passed-in role or fallback to computing from members
-  const effectiveRole = currentUserRole ?? conversation.members?.find(m => m.userId === currentUserId)?.role ?? MemberRole.MEMBER;
+  const effectiveRole =
+      currentUserRole ??
+      conversation.members?.find(m => m.userId === currentUserId)?.role ??
+      MemberRole.MEMBER;
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col p-0 gap-0">
-          {/* Header */}
-          <DialogHeader className="p-6 pb-4">
-            <div className="flex items-start gap-4">
-              <Avatar className="h-16 w-16 flex-shrink-0">
-                <AvatarImage src={conversation.avatarUrl || undefined} alt={groupName} />
-                <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                  <Users className="h-8 w-8" />
-                </AvatarFallback>
-              </Avatar>
+      <>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col p-0 gap-0">
+            {/* Header */}
+            <DialogHeader className="p-6 pb-4">
+              <div className="flex items-start gap-4">
+                <Avatar className="h-16 w-16 flex-shrink-0">
+                  <AvatarImage src={conversation.avatarUrl || undefined} alt={groupName} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                    <Users className="h-8 w-8" />
+                  </AvatarFallback>
+                </Avatar>
 
-              <div className="flex-1 min-w-0 pt-1">
-                <DialogTitle className="text-xl font-semibold truncate">
-                  {groupName}
-                </DialogTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {memberCount} members
-                </p>
-                {conversation.description && (
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                    {conversation.description}
+                <div className="flex-1 min-w-0 pt-1">
+                  <DialogTitle className="text-xl font-semibold truncate">
+                    {groupName}
+                  </DialogTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {memberCount} members
                   </p>
-                )}
+                  {conversation.description && (
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                        {conversation.description}
+                      </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </DialogHeader>
-
-          <Separator />
-
-          {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* Attachments Section */}
-            <SharedAttachments
-              images={images}
-              files={files}
-              isLoading={isLoading}
-              isError={isError}
-              maxVisible={6}
-              onRetry={onRetryAttachments}
-            />
+            </DialogHeader>
 
             <Separator />
 
-            {/* Members Section */}
-            <MembersList
-              members={conversation.members}
-              currentUserId={currentUserId}
-              createdById={conversation.createdById}
-              showSearch={conversation.members.length > 5}
-              maxVisible={15}
-              isLoading={isLoading}
-              getUserStatus={getUserStatus}
-              onMemberClick={onMemberClick}
-            />
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Attachments Section */}
+              <SharedAttachments
+                  images={images}
+                  files={files}
+                  isLoading={isLoading}
+                  isError={isError}
+                  maxVisible={6}
+                  onRetry={onRetryAttachments}
+              />
 
-            {/* Moderation Actions (Admin/Owner only) */}
-            {isRoleLoading ? (
-              <>
-                <Separator />
-                <div className="space-y-3">
-                  <Skeleton className="h-5 w-40" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                </div>
-              </>
-            ) : isElevated && (
-              <>
-                <Separator />
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Moderation Actions
-                  </h3>
+              <Separator />
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      className="justify-start"
-                      onClick={() => setShowKickModal(true)}
-                    >
-                      <UserMinus className="h-4 w-4 mr-2" />
-                      Kick Members
-                    </Button>
+              {/* Members Section */}
+              <MembersList
+                  members={conversation.members}
+                  currentUserId={currentUserId}
+                  createdById={conversation.createdById}
+                  showSearch={conversation.members.length > 5}
+                  maxVisible={15}
+                  isLoading={isLoading}
+                  getUserStatus={getUserStatus}
+                  onMemberClick={onMemberClick}
+              />
 
-                    <Button
-                      variant="outline"
-                      className="justify-start"
-                      onClick={() => setShowInviteModal(true)}
-                    >
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Invite Members
-                    </Button>
-                  </div>
-                </div>
+              {/* Moderation Actions (Admin/Owner only) */}
+              {isRoleLoading ? (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <Skeleton className="h-5 w-40" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                    </div>
+                  </>
+              ) : isElevated && (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Moderation Actions
+                      </h3>
 
-                <Separator />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                            variant="outline"
+                            className="justify-start"
+                            onClick={() => setShowKickModal(true)}
+                        >
+                          <UserMinus className="h-4 w-4 mr-2" />
+                          Kick Members
+                        </Button>
 
-                {/* Group Settings (Admin/Owner only) */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Group Settings
-                  </h3>
+                        <Button
+                            variant="outline"
+                            className="justify-start"
+                            onClick={() => setShowInviteModal(true)}
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Invite Members
+                        </Button>
+                      </div>
+                    </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      className="justify-start"
-                      onClick={() => setShowSettingsModal(true)}
-                    >
-                      <Settings className="h-4 w-4 mr-2" />
-                      Edit Group
-                    </Button>
+                    <Separator />
 
-                    <Button
-                      variant="outline"
-                      className="justify-start"
-                      onClick={() => setShowRolesModal(true)}
-                    >
-                      <Shield className="h-4 w-4 mr-2" />
-                      Manage Roles
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+                    {/* Group Settings (Admin/Owner only) */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Group Settings
+                      </h3>
 
-          <Separator />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                            variant="outline"
+                            className="justify-start"
+                            onClick={() => setShowSettingsModal(true)}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Edit Group
+                        </Button>
 
-          {/* Bottom Actions */}
-          <div className="p-4">
-            <Button
-              variant="outline"
-              className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
-              onClick={() => setShowLeaveConfirm(true)}
-              disabled={isLeaving}
-            >
-              {isLeaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Leaving...
-                </>
-              ) : (
-                <>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Leave Group
-                </>
+                        <Button
+                            variant="outline"
+                            className="justify-start"
+                            onClick={() => setShowRolesModal(true)}
+                        >
+                          <Shield className="h-4 w-4 mr-2" />
+                          Manage Roles
+                        </Button>
+                      </div>
+                    </div>
+                  </>
               )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </div>
 
-      {/* Leave Confirmation */}
-      <ConfirmationDialog
-        open={showLeaveConfirm}
-        onOpenChange={setShowLeaveConfirm}
-        title="Leave Group"
-        description={`Leave ${groupName}? You'll need to be re-invited to join again.`}
-        confirmLabel="Leave"
-        variant="destructive"
-        onConfirm={() => {
-          onLeaveGroup?.();
-          onOpenChange(false);
-        }}
-      />
+            <Separator />
 
-      {/* Kick Members Modal */}
-      <KickMembersModal
-        open={showKickModal}
-        onOpenChange={setShowKickModal}
-        members={conversation.members}
-        currentUserId={currentUserId}
-        conversationName={groupName}
-        getUserStatus={getUserStatus}
-        onKickMember={onKickMember}
-      />
+            {/* Bottom Actions */}
+            <div className="p-4">
+              <Button
+                  variant="outline"
+                  className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                  onClick={() => setShowLeaveConfirm(true)}
+                  disabled={isLeaving}
+              >
+                {isLeaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Leaving...
+                    </>
+                ) : (
+                    <>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Leave Group
+                    </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
-      {/* Invite Members Modal */}
-      <InviteMembersModal
-        open={showInviteModal}
-        onOpenChange={setShowInviteModal}
-        conversationName={groupName}
-        conversationSlug={conversation.slug}
-        existingMemberIds={conversation.members?.map(m => m.userId) || []}
-        onInviteUsers={onInviteUsers}
-      />
+        {/* Leave Confirmation */}
+        <ConfirmationDialog
+            open={showLeaveConfirm}
+            onOpenChange={setShowLeaveConfirm}
+            title="Leave Group"
+            description={`Leave ${groupName}? You'll need to be re-invited to join again.`}
+            confirmLabel="Leave"
+            variant="destructive"
+            onConfirm={() => {
+              onLeaveGroup?.();
+              onOpenChange(false);
+            }}
+        />
 
-      {/* Settings Modal */}
-      <ConversationSettingsModal
-        open={showSettingsModal}
-        onOpenChange={setShowSettingsModal}
-        conversation={conversation}
-        isSaving={isSavingSettings}
-        onSave={onUpdateSettings}
-      />
+        {/* Kick Members Modal */}
+        <KickMembersModal
+            open={showKickModal}
+            onOpenChange={setShowKickModal}
+            members={conversation.members}
+            currentUserId={currentUserId}
+            conversationName={groupName}
+            getUserStatus={getUserStatus}
+            onKickMember={onKickMember}
+        />
 
-      {/* Manage Roles Modal */}
-      <ManageRolesModal
-        open={showRolesModal}
-        onOpenChange={setShowRolesModal}
-        members={conversation.members || []}
-        currentUserId={currentUserId}
-        currentUserRole={effectiveRole}
-        createdById={conversation.createdById}
-        conversationName={groupName}
-        getUserStatus={getUserStatus}
-        onUpdateRoles={onUpdateRoles}
-      />
-    </>
+        {/* Invite Members Modal */}
+        <InviteMembersModal
+            open={showInviteModal}
+            onOpenChange={setShowInviteModal}
+            conversationName={groupName}
+            conversationSlug={conversation.slug}
+            existingMemberIds={conversation.members?.map(m => m.userId) || []}
+            onInviteUsers={onInviteUsers}
+        />
+
+        {/* Settings Modal */}
+        <ConversationSettingsModal
+            open={showSettingsModal}
+            onOpenChange={setShowSettingsModal}
+            conversation={conversation}
+            isSaving={isSavingSettings}
+            onSave={onUpdateSettings}
+        />
+
+        {/* Manage Roles Modal */}
+        <ManageRolesModal
+            open={showRolesModal}
+            onOpenChange={setShowRolesModal}
+            members={conversation.members || []}
+            currentUserId={currentUserId}
+            currentUserRole={effectiveRole}
+            createdById={conversation.createdById}
+            conversationName={groupName}
+            getUserStatus={getUserStatus}
+            onUpdateRoles={onUpdateRoles}
+        />
+      </>
   );
 }
-
