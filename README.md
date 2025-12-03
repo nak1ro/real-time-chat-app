@@ -32,7 +32,7 @@ A real-time messaging platform built with Next.js and Socket.IO, featuring insta
 
 ## Demo
 
-*https://real-time-chat-app-nu-three.vercel.app/auth*
+*https://wave-nakiro.vercel.app/auth*
 
 ## Setup
 
