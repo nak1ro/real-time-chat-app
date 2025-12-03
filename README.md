@@ -60,8 +60,6 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Visit `https://nakiro-real-time-chat-app.vercel.app/`
-
 ## Implementation Highlights
 
 **Real-Time Architecture** - Fully-typed Socket.IO layer with TypeScript interfaces for client-server events. Users join conversation rooms on connection for efficient message broadcasting. Dedicated handlers for messages, reactions, and presence with error boundaries.
