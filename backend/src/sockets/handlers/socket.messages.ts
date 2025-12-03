@@ -10,7 +10,7 @@ import {
     invokeCallback,
     getErrorMessage,
 } from '../core/socket.utils';
-import { notifyMentionedUsers } from './socket.mentions';
+
 import { createNotificationsForMembers } from '../../services';
 import { notifyUser } from './socket.notifications';
 
@@ -78,8 +78,7 @@ export const handleMessageSend = async (
         const { createReceiptForRecipients } = await import('../../services/messages/receipt.service');
         await createReceiptForRecipients(message.id, data.conversationId, userId, readUserIds);
 
-        // Notify mentioned users
-        notifyMentionedUsers(io, message, message.mentionedUserIds);
+
 
         // Create and broadcast NEW_MESSAGE notifications
         try {

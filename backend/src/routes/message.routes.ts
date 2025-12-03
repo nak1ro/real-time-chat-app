@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as messageController from '../controllers/messages/message.controller';
 import * as attachmentController from '../controllers/messages/attachment.controller';
-import * as mentionController from '../controllers/messages/mention.controller';
+
 import * as reactionController from '../controllers/messages/reaction.controller';
 import * as receiptController from '../controllers/messages/receipt.controller';
 import * as notificationController from '../controllers/messages/notification.controller';
@@ -31,8 +31,7 @@ router.delete('/messages/:id', messageController.deleteMessage);
 router.post('/attachments/upload', upload.single('file'), attachmentController.uploadAttachment);
 router.get('/messages/:id/attachments', attachmentController.getMessageAttachments);
 
-// Mention routes
-router.get('/mentions', mentionController.getUserMentions);
+
 
 // Reaction routes
 router.post('/messages/:id/reactions', reactionController.toggleReaction);

@@ -27,8 +27,7 @@ export const SOCKET_EVENTS = {
   MESSAGE_UPDATED: 'message:updated',
   MESSAGE_DELETED: 'message:deleted',
 
-  // Mentions
-  MENTION_NEW: 'mention:new',
+
 
   // Presence
   PRESENCE_UPDATE: 'presence:update',
@@ -138,7 +137,7 @@ export interface ServerToClientEvents {
   [SOCKET_EVENTS.REACTION_UPDATED]: (data: ReactionUpdatePayload) => void;
   [SOCKET_EVENTS.NOTIFICATION_NEW]: (notification: Notification) => void;
   [SOCKET_EVENTS.NOTIFICATION_COUNT_UPDATED]: (data: NotificationCountUpdate) => void;
-  [SOCKET_EVENTS.MENTION_NEW]: (data: { messageId: string; conversationId: string }) => void;
+
   [SOCKET_EVENTS.MODERATION_UPDATED]: (data: ModerationUpdatePayload) => void;
 }
 

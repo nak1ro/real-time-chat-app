@@ -14,7 +14,7 @@ export * from './conversations/moderation.service';
 
 // Message services
 export * from './messages/message.service';
-export * from './messages/mention.service';
+
 export * from './messages/reaction.service';
 export * from './messages/receipt.service';
 export * from './messages/attachment.service';

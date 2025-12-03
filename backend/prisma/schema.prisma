@@ -20,7 +20,6 @@ model User {
   messages      Message[]
   conversations ConversationMember[]
   reactions     MessageReaction[]
-  mentions      MessageMention[]
   receipts      MessageReceipt[]
   typingStates  TypingState[]
 
@@ -119,7 +118,6 @@ model Message {
   replies Message[] @relation("MessageReplies")
 
   reactions         MessageReaction[]
-  mentions          MessageMention[]
   attachments       Attachment[]
   receipts          MessageReceipt[]
   moderationActions ModerationAction[]
@@ -146,19 +144,7 @@ model MessageReaction {
   @@index([messageId])
 }
 
-model MessageMention {
-  id        String   @id @default(uuid())
-  messageId String
-  userId    String
-  createdAt DateTime @default(now())
 
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([messageId, userId])
-  @@index([messageId])
-  @@index([userId])
-}
 
 model Attachment {
   id           String         @id @default(uuid())
@@ -304,7 +290,6 @@ model Notification {
 
 enum NotificationType {
   NEW_MESSAGE
-  MENTION
   REACTION
   REPLY
   CONVERSATION_INVITE

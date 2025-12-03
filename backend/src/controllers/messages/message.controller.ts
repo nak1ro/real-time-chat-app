@@ -49,7 +49,6 @@ export const createMessage = asyncHandler(async (req: Request, res: Response) =>
         status: 'success',
         data: {
             message: result,
-            mentionedUserIds: result.mentionedUserIds,
         },
     });
 });

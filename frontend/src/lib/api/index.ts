@@ -11,7 +11,7 @@ export { conversationApi } from './conversation.api';
 export { messageApi } from './message.api';
 export { attachmentApi } from './attachment.api';
 export { reactionApi } from './reaction.api';
-export { mentionApi } from './mention.api';
+
 export { receiptApi } from './receipt.api';
 export { notificationApi } from './notification.api';
 export { moderationApi } from './moderation.api';
@@ -24,7 +24,7 @@ import { conversationApi } from './conversation.api';
 import { messageApi } from './message.api';
 import { attachmentApi } from './attachment.api';
 import { reactionApi } from './reaction.api';
-import { mentionApi } from './mention.api';
+
 import { receiptApi } from './receipt.api';
 import { notificationApi } from './notification.api';
 import { moderationApi } from './moderation.api';

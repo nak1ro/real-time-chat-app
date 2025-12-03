@@ -86,11 +86,7 @@ export {
 
 export type { UseMessageSocketListenersOptions } from './useMessages';
 
-// Mention hooks
-export {
-  useMentions,
-  useInfiniteMentions,
-} from './useMentions';
+
 
 // Notification hooks
 export {

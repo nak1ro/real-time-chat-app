@@ -29,10 +29,7 @@ const buildNewMessageTitle = (actorName: string): string => {
     return `New message from ${actorName}`;
 };
 
-// Helper: Build notification title for MENTION type
-const buildMentionTitle = (actorName: string): string => {
-    return `${actorName} mentioned you`;
-};
+
 
 // Helper: Build notification title for REACTION type
 const buildReactionTitle = (actorName: string): string => {
@@ -66,11 +63,7 @@ export const buildNotificationContent = (
                 title: buildNewMessageTitle(actorName),
                 body: context?.messageText || 'Sent a message',
             };
-        case 'MENTION':
-            return {
-                title: buildMentionTitle(actorName),
-                body: context?.messageText || 'Mentioned you in a message',
-            };
+
         case 'REACTION':
             return {
                 title: buildReactionTitle(actorName),

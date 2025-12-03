@@ -1,23 +1,23 @@
-import {Message, MessageDeliveryStatus, Prisma} from '@prisma/client';
-import {prisma} from '../../db/prisma';
-import {CreateMessageData, MessageWithRelations, PaginatedMessages, PaginationOptions} from '../../domain';
-import {AuthorizationError, BadRequestError, NotFoundError} from '../../middleware';
-import {createReceiptForRecipients} from './receipt.service';
-import {canModerateMessage, canSendMessage} from '../users/permissions.service';
-import {attachFilesToMessage, AttachmentData} from './attachment.service';
+import { Message, MessageDeliveryStatus, Prisma } from '@prisma/client';
+import { prisma } from '../../db/prisma';
+import { CreateMessageData, MessageWithRelations, PaginatedMessages, PaginationOptions } from '../../domain';
+import { AuthorizationError, BadRequestError, NotFoundError } from '../../middleware';
+import { createReceiptForRecipients } from './receipt.service';
+import { canModerateMessage, canSendMessage } from '../users/permissions.service';
+import { attachFilesToMessage, AttachmentData } from './attachment.service';
 import {
     DEFAULT_PAGE_LIMIT,
     DELETED_MESSAGE_PLACEHOLDER,
     MAX_PAGE_LIMIT,
     MESSAGE_INCLUDE_WITH_RELATIONS,
 } from '../shared/service-constants';
-import {verifyConversationExists, verifyMembership, verifyMessageExists} from '../../utils/validation-helpers';
-import {processMentions} from './mention.service';
+import { verifyConversationExists, verifyMembership, verifyMessageExists } from '../../utils/validation-helpers';
+
 
 // Helper: Verify reply-to message is valid
 const verifyReplyToMessage = async (replyToId: string, conversationId: string): Promise<void> => {
     const replyToMessage = await prisma.message.findUnique({
-        where: {id: replyToId},
+        where: { id: replyToId },
     });
 
     if (!replyToMessage) {
@@ -54,7 +54,7 @@ const validateMessageText = (text: string): void => {
 
 // Helper: Build pagination where clause
 const buildPaginationWhereClause = (conversationId: string): Prisma.MessageWhereInput => {
-    return {conversationId};
+    return { conversationId };
 };
 
 // Helper: Add isDeleted field to message
@@ -117,7 +117,7 @@ const createSenderReadReceipt = async (
 // Helper: Fetch message with all relations
 const fetchMessageWithRelations = async (tx: Prisma.TransactionClient, messageId: string) => {
     return tx.message.findUniqueOrThrow({
-        where: {id: messageId},
+        where: { id: messageId },
         include: MESSAGE_INCLUDE_WITH_RELATIONS,
     });
 };
@@ -136,7 +136,7 @@ const getPaginationParams = (pagination?: PaginationOptions) => {
     const sortOrder = pagination?.sortOrder || 'desc';
     const cursor = pagination?.cursor;
 
-    return {limit, sortOrder, cursor};
+    return { limit, sortOrder, cursor };
 };
 
 // Helper: Extract next cursor from messages
@@ -167,8 +167,8 @@ const verifyTextChanged = (oldText: string, newText: string): void => {
 // Create a new message in a conversation
 export const createMessage = async (
     data: CreateMessageData
-): Promise<MessageWithRelations & { mentionedUserIds: string[]; isDeleted: boolean }> => {
-    const {userId, conversationId, text, replyToId, attachments} = data;
+): Promise<MessageWithRelations & { isDeleted: boolean }> => {
+    const { userId, conversationId, text, replyToId, attachments } = data;
 
     validateMessageText(text);
     await verifyUserCanSendMessage(userId, conversationId);
@@ -177,16 +177,12 @@ export const createMessage = async (
         await verifyReplyToMessage(replyToId, conversationId);
     }
 
-    let mentionedUserIds: string[] = [];
-
     const result = await prisma.$transaction(async (tx) => {
         const message = await createMessageInTransaction(tx, userId, conversationId, text, replyToId);
 
         if (attachments && attachments.length > 0) {
             await attachFilesToMessage(message.id, attachments as AttachmentData[], tx);
         }
-
-        mentionedUserIds = await processMentions(message.id, text);
 
         await createSenderReadReceipt(tx, message.id, userId);
 
@@ -195,7 +191,7 @@ export const createMessage = async (
 
     await createReceiptForRecipients(result.id, conversationId, userId, []);
 
-    return {...addIsDeletedField(result), mentionedUserIds};
+    return addIsDeletedField(result);
 };
 
 // Get messages for a conversation with pagination
@@ -207,15 +203,15 @@ export const getConversationMessages = async (
     await verifyConversationExists(conversationId);
     await verifyMembership(userId, conversationId);
 
-    const {limit, sortOrder, cursor} = getPaginationParams(pagination);
+    const { limit, sortOrder, cursor } = getPaginationParams(pagination);
     const where = buildPaginationWhereClause(conversationId);
 
     const messages = await prisma.message.findMany({
         where,
         take: limit + 1,
         skip: cursor ? 1 : 0,
-        cursor: cursor ? {id: cursor} : undefined,
-        orderBy: [{createdAt: sortOrder}, {id: sortOrder}],
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: [{ createdAt: sortOrder }, { id: sortOrder }],
         include: MESSAGE_INCLUDE_WITH_RELATIONS,
     });
 
@@ -249,7 +245,7 @@ export const editMessage = async (
     verifyTextChanged(message.text, trimmedText);
 
     const updatedMessage = await prisma.message.update({
-        where: {id: messageId},
+        where: { id: messageId },
         data: {
             text: trimmedText,
             isEdited: true,
@@ -278,7 +274,7 @@ export const softDeleteMessage = async (
     }
 
     const deletedMessage = await prisma.message.update({
-        where: {id: messageId},
+        where: { id: messageId },
         data: {
             deletedAt: new Date(),
             text: DELETED_MESSAGE_PLACEHOLDER,

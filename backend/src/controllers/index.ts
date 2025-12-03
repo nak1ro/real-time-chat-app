@@ -4,7 +4,7 @@ export const authController = authControllerImport;
 
 // Message controllers
 export * from './messages/message.controller';
-export * from './messages/mention.controller';
+
 export * from './messages/reaction.controller';
 export * from './messages/receipt.controller';
 export * from './messages/attachment.controller';

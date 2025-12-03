@@ -56,7 +56,7 @@ export * from './core/socket.utils';
 export * from './handlers/socket.handlers';
 export * from './handlers/socket.rooms';
 export * from './handlers/socket.messages';
-export * from './handlers/socket.mentions';
+
 export * from './handlers/socket.reactions';
 export * from './handlers/socket.receipts';
 export * from './handlers/socket.presence';

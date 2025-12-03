@@ -5,26 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7c52423-0ec5-4b06-b8d8-5d028471c1ba" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next-env.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/chat/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/chat/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/api-client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/api-client.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/attachment.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/attachment.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/conversation.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/conversation.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/moderation.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/moderation.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/notification.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/notification.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/reaction.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/reaction.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/receipt.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/receipt.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/api/user.api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/api/user.api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/auth/auth-guards.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/auth/auth-helpers.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/utils/receiptHelpers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/utils/receiptHelpers.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/providers/AppProviders.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/providers/AuthProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/providers/AuthProvider.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/providers/SocketProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/providers/SocketProvider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/backend/prisma/schema.prisma" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/messages/mention.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/message.routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/routes/message.routes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/mention.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/message.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/message.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/messages/notification.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/shared/service-constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/services/shared/service-constants.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.mentions.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.messages.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/sockets/handlers/socket.messages.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,7 +97,7 @@
       <workItem from="1764516474401" duration="7452000" />
       <workItem from="1764548560602" duration="1645000" />
       <workItem from="1764599094389" duration="4153000" />
-      <workItem from="1764705902552" duration="7022000" />
+      <workItem from="1764705902552" duration="7943000" />
     </task>
     <servers />
   </component>

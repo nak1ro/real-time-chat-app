@@ -78,16 +78,6 @@ export interface MessageReceipt {
   user?: UserBasic;
 }
 
-// Message mention object
-export interface MessageMention {
-  id: string;
-  messageId: string;
-  userId: string;
-  mentionedUserId: string;
-  createdAt: Date;
-  message?: Message;
-}
-
 // Full message object from API
 export interface Message {
   id: string;
@@ -104,7 +94,6 @@ export interface Message {
   attachments?: Attachment[];
   reactions?: Reaction[];
   receipts?: MessageReceipt[];
-  mentions?: MessageMention[];
   _count?: {
     receipts?: number;
   };
@@ -141,7 +130,6 @@ export interface PaginatedMessages {
 // Response types
 export interface MessageResponse {
   message: Message;
-  mentionedUserIds?: string[];
 }
 
 export interface AttachmentsResponse {

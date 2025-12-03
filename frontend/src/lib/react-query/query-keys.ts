@@ -39,11 +39,4 @@ export const queryKeys = {
     list: () => [...queryKeys.notifications.all, 'list'] as const,
     unreadCount: () => [...queryKeys.notifications.all, 'unreadCount'] as const,
   },
-
-  // Mentions
-  mentions: {
-    all: ['mentions'] as const,
-    list: () => [...queryKeys.mentions.all, 'list'] as const,
-  },
 } as const;
-
