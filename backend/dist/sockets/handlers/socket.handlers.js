@@ -7,11 +7,13 @@ const socket_presence_1 = require("./socket.presence");
 const socket_receipts_1 = require("./socket.receipts");
 const socket_reactions_1 = require("./socket.reactions");
 const socket_notifications_1 = require("./socket.notifications");
+const socket_moderation_1 = require("./socket.moderation");
 const socket_utils_1 = require("../core/socket.utils");
 // Register all event handlers for a socket connection
 const handleConnection = async (io, socket) => {
     const { userId, userName } = socket.data;
     console.log(`User connected: ${userName} (${userId}) - Socket: ${socket.id}`);
+    socket.join(userId);
     await (0, socket_rooms_1.joinUserConversations)(socket);
     await (0, socket_presence_1.handleUserOnline)(io, socket);
     registerConversationHandlers(socket);
@@ -20,6 +22,7 @@ const handleConnection = async (io, socket) => {
     registerReceiptHandlers(io, socket);
     registerReactionHandlers(io, socket);
     registerNotificationHandlers(io, socket);
+    registerModerationHandlers(io, socket);
     registerDisconnectionHandlers(io, socket, userName, userId);
 };
 exports.handleConnection = handleConnection;
@@ -67,9 +70,6 @@ const registerReceiptHandlers = (io, socket) => {
     socket.on(socket_utils_1.SOCKET_EVENTS.RECEIPT_READ, (data, callback) => {
         (0, socket_receipts_1.handleMarkAsRead)(io, socket, data, callback);
     });
-    socket.on(socket_utils_1.SOCKET_EVENTS.RECEIPT_DELIVERED, (data, callback) => {
-        (0, socket_receipts_1.handleMarkAsDelivered)(io, socket, data, callback);
-    });
     socket.on(socket_utils_1.SOCKET_EVENTS.RECEIPT_GET_STATS, (messageId, callback) => {
         (0, socket_receipts_1.handleGetReadStats)(socket, messageId, callback);
     });
@@ -84,6 +84,10 @@ const registerNotificationHandlers = (io, socket) => {
     socket.on(socket_utils_1.SOCKET_EVENTS.NOTIFICATION_GET_UNREAD_COUNT, (callback) => (0, socket_notifications_1.handleGetUnreadCount)(socket, callback));
     socket.on(socket_utils_1.SOCKET_EVENTS.NOTIFICATION_MARK_READ, (data, callback) => (0, socket_notifications_1.handleMarkNotificationRead)(io, socket, data, callback));
     socket.on(socket_utils_1.SOCKET_EVENTS.NOTIFICATION_MARK_ALL_READ, (callback) => (0, socket_notifications_1.handleMarkAllNotificationsRead)(io, socket, callback));
+};
+// Register moderation-related event handlers
+const registerModerationHandlers = (io, socket) => {
+    socket.on(socket_utils_1.SOCKET_EVENTS.MODERATION_ACTION, (data, callback) => (0, socket_moderation_1.handleModerationAction)(io, socket, data, callback));
 };
 // Register disconnection and error handlers
 const registerDisconnectionHandlers = (io, socket, userName, userId) => {

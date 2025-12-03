@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCurrentRooms = exports.leaveAllConversations = exports.leaveConversation = exports.joinConversation = exports.joinUserConversations = exports.verifyConversationMembership = exports.getUserConversationIds = void 0;
 const prisma_1 = require("../../db/prisma");
@@ -48,6 +81,23 @@ const joinConversation = async (socket, conversationId) => {
         }
         await socket.join(conversationId);
         console.log(`User ${userName} joined room: ${conversationId}`);
+        // Auto-read messages on join
+        try {
+            // We need to import these dynamically or move them to avoid circular deps if possible,
+            // but for now let's assume imports work or we'll fix them.
+            // Actually, let's add the imports at the top.
+            const { markMessagesAsRead } = await Promise.resolve().then(() => __importStar(require('../../services/messages/receipt.service')));
+            const { broadcastBulkReadUpdate } = await Promise.resolve().then(() => __importStar(require('./socket.receipts')));
+            // Mark all messages as read for this user
+            const result = await markMessagesAsRead(conversationId, userId);
+            if (result.messagesAffected > 0 && result.lastMessageId) {
+                broadcastBulkReadUpdate(socket.nsp.server, // Access io instance from socket namespace
+                conversationId, userId, result.lastMessageId, result.messagesAffected);
+            }
+        }
+        catch (error) {
+            console.error(`Failed to auto-read messages on join for user ${userId}:`, error);
+        }
         return true;
     }
     catch (error) {

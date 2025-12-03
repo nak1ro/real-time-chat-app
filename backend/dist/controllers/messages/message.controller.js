@@ -36,9 +36,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteMessage = exports.editMessage = exports.getConversationMessages = exports.createMessage = void 0;
 const middleware_1 = require("../../middleware");
 const messageService = __importStar(require("../../services/messages/message.service"));
+const notification_service_1 = require("../../services/messages/notification.service");
 // Create new message
 exports.createMessage = (0, middleware_1.asyncHandler)(async (req, res) => {
     const userId = req.user?.id;
+    const userName = req.user?.name;
     const { conversationId, text, replyToId, attachments } = req.body;
     const data = {
         userId,
@@ -48,11 +50,29 @@ exports.createMessage = (0, middleware_1.asyncHandler)(async (req, res) => {
         attachments,
     };
     const result = await messageService.createMessage(data);
+    // Create and broadcast NEW_MESSAGE notifications
+    try {
+        const io = req.app.get('io');
+        if (io) {
+            const notifications = await (0, notification_service_1.createNotificationsForMembers)(conversationId, userId, 'NEW_MESSAGE', {
+                messageId: result.id,
+                actorName: userName || 'Unknown User',
+                messageText: result.text.substring(0, 100),
+            });
+            // Notify each recipient via socket
+            notifications.forEach((notification) => {
+                io.to(notification.userId).emit('notification:new', notification);
+            });
+        }
+    }
+    catch (notifError) {
+        console.error('Failed to create message notifications via HTTP:', notifError);
+        // Don't fail the request if notifications fail
+    }
     res.status(201).json({
         status: 'success',
         data: {
             message: result,
-            mentionedUserIds: result.mentionedUserIds,
         },
     });
 });
@@ -63,9 +83,15 @@ exports.getConversationMessages = (0, middleware_1.asyncHandler)(async (req, res
     const pagination = {
         limit: req.query.limit ? parseInt(req.query.limit) : undefined,
         cursor: req.query.cursor,
-        sortOrder: req.query.sortOrder || 'desc',
+        sortOrder: req.query.sortOrder || 'asc',
     };
+    console.log('[getConversationMessages] Params:', {
+        conversationId,
+        pagination,
+        queryParams: req.query
+    });
     const result = await messageService.getConversationMessages(conversationId, userId, pagination);
+    console.log('[getConversationMessages] Returning messages:', result.messages.length);
     res.status(200).json({
         status: 'success',
         data: result,

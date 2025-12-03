@@ -40,6 +40,9 @@ exports.SOCKET_EVENTS = {
     NOTIFICATION_MARK_READ: 'notification:markRead',
     NOTIFICATION_MARK_ALL_READ: 'notification:markAllRead',
     NOTIFICATION_COUNT_UPDATED: 'notification:countUpdated',
+    // Moderation
+    MODERATION_ACTION: 'moderation:action',
+    MODERATION_UPDATED: 'moderation:updated',
 };
 // Create success response
 const createSuccessResponse = (data) => ({

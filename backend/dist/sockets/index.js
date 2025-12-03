@@ -63,7 +63,6 @@ __exportStar(require("./core/socket.utils"), exports);
 __exportStar(require("./handlers/socket.handlers"), exports);
 __exportStar(require("./handlers/socket.rooms"), exports);
 __exportStar(require("./handlers/socket.messages"), exports);
-__exportStar(require("./handlers/socket.mentions"), exports);
 __exportStar(require("./handlers/socket.reactions"), exports);
 __exportStar(require("./handlers/socket.receipts"), exports);
 __exportStar(require("./handlers/socket.presence"), exports);

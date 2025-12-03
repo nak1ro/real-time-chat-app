@@ -1,17 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUnreadMessageCount = exports.getMessageReceipts = exports.getMessageReadStats = exports.markMessageAsDelivered = exports.createReceiptForRecipients = exports.markMessagesAsRead = void 0;
+exports.getUnreadMessageCount = exports.getMessageReadStats = exports.createReceiptForRecipients = exports.markMessagesAsRead = void 0;
 const client_1 = require("@prisma/client");
 const prisma_1 = require("../../db/prisma");
 const middleware_1 = require("../../middleware");
 const service_constants_1 = require("../shared/service-constants");
 const validation_helpers_1 = require("../../utils/validation-helpers");
-// Helper Functions - Validation
-// Verify user membership in conversation
+// Helper: Verify user membership in conversation
 const verifyUserIsMember = async (conversationId, userId) => {
     await (0, validation_helpers_1.verifyMembership)(userId, conversationId);
 };
-// Get and verify message exists
+// Helper: Get message or throw
 const getMessageOrThrow = async (messageId) => {
     const message = await prisma_1.prisma.message.findUnique({
         where: { id: messageId },
@@ -22,7 +21,7 @@ const getMessageOrThrow = async (messageId) => {
     }
     return message;
 };
-// Get target message and verify it belongs to conversation
+// Helper: Get target message and verify conversation
 const getTargetMessage = async (messageId, conversationId) => {
     const message = await prisma_1.prisma.message.findUnique({
         where: { id: messageId },
@@ -36,8 +35,7 @@ const getTargetMessage = async (messageId, conversationId) => {
     }
     return { createdAt: message.createdAt };
 };
-// Helper Functions - Data Retrieval
-// Get conversation members excluding sender
+// Helper: Get conversation members excluding sender
 const getConversationRecipients = async (conversationId, senderId) => {
     const members = await prisma_1.prisma.conversationMember.findMany({
         where: {
@@ -48,7 +46,7 @@ const getConversationRecipients = async (conversationId, senderId) => {
     });
     return members.map((m) => m.userId);
 };
-// Get message IDs in conversation up to a specific point
+// Helper: Get message IDs up to a specific creation date
 const getMessageIdsUpTo = async (conversationId, targetCreatedAt) => {
     const messages = await prisma_1.prisma.message.findMany({
         where: {
@@ -61,7 +59,7 @@ const getMessageIdsUpTo = async (conversationId, targetCreatedAt) => {
     });
     return messages.map((m) => m.id);
 };
-// Get all message IDs in conversation
+// Helper: Get all message IDs in conversation
 const getAllMessageIds = async (conversationId) => {
     const messages = await prisma_1.prisma.message.findMany({
         where: {
@@ -73,7 +71,7 @@ const getAllMessageIds = async (conversationId) => {
     });
     return messages.map((m) => m.id);
 };
-// Get message IDs based on optional target
+// Helper: Get message IDs based on optional target
 const getMessageIdsInConversation = async (conversationId, upToMessageId) => {
     if (upToMessageId) {
         const targetMessage = await getTargetMessage(upToMessageId, conversationId);
@@ -81,8 +79,7 @@ const getMessageIdsInConversation = async (conversationId, upToMessageId) => {
     }
     return await getAllMessageIds(conversationId);
 };
-// Helper Functions - Receipt Operations
-// Upsert a single receipt
+// Helper: Upsert a single receipt
 const upsertReceipt = async (messageId, userId, status) => {
     const timestamps = (0, service_constants_1.buildReceiptTimestamps)(status);
     await prisma_1.prisma.messageReceipt.upsert({
@@ -105,7 +102,7 @@ const upsertReceipt = async (messageId, userId, status) => {
         },
     });
 };
-// Update last read message for conversation member
+// Helper: Update last read message for conversation member
 const updateLastReadMessage = async (conversationId, userId, messageId) => {
     await prisma_1.prisma.conversationMember.update({
         where: {
@@ -119,38 +116,32 @@ const updateLastReadMessage = async (conversationId, userId, messageId) => {
         },
     });
 };
-// Helper Functions - Statistics
-// Calculate receipt statistics
-const calculateReceiptStats = (receipts) => {
-    const stats = {
-        sentCount: 0,
-        deliveredCount: 0,
-        readCount: 0,
-        readBy: [],
-    };
-    for (const receipt of receipts) {
-        switch (receipt.status) {
-            case client_1.MessageDeliveryStatus.SENT:
-                stats.sentCount++;
-                break;
-            case client_1.MessageDeliveryStatus.DELIVERED:
-                stats.deliveredCount++;
-                break;
-            case client_1.MessageDeliveryStatus.READ:
-                stats.readCount++;
-                stats.readBy.push({
-                    userId: receipt.userId,
-                    userName: receipt.user.name,
-                    seenAt: receipt.seenAt,
-                });
-                break;
-        }
-    }
-    return stats;
+// Helper: Count sent receipts
+const countSentReceipts = (receipts) => {
+    return receipts.filter((r) => r.status === client_1.MessageDeliveryStatus.SENT).length;
 };
-// Count unread messages for never-read case
+// Helper: Filter and map read receipts
+const getReadReceiptsList = (receipts) => {
+    return receipts
+        .filter((r) => r.status === client_1.MessageDeliveryStatus.READ)
+        .map((r) => ({
+        userId: r.userId,
+        userName: r.user.name,
+        seenAt: r.seenAt,
+    }));
+};
+// Helper: Calculate receipt statistics
+const calculateReceiptStats = (receipts) => {
+    const readBy = getReadReceiptsList(receipts);
+    return {
+        sentCount: countSentReceipts(receipts),
+        readCount: readBy.length,
+        readBy,
+    };
+};
+// Helper: Count all unread messages for never-read case
 const countAllUnreadMessages = async (conversationId, userId) => {
-    return await prisma_1.prisma.message.count({
+    return prisma_1.prisma.message.count({
         where: {
             conversationId,
             userId: { not: userId },
@@ -158,9 +149,9 @@ const countAllUnreadMessages = async (conversationId, userId) => {
         },
     });
 };
-// Count unread messages after last read
+// Helper: Count unread messages after last read
 const countUnreadMessagesAfter = async (conversationId, userId, lastReadAt) => {
-    return await prisma_1.prisma.message.count({
+    return prisma_1.prisma.message.count({
         where: {
             conversationId,
             userId: { not: userId },
@@ -189,20 +180,18 @@ const markMessagesAsRead = async (conversationId, userId, upToMessageId) => {
 };
 exports.markMessagesAsRead = markMessagesAsRead;
 // Create receipts for all recipients of a message
-const createReceiptForRecipients = async (messageId, conversationId, senderId, status = client_1.MessageDeliveryStatus.SENT) => {
+const createReceiptForRecipients = async (messageId, conversationId, senderId, readUserIds = []) => {
     const recipientIds = await getConversationRecipients(conversationId, senderId);
     if (recipientIds.length === 0)
         return;
-    await Promise.all(recipientIds.map((recipientId) => upsertReceipt(messageId, recipientId, status)));
+    await Promise.all(recipientIds.map((recipientId) => {
+        const status = readUserIds.includes(recipientId)
+            ? client_1.MessageDeliveryStatus.READ
+            : client_1.MessageDeliveryStatus.SENT;
+        return upsertReceipt(messageId, recipientId, status);
+    }));
 };
 exports.createReceiptForRecipients = createReceiptForRecipients;
-// Mark single message as delivered
-const markMessageAsDelivered = async (messageId, userId) => {
-    const message = await getMessageOrThrow(messageId);
-    await verifyUserIsMember(message.conversationId, userId);
-    await upsertReceipt(messageId, userId, client_1.MessageDeliveryStatus.DELIVERED);
-};
-exports.markMessageAsDelivered = markMessageAsDelivered;
 // Get comprehensive read statistics for a message
 const getMessageReadStats = async (messageId) => {
     await getMessageOrThrow(messageId);
@@ -218,16 +207,6 @@ const getMessageReadStats = async (messageId) => {
     };
 };
 exports.getMessageReadStats = getMessageReadStats;
-// Get all receipts for a message with user info
-const getMessageReceipts = async (messageId) => {
-    await getMessageOrThrow(messageId);
-    return await prisma_1.prisma.messageReceipt.findMany({
-        where: { messageId },
-        include: service_constants_1.RECEIPT_INCLUDE_WITH_USER,
-        orderBy: { updatedAt: 'desc' },
-    });
-};
-exports.getMessageReceipts = getMessageReceipts;
 // Get count of unread messages for a user in a conversation
 const getUnreadMessageCount = async (conversationId, userId) => {
     await verifyUserIsMember(conversationId, userId);

@@ -39,7 +39,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const messageController = __importStar(require("../controllers/messages/message.controller"));
 const attachmentController = __importStar(require("../controllers/messages/attachment.controller"));
-const mentionController = __importStar(require("../controllers/messages/mention.controller"));
 const reactionController = __importStar(require("../controllers/messages/reaction.controller"));
 const receiptController = __importStar(require("../controllers/messages/receipt.controller"));
 const notificationController = __importStar(require("../controllers/messages/notification.controller"));
@@ -63,8 +62,6 @@ router.delete('/messages/:id', messageController.deleteMessage);
 // Attachment routes
 router.post('/attachments/upload', upload.single('file'), attachmentController.uploadAttachment);
 router.get('/messages/:id/attachments', attachmentController.getMessageAttachments);
-// Mention routes
-router.get('/mentions', mentionController.getUserMentions);
 // Reaction routes
 router.post('/messages/:id/reactions', reactionController.toggleReaction);
 router.get('/messages/:id/reactions', reactionController.getMessageReactions);

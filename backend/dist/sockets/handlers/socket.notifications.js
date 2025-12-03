@@ -63,7 +63,7 @@ const handleMarkAllNotificationsRead = async (io, socket, callback) => {
 exports.handleMarkAllNotificationsRead = handleMarkAllNotificationsRead;
 // Helper: Notify a user of a new notification
 const notifyUser = (io, userId, notification) => {
-    // Emit to user's personal room
+    console.log('[SOCKET][NOTIFICATIONS] Emitting NOTIFICATION_NEW to user:', userId, 'notificationId:', notification.id);
     io.to(userId).emit(socket_utils_1.SOCKET_EVENTS.NOTIFICATION_NEW, notification);
 };
 exports.notifyUser = notifyUser;

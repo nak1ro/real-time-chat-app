@@ -13,6 +13,7 @@ const prisma_1 = require("./db/prisma");
 const routes_1 = __importDefault(require("./routes"));
 const errorMiddleware_1 = require("./middleware/errorMiddleware");
 const sockets_1 = require("./sockets");
+const invitation_controller_1 = require("./controllers/conversations/invitation.controller");
 const app = (0, express_1.default)();
 const httpServer = (0, http_1.createServer)(app);
 // Initialize Socket.IO
@@ -20,6 +21,8 @@ const io = (0, sockets_1.initializeSocketIO)(httpServer);
 exports.io = io;
 // Make io accessible to routes if needed
 app.set('io', io);
+// Inject socket server into invitation controller
+(0, invitation_controller_1.setSocketServer)(io);
 // Middleware
 app.use((0, cors_1.default)({
     origin: env_1.env.corsOrigin,

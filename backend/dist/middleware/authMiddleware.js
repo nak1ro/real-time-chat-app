@@ -4,7 +4,7 @@ exports.requireSelfOrAdmin = exports.requireUser = exports.optionalAuthenticate 
 const services_1 = require("../services");
 const services_2 = require("../services");
 const errorMiddleware_1 = require("./errorMiddleware");
-/** Authenticate request using JWT */
+// Authenticate request using JWT
 const authenticate = async (req, res, next) => {
     try {
         const token = (0, services_1.extractTokenFromHeader)(req.headers.authorization);
@@ -27,7 +27,7 @@ const authenticate = async (req, res, next) => {
     }
 };
 exports.authenticate = authenticate;
-/** Attach user if token exists, but don't require it */
+// Attach user if token exists, but don't require it
 const optionalAuthenticate = async (req, res, next) => {
     try {
         const token = (0, services_1.extractTokenFromHeader)(req.headers.authorization);
@@ -48,7 +48,7 @@ const optionalAuthenticate = async (req, res, next) => {
     }
 };
 exports.optionalAuthenticate = optionalAuthenticate;
-/** Ensure user is authenticated */
+// Ensure user is authenticated
 const requireUser = (req, res, next) => {
     if (!req.user) {
         throw new errorMiddleware_1.AuthenticationError('Authentication required');
@@ -56,7 +56,7 @@ const requireUser = (req, res, next) => {
     next();
 };
 exports.requireUser = requireUser;
-/** Allow only the user themselves (or an admin, in future) */
+// Allow only the user themselves (or an admin, in future)
 const requireSelfOrAdmin = (req, res, next) => {
     const userId = req.params.userId || req.params.id;
     const currentUserId = req.user?.id;

@@ -9,7 +9,6 @@ const middleware_1 = require("../../middleware");
 const s3_service_1 = require("../shared/s3.service");
 const sharp_1 = __importDefault(require("sharp"));
 const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
-// Constants
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_MIMETYPES = {
     // Images
@@ -32,18 +31,29 @@ const ALLOWED_MIMETYPES = {
     'application/vnd.ms-excel': 'DOCUMENT',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'DOCUMENT',
 };
-// Helper Functions
-// Validate file before upload
-const validateFile = (file) => {
-    if (!file) {
-        throw new middleware_1.BadRequestError('No file provided');
-    }
+// Helper: Validate file size
+const validateFileSize = (file) => {
     if (file.size > MAX_FILE_SIZE) {
         throw new middleware_1.BadRequestError(`File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`);
     }
-    if (!ALLOWED_MIMETYPES[file.mimetype]) {
-        throw new middleware_1.BadRequestError(`File type ${file.mimetype} is not allowed`);
+};
+// Helper: Validate file type
+const validateFileType = (mimeType) => {
+    if (!ALLOWED_MIMETYPES[mimeType]) {
+        throw new middleware_1.BadRequestError(`File type ${mimeType} is not allowed`);
     }
+};
+// Helper: Validate file exists
+const validateFileExists = (file) => {
+    if (!file) {
+        throw new middleware_1.BadRequestError('No file provided');
+    }
+};
+// Validate file before upload
+const validateFile = (file) => {
+    validateFileExists(file);
+    validateFileSize(file);
+    validateFileType(file.mimetype);
 };
 // Determine attachment type from mime type
 const determineAttachmentType = (mimeType) => {
@@ -63,80 +73,69 @@ const extractImageMetadata = async (buffer) => {
         return {};
     }
 };
+// Helper: Write buffer to temporary file
+const writeTempFile = (fileName, buffer) => {
+    const fs = require('fs');
+    const tempPath = `/tmp/${Date.now()}-${Math.random()}.${fileName.split('.').pop()}`;
+    fs.writeFileSync(tempPath, buffer);
+    return tempPath;
+};
+// Helper: Clean up temporary file
+const cleanupTempFile = (filePath) => {
+    try {
+        const fs = require('fs');
+        fs.unlinkSync(filePath);
+    }
+    catch (e) {
+        // Ignore cleanup errors
+    }
+};
+// Helper: Extract video stream metadata
+const parseVideoMetadata = (metadata) => {
+    try {
+        const videoStream = metadata.streams.find((s) => s.codec_type === 'video');
+        return {
+            width: videoStream?.width,
+            height: videoStream?.height,
+            durationMs: metadata.format.duration ? Math.floor(metadata.format.duration * 1000) : undefined,
+        };
+    }
+    catch (error) {
+        console.error('Failed to parse video metadata:', error);
+        return {};
+    }
+};
 // Extract video metadata using ffmpeg
 const extractVideoMetadata = async (buffer) => {
     return new Promise((resolve) => {
-        // Create a temporary file path (ffmpeg needs a file path, not just a buffer)
-        const tempPath = `/tmp/${Date.now()}-${Math.random()}.mp4`;
-        const fs = require('fs');
-        try {
-            // Write buffer to temp file
-            fs.writeFileSync(tempPath, buffer);
-            fluent_ffmpeg_1.default.ffprobe(tempPath, (err, metadata) => {
-                // Clean up temp file
-                try {
-                    fs.unlinkSync(tempPath);
-                }
-                catch (e) {
-                    // Ignore cleanup errors
-                }
-                if (err) {
-                    console.error('Failed to extract video metadata:', err);
-                    resolve({});
-                    return;
-                }
-                try {
-                    const videoStream = metadata.streams.find((s) => s.codec_type === 'video');
-                    resolve({
-                        width: videoStream?.width,
-                        height: videoStream?.height,
-                        durationMs: metadata.format.duration
-                            ? Math.floor(metadata.format.duration * 1000)
-                            : undefined,
-                    });
-                }
-                catch (error) {
-                    console.error('Failed to parse video metadata:', error);
-                    resolve({});
-                }
-            });
-        }
-        catch (error) {
-            console.error('Failed to process video file:', error);
-            // Clean up temp file if it exists
-            try {
-                fs.unlinkSync(tempPath);
+        const tempPath = writeTempFile('video', buffer);
+        fluent_ffmpeg_1.default.ffprobe(tempPath, (err, metadata) => {
+            cleanupTempFile(tempPath);
+            if (err) {
+                console.error('Failed to extract video metadata:', err);
+                resolve({});
+                return;
             }
-            catch (e) {
-                // Ignore cleanup errors
-            }
-            resolve({});
-        }
+            resolve(parseVideoMetadata(metadata));
+        });
     });
 };
 // Extract metadata from file based on type
 const extractMetadata = async (file) => {
     const mimeType = file.mimetype;
-    // Extract image metadata
     if (mimeType.startsWith('image/')) {
         return await extractImageMetadata(file.buffer);
     }
-    // Extract video metadata
     if (mimeType.startsWith('video/')) {
         return await extractVideoMetadata(file.buffer);
     }
-    // No metadata for other types
     return {};
 };
-// Public API
 // Upload attachment file
 const uploadAttachment = async (userId, file) => {
     validateFile(file);
-    // Upload to S3
     const url = await (0, s3_service_1.uploadToS3)(file, 'attachments');
-    // Determine type
     const type = determineAttachmentType(file.mimetype);
-    // Extract metadata
     const metadata = await extractMetadata(file);
     return {
         url,
@@ -148,30 +147,35 @@ const uploadAttachment = async (userId, file) => {
     };
 };
 exports.uploadAttachment = uploadAttachment;
+// Helper: Build attachment data for creation
+const buildAttachmentCreateData = (messageId, attachment) => {
+    return {
+        messageId,
+        url: attachment.url,
+        fileName: attachment.fileName,
+        mimeType: attachment.mimeType,
+        sizeBytes: attachment.sizeBytes,
+        type: attachment.type,
+        width: attachment.width,
+        height: attachment.height,
+        durationMs: attachment.durationMs,
+        thumbnailUrl: attachment.thumbnailUrl,
+    };
+};
 // Attach files to a message
-const attachFilesToMessage = async (messageId, attachments) => {
+const attachFilesToMessage = async (messageId, attachments, tx) => {
     if (!attachments || attachments.length === 0) {
         return;
     }
-    return await prisma_1.prisma.attachment.createMany({
-        data: attachments.map((att) => ({
-            messageId,
-            url: att.url,
-            fileName: att.fileName,
-            mimeType: att.mimeType,
-            sizeBytes: att.sizeBytes,
-            type: att.type,
-            width: att.width,
-            height: att.height,
-            durationMs: att.durationMs,
-            thumbnailUrl: att.thumbnailUrl,
-        })),
+    const client = tx ?? prisma_1.prisma;
+    return client.attachment.createMany({
+        data: attachments.map((att) => buildAttachmentCreateData(messageId, att)),
     });
 };
 exports.attachFilesToMessage = attachFilesToMessage;
 // Get attachments for a message
 const getMessageAttachments = async (messageId) => {
-    return await prisma_1.prisma.attachment.findMany({
+    return prisma_1.prisma.attachment.findMany({
         where: { messageId },
         orderBy: { createdAt: 'asc' },
     });

@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateSlug = exports.joinChannelBySlug = exports.listPublicChannels = exports.updateMemberRole = exports.leaveConversation = exports.removeMember = exports.addMembers = exports.updateConversation = exports.getConversationById = exports.listUserConversations = exports.createGroupOrChannel = exports.createDirectConversation = void 0;
+exports.deleteConversation = exports.getAttachments = exports.search = exports.generateSlug = exports.joinChannelBySlug = exports.listPublicChannels = exports.updateMemberRole = exports.leaveConversation = exports.removeMember = exports.addMembers = exports.updateConversation = exports.getConversationById = exports.listUserConversations = exports.createGroupOrChannel = exports.createDirectConversation = void 0;
 const middleware_1 = require("../../middleware");
 const conversationService = __importStar(require("../../services/conversations/conversation.service"));
 const client_1 = require("@prisma/client");
@@ -166,5 +166,39 @@ exports.generateSlug = (0, middleware_1.asyncHandler)(async (req, res) => {
     res.status(200).json({
         status: 'success',
         data: { slug },
+    });
+});
+// Search conversations and users
+exports.search = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const currentUserId = req.user?.id;
+    const { q, type } = req.query;
+    const results = await conversationService.searchConversations(q, currentUserId, type);
+    res.status(200).json({
+        status: 'success',
+        data: results,
+    });
+});
+// Get conversation attachments
+exports.getAttachments = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const currentUserId = req.user?.id;
+    const { id } = req.params;
+    const { type, cursor, limit } = req.query;
+    const results = await conversationService.getConversationAttachments(id, currentUserId, type, {
+        cursor: cursor,
+        limit: limit ? parseInt(limit) : undefined,
+    });
+    res.status(200).json({
+        status: 'success',
+        data: results,
+    });
+});
+// Delete conversation
+exports.deleteConversation = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const currentUserId = req.user?.id;
+    const { id } = req.params;
+    await conversationService.deleteConversation(id, currentUserId);
+    res.status(200).json({
+        status: 'success',
+        data: { message: 'Conversation deleted successfully' },
     });
 });

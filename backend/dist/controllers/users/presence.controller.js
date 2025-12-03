@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePresenceHeartbeat = exports.getBulkPresences = exports.getUserPresence = void 0;
+exports.getOnlineContacts = exports.updatePresenceHeartbeat = exports.getBulkPresences = exports.getUserPresence = void 0;
 const middleware_1 = require("../../middleware");
 const presenceService = __importStar(require("../../services/users/presence.service"));
 // Get user presence
@@ -73,5 +73,14 @@ exports.updatePresenceHeartbeat = (0, middleware_1.asyncHandler)(async (req, res
     res.status(200).json({
         status: 'success',
         data: { message: 'Heartbeat updated' },
+    });
+});
+// Get online contacts (users with direct conversations who are currently online)
+exports.getOnlineContacts = (0, middleware_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
+    const contacts = await presenceService.getOnlineContacts(userId);
+    res.status(200).json({
+        status: 'success',
+        data: { contacts },
     });
 });

@@ -27,7 +27,6 @@ __exportStar(require("./conversations/conversation.service"), exports);
 __exportStar(require("./conversations/moderation.service"), exports);
 // Message services
 __exportStar(require("./messages/message.service"), exports);
-__exportStar(require("./messages/mention.service"), exports);
 __exportStar(require("./messages/reaction.service"), exports);
 __exportStar(require("./messages/receipt.service"), exports);
 __exportStar(require("./messages/attachment.service"), exports);

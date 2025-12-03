@@ -22,6 +22,7 @@ exports.MESSAGE_REPLY_TO_INCLUDE = {
         text: true,
         userId: true,
         createdAt: true,
+        deletedAt: true,
         user: {
             select: {
                 id: true,
@@ -35,7 +36,13 @@ exports.MESSAGE_INCLUDE_WITH_RELATIONS = {
     user: { select: exports.MESSAGE_USER_SELECT },
     replyTo: exports.MESSAGE_REPLY_TO_INCLUDE,
     attachments: true,
-    mentions: true,
+    reactions: {
+        include: {
+            user: {
+                select: exports.USER_SELECT,
+            },
+        },
+    },
     _count: {
         select: { receipts: true },
     },
@@ -55,18 +62,15 @@ exports.RECEIPT_INCLUDE_WITH_USER = {
     },
 };
 // Message constants
-exports.DEFAULT_PAGE_LIMIT = 50;
-exports.MAX_PAGE_LIMIT = 100;
+exports.DEFAULT_PAGE_LIMIT = 200;
+exports.MAX_PAGE_LIMIT = 300;
 exports.DELETED_MESSAGE_PLACEHOLDER = '[Message deleted]';
 // Receipt helpers
 // Build receipt timestamp data based on status
 const buildReceiptTimestamps = (status) => {
     const now = new Date();
     if (status === client_1.MessageDeliveryStatus.READ) {
-        return { deliveredAt: now, seenAt: now };
-    }
-    if (status === client_1.MessageDeliveryStatus.DELIVERED) {
-        return { deliveredAt: now };
+        return { seenAt: now };
     }
     return {};
 };

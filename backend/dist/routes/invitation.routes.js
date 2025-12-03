@@ -32,24 +32,14 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authController = void 0;
-// Auth controllers
-const authControllerImport = __importStar(require("./auth/auth.controller"));
-exports.authController = authControllerImport;
-// Message controllers
-__exportStar(require("./messages/message.controller"), exports);
-__exportStar(require("./messages/reaction.controller"), exports);
-__exportStar(require("./messages/receipt.controller"), exports);
-__exportStar(require("./messages/attachment.controller"), exports);
-__exportStar(require("./messages/notification.controller"), exports);
-// Conversation controllers
-__exportStar(require("./conversations/conversation.controller"), exports);
-__exportStar(require("./conversations/moderation.controller"), exports);
-// User controllers
-__exportStar(require("./users/user.controller"), exports);
-__exportStar(require("./users/presence.controller"), exports);
-__exportStar(require("./users/permissions.controller"), exports);
+const express_1 = require("express");
+const invitationController = __importStar(require("../controllers/conversations/invitation.controller"));
+const middleware_1 = require("../middleware");
+const router = (0, express_1.Router)();
+// All invitation routes require authentication
+router.use(middleware_1.authenticate);
+// Accept or decline invitations
+router.post('/:invitationId/accept', invitationController.acceptInvitation);
+router.post('/:invitationId/decline', invitationController.declineInvitation);
+exports.default = router;

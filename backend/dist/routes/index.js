@@ -8,10 +8,12 @@ const auth_routes_1 = __importDefault(require("./auth.routes"));
 const conversation_routes_1 = __importDefault(require("./conversation.routes"));
 const message_routes_1 = __importDefault(require("./message.routes"));
 const user_routes_1 = __importDefault(require("./user.routes"));
+const invitation_routes_1 = __importDefault(require("./invitation.routes"));
 const router = (0, express_1.Router)();
 // Mount route modules
 router.use('/auth', auth_routes_1.default);
 router.use('/conversations', conversation_routes_1.default);
 router.use('/users', user_routes_1.default);
+router.use('/invitations', invitation_routes_1.default);
 router.use('/', message_routes_1.default);
 exports.default = router;

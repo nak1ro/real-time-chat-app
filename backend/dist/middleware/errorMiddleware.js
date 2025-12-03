@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleSocketError = exports.asyncHandler = exports.notFoundHandler = exports.errorHandler = exports.AttachmentError = exports.ChannelBanError = exports.ModerationError = exports.MembershipError = exports.ConversationError = exports.MessageError = exports.BadRequestError = exports.RateLimitError = exports.ConflictError = exports.NotFoundError = exports.AuthorizationError = exports.AuthenticationError = exports.ValidationError = exports.AppError = void 0;
+exports.handleSocketError = exports.asyncHandler = exports.notFoundHandler = exports.errorHandler = exports.AttachmentError = exports.BadRequestError = exports.ConflictError = exports.NotFoundError = exports.AuthorizationError = exports.AuthenticationError = exports.ValidationError = exports.AppError = void 0;
 const client_1 = require("@prisma/client");
 /**
  * Custom Error Classes
@@ -52,13 +52,6 @@ class ConflictError extends AppError {
     }
 }
 exports.ConflictError = ConflictError;
-class RateLimitError extends AppError {
-    constructor(message = 'Too many requests') {
-        super(message, 429, true, 'RATE_LIMIT_ERROR');
-        Object.setPrototypeOf(this, RateLimitError.prototype);
-    }
-}
-exports.RateLimitError = RateLimitError;
 class BadRequestError extends AppError {
     constructor(message, details) {
         super(message, 400, true, 'BAD_REQUEST', details);
@@ -66,44 +59,6 @@ class BadRequestError extends AppError {
     }
 }
 exports.BadRequestError = BadRequestError;
-/**
- * Chat-specific Error Classes
- */
-class MessageError extends AppError {
-    constructor(message, statusCode = 400, details) {
-        super(message, statusCode, true, 'MESSAGE_ERROR', details);
-        Object.setPrototypeOf(this, MessageError.prototype);
-    }
-}
-exports.MessageError = MessageError;
-class ConversationError extends AppError {
-    constructor(message, statusCode = 400, details) {
-        super(message, statusCode, true, 'CONVERSATION_ERROR', details);
-        Object.setPrototypeOf(this, ConversationError.prototype);
-    }
-}
-exports.ConversationError = ConversationError;
-class MembershipError extends AppError {
-    constructor(message, statusCode = 403, details) {
-        super(message, statusCode, true, 'MEMBERSHIP_ERROR', details);
-        Object.setPrototypeOf(this, MembershipError.prototype);
-    }
-}
-exports.MembershipError = MembershipError;
-class ModerationError extends AppError {
-    constructor(message, statusCode = 403, details) {
-        super(message, statusCode, true, 'MODERATION_ERROR', details);
-        Object.setPrototypeOf(this, ModerationError.prototype);
-    }
-}
-exports.ModerationError = ModerationError;
-class ChannelBanError extends AppError {
-    constructor(message = 'User is banned from this channel') {
-        super(message, 403, true, 'CHANNEL_BAN_ERROR');
-        Object.setPrototypeOf(this, ChannelBanError.prototype);
-    }
-}
-exports.ChannelBanError = ChannelBanError;
 class AttachmentError extends AppError {
     constructor(message, details) {
         super(message, 400, true, 'ATTACHMENT_ERROR', details);
@@ -111,9 +66,6 @@ class AttachmentError extends AppError {
     }
 }
 exports.AttachmentError = AttachmentError;
-/**
- * Handle Prisma Errors
- */
 const handlePrismaError = (error) => {
     if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
         switch (error.code) {
@@ -172,17 +124,11 @@ const handlePrismaError = (error) => {
     }
     return new AppError('An unexpected database error occurred', 500, false);
 };
-/**
- * Handle Express Validation Errors
- */
 const handleValidationError = (error) => {
     return new ValidationError('Validation failed', {
         errors: error.errors || error.array?.(),
     });
 };
-/**
- * Development Error Response
- */
 const sendErrorDev = (err, res) => {
     const response = {
         status: 'error',
@@ -193,9 +139,6 @@ const sendErrorDev = (err, res) => {
     };
     res.status(err.statusCode).json(response);
 };
-/**
- * Production Error Response
- */
 const sendErrorProd = (err, res) => {
     // Operational, trusted error: send message to client
     if (err.isOperational) {
@@ -218,9 +161,6 @@ const sendErrorProd = (err, res) => {
         res.status(500).json(response);
     }
 };
-/**
- * Global Error Handler Middleware
- */
 const errorHandler = (err, req, res, next) => {
     let error;
     // Convert error to AppError

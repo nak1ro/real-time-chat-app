@@ -1,19 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleGetReadStats = exports.handleMarkAsDelivered = exports.handleMarkAsRead = void 0;
-const client_1 = require("@prisma/client");
+exports.handleGetReadStats = exports.handleMarkAsRead = exports.broadcastBulkReadUpdate = void 0;
 const receipt_service_1 = require("../../services/messages/receipt.service");
 const socket_utils_1 = require("../core/socket.utils");
 // Helper Functions - Payload Creation
-// Create single receipt update payload
-const createReceiptUpdatePayload = (conversationId, messageId, userId, status, seenAt) => ({
-    conversationId,
-    messageId,
-    userId,
-    status,
-    seenAt,
-    timestamp: new Date(),
-});
 // Create bulk receipt update payload
 const createBulkReceiptUpdatePayload = (conversationId, userId, lastReadMessageId, messagesAffected) => ({
     conversationId,
@@ -32,11 +22,7 @@ const broadcastBulkReadUpdate = (io, conversationId, userId, lastMessageId, mess
     const payload = createBulkReceiptUpdatePayload(conversationId, userId, lastMessageId, messagesAffected);
     broadcastToConversation(io, conversationId, payload);
 };
-// Broadcast single delivery update
-const broadcastDeliveryUpdate = (io, conversationId, messageId, userId) => {
-    const payload = createReceiptUpdatePayload(conversationId, messageId, userId, client_1.MessageDeliveryStatus.DELIVERED, null);
-    broadcastToConversation(io, conversationId, payload);
-};
+exports.broadcastBulkReadUpdate = broadcastBulkReadUpdate;
 // Helper Functions - Result Processing
 // Check if read result should be broadcast
 const shouldBroadcastReadResult = (result) => {
@@ -50,7 +36,7 @@ const handleMarkAsRead = async (io, socket, data, callback) => {
     try {
         const result = await (0, receipt_service_1.markMessagesAsRead)(conversationId, userId, upToMessageId);
         if (shouldBroadcastReadResult(result)) {
-            broadcastBulkReadUpdate(io, conversationId, userId, result.lastMessageId, result.messagesAffected);
+            (0, exports.broadcastBulkReadUpdate)(io, conversationId, userId, result.lastMessageId, result.messagesAffected);
         }
         (0, socket_utils_1.invokeCallback)(callback, (0, socket_utils_1.createSuccessResponse)(result));
     }
@@ -60,21 +46,6 @@ const handleMarkAsRead = async (io, socket, data, callback) => {
     }
 };
 exports.handleMarkAsRead = handleMarkAsRead;
-// Handle marking a single message as delivered
-const handleMarkAsDelivered = async (io, socket, data, callback) => {
-    const { userId } = socket.data;
-    const { messageId, conversationId } = data;
-    try {
-        await (0, receipt_service_1.markMessageAsDelivered)(messageId, userId);
-        broadcastDeliveryUpdate(io, conversationId, messageId, userId);
-        (0, socket_utils_1.invokeCallback)(callback, (0, socket_utils_1.createSuccessResponse)({ success: true }));
-    }
-    catch (error) {
-        console.error(`Failed to mark message ${messageId} as delivered:`, error);
-        (0, socket_utils_1.invokeCallback)(callback, (0, socket_utils_1.createErrorResponse)((0, socket_utils_1.getErrorMessage)(error, 'Failed to mark message as delivered')));
-    }
-};
-exports.handleMarkAsDelivered = handleMarkAsDelivered;
 // Handle getting read statistics for a message
 const handleGetReadStats = async (socket, messageId, callback) => {
     try {

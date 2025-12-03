@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cancelPendingOffline = exports.getUsersStatus = exports.getUserStatus = exports.updateLastSeen = exports.setUserOffline = exports.setUserOnline = exports.PRESENCE_CONFIG = void 0;
+exports.getOnlineContacts = exports.cancelPendingOffline = exports.getUsersStatus = exports.getUserStatus = exports.updateLastSeen = exports.setUserOffline = exports.setUserOnline = exports.PRESENCE_CONFIG = void 0;
 const client_1 = require("@prisma/client");
 const prisma_1 = require("../../db/prisma");
 const middleware_1 = require("../../middleware");
@@ -113,3 +113,42 @@ const cancelPendingOffline = (userId) => {
     }
 };
 exports.cancelPendingOffline = cancelPendingOffline;
+// Get online contacts for a user (users with DIRECT conversations who are online)
+const getOnlineContacts = async (userId) => {
+    // Get all direct conversations for this user with the other member's info
+    const directConversations = await prisma_1.prisma.conversation.findMany({
+        where: {
+            type: 'DIRECT',
+            members: {
+                some: { userId },
+            },
+        },
+        include: {
+            members: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatarUrl: true,
+                            status: true,
+                            lastSeenAt: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+    // Extract the other user from each direct conversation and filter online only
+    const onlineContacts = directConversations
+        .map((conv) => {
+        // Find the other member (not the current user)
+        const otherMember = conv.members.find((m) => m.userId !== userId);
+        return otherMember?.user;
+    })
+        .filter((user) => {
+        return user !== undefined && user.status === client_1.Status.ONLINE;
+    });
+    return onlineContacts;
+};
+exports.getOnlineContacts = getOnlineContacts;
