@@ -32,9 +32,7 @@ A real-time messaging platform built with Next.js and Socket.IO, featuring insta
 
 ## Demo
 
-*[Live demo coming soon]*
-
-![Application Preview](screenshot.png)
+*https://real-time-chat-app-nu-three.vercel.app/auth*
 
 ## Setup
 
@@ -61,8 +59,6 @@ cp .env.example .env.local
 
 npm run dev
 ```
-
-Visit `https://nakiro-real-time-chat-app.vercel.app/`
 
 ## Implementation Highlights
 
