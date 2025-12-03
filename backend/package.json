@@ -7,8 +7,8 @@
     "build": "tsc",
     "start": "cross-env NODE_ENV=production node dist/server.js",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev --name init --env-file .env.development",
-    "prisma:deploy": "prisma migrate deploy --env-file .env.production",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:deploy": "prisma migrate deploy",
     "migrate": "npm run prisma:deploy"
   },
   "keywords": [],
