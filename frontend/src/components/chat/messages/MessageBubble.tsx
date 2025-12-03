@@ -20,6 +20,7 @@ interface MessageBubbleProps {
     isHighlighted?: boolean;
     onContextMenu?: (message: Message, position: { x: number; y: number }) => void;
     onReplyClick?: (messageId: string) => void;
+    onAvatarClick?: (userId: string) => void;
 }
 
 
@@ -134,6 +135,7 @@ export function MessageBubble({
     isHighlighted = false,
     onContextMenu,
     onReplyClick,
+    onAvatarClick,
 }: MessageBubbleProps) {
     const senderName = message.user?.name || 'Unknown';
     const senderAvatar = message.user?.avatarUrl;
@@ -169,6 +171,12 @@ export function MessageBubble({
         }
     };
 
+    const handleAvatarClick = () => {
+        if (onAvatarClick && message.user?.id && message.user.id !== currentUserId) {
+            onAvatarClick(message.user.id);
+        }
+    };
+
     return (
         <div
             className={cn(
@@ -178,7 +186,13 @@ export function MessageBubble({
             )}
         >
             {!isOwn && showAvatar && (
-                <Avatar className="h-8 w-8 flex-shrink-0 mt-auto">
+                <Avatar
+                    className={cn(
+                        "h-8 w-8 flex-shrink-0 mt-auto",
+                        onAvatarClick && message.user?.id && message.user.id !== currentUserId && "cursor-pointer hover:opacity-80 transition-opacity"
+                    )}
+                    onClick={handleAvatarClick}
+                >
                     <AvatarImage src={senderAvatar || undefined} alt={senderName} />
                     <AvatarFallback className="text-xs bg-primary/10 text-primary">
                         {getInitials(senderName)}

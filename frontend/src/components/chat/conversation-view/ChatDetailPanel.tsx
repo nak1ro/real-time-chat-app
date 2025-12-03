@@ -20,6 +20,7 @@ interface ChatDetailPanelProps {
   onUploadAttachment?: (file: File) => Promise<UploadedAttachment | null>;
   isUploading?: boolean;
   onOpenDetails?: () => void;
+  onAvatarClick?: (userId: string) => void;
 }
 
 export function ChatDetailPanel({
@@ -37,6 +38,7 @@ export function ChatDetailPanel({
   onUploadAttachment,
   isUploading = false,
   onOpenDetails,
+  onAvatarClick,
 }: ChatDetailPanelProps) {
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
@@ -116,6 +118,7 @@ export function ChatDetailPanel({
           onReply={handleReply}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onAvatarClick={onAvatarClick}
         />
       </div>
 

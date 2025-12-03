@@ -15,6 +15,7 @@ interface MessageListProps {
   onReply?: (message: Message) => void;
   onEdit?: (message: Message) => void;
   onDelete?: (messageId: string) => void;
+  onAvatarClick?: (userId: string) => void;
 }
 
 interface ContextMenuState {
@@ -63,6 +64,7 @@ export function MessageList({
   onReply,
   onEdit,
   onDelete,
+  onAvatarClick,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -155,6 +157,7 @@ export function MessageList({
               isHighlighted={highlightedMessageId === message.id}
               onContextMenu={handleContextMenu}
               onReplyClick={handleReplyClick}
+              onAvatarClick={onAvatarClick}
             />
           </div>
         ))}

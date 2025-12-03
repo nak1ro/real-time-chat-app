@@ -26,6 +26,7 @@ import {
   useUploadAttachment,
   useMessageSocketListeners,
   useSocket,
+  useCreateDirectConversation,
 } from '@/hooks';
 import { conversationApi } from '@/lib/api';
 import type { Conversation, Message, AttachmentData, UploadedAttachment, Attachment } from '@/types';
@@ -169,6 +170,18 @@ export default function ChatsPage() {
     },
     onError: (error) => {
       console.error('[ChatsPage] Failed to upload attachment:', error.message);
+    },
+  });
+
+  // Create direct conversation mutation
+  const createDirectConversation = useCreateDirectConversation({
+    onSuccess: (conversation) => {
+      console.log('[ChatsPage] Direct conversation created/retrieved:', conversation.id);
+      handleSelectConversation(conversation.id);
+    },
+    onError: (error) => {
+      console.error('[ChatsPage] Failed to create direct conversation:', error.message);
+      toast.error('Failed to open conversation');
     },
   });
 
@@ -371,6 +384,15 @@ export default function ChatsPage() {
     }
   }, [selectedConversation]);
 
+  // Handle avatar click to open direct conversation
+  const handleAvatarClick = useCallback((userId: string) => {
+    // Don't create conversation with self
+    if (!user || userId === user.id) return;
+
+    console.log('[ChatsPage] Avatar clicked, creating/opening direct conversation with user:', userId);
+    createDirectConversation.mutate({ otherUserId: userId });
+  }, [user, createDirectConversation]);
+
   return (
     <div className="h-[calc(100vh-3.5rem)] md:h-screen flex flex-col">
       {/* Debug: Socket connection indicator */}
@@ -432,6 +454,7 @@ export default function ChatsPage() {
               onUploadAttachment={handleUploadAttachment}
               isUploading={uploadAttachment.isPending}
               onOpenDetails={handleOpenConversationDetails}
+              onAvatarClick={handleAvatarClick}
             />
           ) : (
             <EmptyChatState />
