@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, MessageCircle, Bell, Waves } from 'lucide-react';
+import { LayoutDashboard, MessageCircle, Bell, Waves, Wifi, WifiOff, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
@@ -16,10 +16,40 @@ const navItems = [
 
 interface AppNavProps {
   unreadNotifications?: number;
+  socketStatus?: string;
+  isSocketConnected?: boolean;
+}
+
+// Socket connection status indicator component
+function ConnectionIndicator({ status, isConnected }: { status: string; isConnected: boolean }) {
+  if (status === 'connecting') {
+    return (
+      <div className="flex items-center gap-1.5 px-2 py-1 gradient-status-connecting text-yellow-600 dark:text-yellow-400 rounded-md text-xs border border-yellow-500/20">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        <span>Connecting...</span>
+      </div>
+    );
+  }
+
+  if (isConnected) {
+    return (
+      <div className="flex items-center gap-1.5 px-2 py-1 gradient-status-online text-green-600 dark:text-green-400 rounded-md text-xs border border-green-500/20">
+        <Wifi className="h-3 w-3" />
+        <span>Connected</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 px-2 py-1 gradient-status-offline text-red-600 dark:text-red-400 rounded-md text-xs border border-red-500/20">
+      <WifiOff className="h-3 w-3" />
+      <span>Disconnected</span>
+    </div>
+  );
 }
 
 // Desktop Sidebar Component
-function DesktopSidebar({ unreadNotifications = 0 }: AppNavProps) {
+function DesktopSidebar({ unreadNotifications = 0, socketStatus = 'disconnected', isSocketConnected = false }: AppNavProps) {
   const pathname = usePathname();
 
   return (
@@ -53,8 +83,8 @@ function DesktopSidebar({ unreadNotifications = 0 }: AppNavProps) {
               <Icon className="h-5 w-5 flex-shrink-0" />
               <span>{item.label}</span>
               {showBadge && (
-                <Badge 
-                  variant="destructive" 
+                <Badge
+                  variant="destructive"
                   className="ml-auto h-5 min-w-5 px-1.5 text-xs font-semibold"
                 >
                   {unreadNotifications > 99 ? '99+' : unreadNotifications}
@@ -64,6 +94,11 @@ function DesktopSidebar({ unreadNotifications = 0 }: AppNavProps) {
           );
         })}
       </nav>
+
+      {/* Connection Status */}
+      <div className="px-3 py-4 border-t border-border">
+        <ConnectionIndicator status={socketStatus} isConnected={isSocketConnected} />
+      </div>
     </aside>
   );
 }
@@ -80,14 +115,14 @@ function MobileBottomNav({ unreadNotifications = 0 }: AppNavProps) {
       if (!ticking.current) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
-          
+
           // Show nav when scrolling up or at top, hide when scrolling down
           if (currentScrollY < lastScrollY.current || currentScrollY < 10) {
             setIsVisible(true);
           } else if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
             setIsVisible(false);
           }
-          
+
           lastScrollY.current = currentScrollY;
           ticking.current = false;
         });
@@ -143,10 +178,14 @@ function MobileBottomNav({ unreadNotifications = 0 }: AppNavProps) {
 }
 
 // Main Navigation Component
-export function AppNav({ unreadNotifications = 0 }: AppNavProps) {
+export function AppNav({ unreadNotifications = 0, socketStatus, isSocketConnected }: AppNavProps) {
   return (
     <>
-      <DesktopSidebar unreadNotifications={unreadNotifications} />
+      <DesktopSidebar
+        unreadNotifications={unreadNotifications}
+        socketStatus={socketStatus}
+        isSocketConnected={isSocketConnected}
+      />
       <MobileBottomNav unreadNotifications={unreadNotifications} />
     </>
   );

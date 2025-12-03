@@ -30,36 +30,8 @@ import {
 import { conversationApi } from '@/lib/api';
 import type { Conversation, Message, AttachmentData, UploadedAttachment, Attachment } from '@/types';
 import { AttachmentType } from '@/types/enums';
-import { Wifi, WifiOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Socket connection status indicator component
-function ConnectionIndicator({ status, isConnected }: { status: string; isConnected: boolean }) {
-  if (status === 'connecting') {
-    return (
-      <div className="flex items-center gap-1.5 px-2 py-1 gradient-status-connecting text-yellow-600 dark:text-yellow-400 rounded-md text-xs border border-yellow-500/20">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        <span>Connecting...</span>
-      </div>
-    );
-  }
-
-  if (isConnected) {
-    return (
-      <div className="flex items-center gap-1.5 px-2 py-1 gradient-status-online text-green-600 dark:text-green-400 rounded-md text-xs border border-green-500/20">
-        <Wifi className="h-3 w-3" />
-        <span>Connected</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-1.5 px-2 py-1 gradient-status-offline text-red-600 dark:text-red-400 rounded-md text-xs border border-red-500/20">
-      <WifiOff className="h-3 w-3" />
-      <span>Disconnected</span>
-    </div>
-  );
-}
 
 export default function ChatsPage() {
   const { user } = useAuth();
@@ -402,17 +374,6 @@ export default function ChatsPage() {
   return (
     <div className="h-[calc(100vh-3.5rem)] md:h-screen flex flex-col">
       {/* Debug: Socket connection indicator */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30">
-        <span className="text-xs text-muted-foreground">
-          {previewConversation
-            ? `Preview: ${previewConversation.name}`
-            : selectedConversation
-              ? `Chat: ${selectedConversation.name || 'Direct Message'}`
-              : 'Select a chat'}
-        </span>
-        <ConnectionIndicator status={status} isConnected={isConnected} />
-      </div>
-
       <div className="flex-1 flex min-h-0">
         {/* Chat List Panel */}
         <div

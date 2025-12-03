@@ -32,13 +32,10 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        {/* Desktop: 2-column grid | Mobile: single column */}
-        <div className="grid gap-5 lg:grid-cols-12">
-          {/* Left Column: Profile & People Online */}
-          <div className="space-y-5 lg:col-span-5 xl:col-span-4">
-            <ProfileActionsCard />
-            <PeopleOnlineCard />
-          </div>
+        {/* Desktop: 2-column grid (equal width) | Mobile: single column */}
+        <div className="grid gap-5 lg:grid-cols-2">
+          <ProfileActionsCard />
+          <PeopleOnlineCard />
         </div>
       </main>
     </div>
