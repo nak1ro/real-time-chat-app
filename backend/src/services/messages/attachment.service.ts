@@ -7,7 +7,8 @@ import ffmpeg from 'fluent-ffmpeg';
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_IMAGE_SIZE = 15 * 1024 * 1024; // 15MB
 
 const ALLOWED_MIMETYPES: Record<string, AttachmentType> = {
     // Images
@@ -49,8 +50,12 @@ export interface AttachmentUploadResult extends AttachmentData {
 
 // Helper: Validate file size
 const validateFileSize = (file: Express.Multer.File): void => {
-    if (file.size > MAX_FILE_SIZE) {
-        throw new BadRequestError(`File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`);
+    const isImage = file.mimetype.startsWith('image/');
+    const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_FILE_SIZE;
+    const fileType = isImage ? 'Image' : 'File';
+
+    if (file.size > maxSize) {
+        throw new BadRequestError(`${fileType} size exceeds ${maxSize / (1024 * 1024)}MB limit`);
     }
 };
 
@@ -222,7 +227,7 @@ export const attachFilesToMessage = async (
 // Get attachments for a message
 export const getMessageAttachments = async (messageId: string) => {
     return prisma.attachment.findMany({
-        where: {messageId},
-        orderBy: {createdAt: 'asc'},
+        where: { messageId },
+        orderBy: { createdAt: 'asc' },
     });
 };
